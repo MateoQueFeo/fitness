@@ -31,24 +31,16 @@
         <!-- ============================== -->
         <div id="view-track" class="block">
             
-            <!-- ⏱️ Rest Timer Widget -->
-            <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800 mb-6 flex flex-col items-center">
-                <div class="w-full flex justify-between items-center mb-2">
-                    <span class="text-sm font-semibold text-gray-400">⏱️ Rest Timer</span>
-                    <div class="flex gap-2">
-                        <button onclick="setTimer(60)" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-2 py-1 rounded border border-zinc-700 text-yellow-500 font-semibold">1m</button>
-                        <button onclick="setTimer(90)" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-2 py-1 rounded border border-zinc-700 text-yellow-500 font-semibold">1.5m</button>
-                        <button onclick="setTimer(120)" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-2 py-1 rounded border border-zinc-700 text-yellow-500 font-semibold">2m</button>
-                        <button onclick="addTime(60)" class="bg-yellow-500/20 hover:bg-yellow-500/30 text-xs px-2 py-1 rounded border border-yellow-500/50 text-yellow-500 font-bold">+1m</button>
-                    </div>
-                </div>
-                
+            <!-- ⏱️ Automated Minimalist Rest Timer Widget -->
+            <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800 mb-6">
                 <div class="flex items-center gap-4 w-full">
+                    <!-- Giant Countdown Timer -->
                     <div id="timerDisplay" class="text-4xl font-mono font-black text-yellow-500 bg-black px-4 py-2 rounded-lg border border-zinc-800 flex-1 text-center">
                         01:00
                     </div>
+                    <!-- Simplified Controls -->
                     <div class="flex gap-2">
-                        <button id="timerBtn" onclick="toggleTimer()" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-4 py-3 rounded-lg transition">Start</button>
+                        <button onclick="addTime(60)" class="bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 font-bold px-4 py-3 rounded-lg transition">+1m</button>
                         <button onclick="resetTimer()" class="bg-zinc-800 hover:bg-zinc-700 font-bold px-4 py-3 rounded-lg border border-zinc-700 transition">Reset</button>
                     </div>
                 </div>
@@ -145,10 +137,10 @@
         }
 
         // -----------------------
-        // TIMER LOGIC
+        // AUTO Rest Timer Logic
         // -----------------------
         let timerInstance = null;
-        let defaultSeconds = 60; 
+        let defaultSeconds = 60; // 1 Minute Default
         let currentSecondsRemaining = defaultSeconds;
 
         function updateTimerDisplay() {
@@ -158,48 +150,36 @@
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
 
-        function setTimer(seconds) {
+        function startTimer() {
+            // Clear any active timer instances first
             clearInterval(timerInstance);
-            timerInstance = null;
-            document.getElementById('timerBtn').innerText = "Start";
-            defaultSeconds = seconds;
-            currentSecondsRemaining = seconds;
-            updateTimerDisplay();
+            
+            timerInstance = setInterval(() => {
+                if (currentSecondsRemaining > 0) {
+                    currentSecondsRemaining--;
+                    updateTimerDisplay();
+                } else {
+                    clearInterval(timerInstance);
+                    timerInstance = null;
+                    alertUser(); 
+                    currentSecondsRemaining = defaultSeconds;
+                    updateTimerDisplay();
+                }
+            }, 1000);
         }
 
         function addTime(seconds) {
             currentSecondsRemaining += seconds;
             updateTimerDisplay();
-        }
-
-        function toggleTimer() {
-            const btn = document.getElementById('timerBtn');
-            if (timerInstance) {
-                clearInterval(timerInstance);
-                timerInstance = null;
-                btn.innerText = "Resume";
-            } else {
-                btn.innerText = "Pause";
-                timerInstance = setInterval(() => {
-                    if (currentSecondsRemaining > 0) {
-                        currentSecondsRemaining--;
-                        updateTimerDisplay();
-                    } else {
-                        clearInterval(timerInstance);
-                        timerInstance = null;
-                        btn.innerText = "Start";
-                        alertUser(); 
-                        currentSecondsRemaining = defaultSeconds;
-                        updateTimerDisplay();
-                    }
-                }, 1000);
+            // If the timer wasn't running, start it
+            if (!timerInstance) {
+                startTimer();
             }
         }
 
         function resetTimer() {
             clearInterval(timerInstance);
             timerInstance = null;
-            document.getElementById('timerBtn').innerText = "Start";
             currentSecondsRemaining = defaultSeconds;
             updateTimerDisplay();
         }
@@ -246,9 +226,10 @@
             document.getElementById('weight').value = '';
             document.getElementById('reps').value = '';
 
+            // Auto-start action trigger
             if (document.getElementById('autoTimer').checked) {
                 resetTimer();
-                toggleTimer();
+                startTimer();
             }
         }
 
@@ -355,15 +336,12 @@
 
             const filteredLogs = workoutLogs.filter(log => log.exercise.toLowerCase().trim() === selectedExercise);
 
-            // Calculate Max Weight and Max Estimated 1RM per date
             const maxWeightPerDate = {};
             const max1RmPerDate = {};
 
             filteredLogs.forEach(log => {
                 const weight = parseFloat(log.weight);
                 const reps = parseInt(log.reps);
-                
-                // Epley Formula: 1RM = Weight * (1 + (Reps / 30))
                 const estimated1RM = Math.round(weight * (1 + (reps / 30)));
 
                 if (!maxWeightPerDate[log.date] || weight > maxWeightPerDate[log.date]) {
@@ -404,10 +382,10 @@
                         {
                             label: 'Estimated 1RM (lbs)',
                             data: oneRmData,
-                            borderColor: '#e5e7eb', // Silver/White for high contrast
+                            borderColor: '#e5e7eb', 
                             backgroundColor: 'transparent',
                             borderWidth: 2,
-                            borderDash: [5, 5], // Creates the dashed line effect
+                            borderDash: [5, 5], 
                             pointBackgroundColor: '#e5e7eb',
                             pointBorderColor: '#000',
                             pointBorderWidth: 2,
@@ -452,7 +430,7 @@
             document.body.removeChild(link);
         }
 
-        // Initialize display
+        // Initialize displays
         updateTimerDisplay();
         renderLogs();
     </script>
