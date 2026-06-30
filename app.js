@@ -74,7 +74,6 @@
         addExerciseRowBtn: document.getElementById('addExerciseRowBtn'),
         saveRoutineBtn: document.getElementById('saveRoutineBtn'),
         routineList: document.getElementById('routineList'),
-        // References to custom set elements have been removed
     };
 
     // --- DATA & PERSISTENCE (IndexedDB & LocalStorage) ---
@@ -94,7 +93,18 @@
     }
     
     function loadRoutines() {
-        const defaultRoutines = [ /* Default routines array */ ];
+        // CORRECTED: The full default routines array is now included.
+        const defaultRoutines = [
+            { id: 1, name: "1. Side Lunge & Adduction", warmups: ["Hip Circles (10 each way)", "Leg Swings (10 each leg)"], exercises: [ { name: "Side Lunge", type: "warm-up", pct: 33, reps: "6" }, { name: "Side Lunge", type: "ramp", pct: 66, reps: "6" }, { name: "Side Lunge", type: "working", pct: 80, reps: "amrap" }, { name: "Hip Adduction", type: "isolation", pct: 75, reps: "amrap" }, { name: "Calf Raise", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Butterfly Stretch (30s)", "Standing Calf Stretch (30s per side)"] },
+            { id: 2, name: "2. 30-deg Incline Press", warmups: ["Arm Circles (12 each way)", "Band Pull-Aparts (15 reps)"], exercises: [ { name: "30-degree Incline Press", type: "warm-up", pct: 33, reps: "6" }, { name: "30-degree Incline Press", type: "ramp", pct: 66, reps: "6" }, { name: "30-degree Incline Press", type: "working", pct: 80, reps: "amrap" }, { name: "Incline Fly", type: "isolation", pct: 75, reps: "amrap" }, { name: "Front Raise", type: "isolation", pct: 75, reps: "amrap" }, { name: "Tricep Extension", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Doorway Chest Stretch (30s)", "Overhead Tricep Stretch (30s per side)"] },
+            { id: 3, name: "3. Walking Lunge & Back Ext", warmups: ["Cat-Cow (10 cycles)", "Glute Bridges (15 reps)"], exercises: [ { name: "Walking Lunge", type: "warm-up", pct: 33, reps: "6" }, { name: "Walking Lunge", type: "ramp", pct: 66, reps: "6" }, { name: "Walking Lunge", type: "working", pct: 80, reps: "amrap" }, { name: "Back Extension", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Kneeling Hip Flexor Stretch (30s per side)", "Child's Pose (60s)"] },
+            { id: 4, name: "4. Bent-Over Row", warmups: ["T-Spine Rotations (8 each side)", "Scapular Retractions (15 reps)"], exercises: [ { name: "Bent-Over Row", type: "warm-up", pct: 33, reps: "6" }, { name: "Bent-Over Row", type: "ramp", pct: 66, reps: "6" }, { name: "Bent-Over Row", type: "working", pct: 80, reps: "amrap" }, { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Dead Hang (30s)", "Bicep Wall Stretch (30s per side)"] },
+            { id: 5, name: "5. Curtsy Lunge & Abduction", warmups: ["Fire Hydrants (15 each side)", "Lateral Band Walks (10 each side)"], exercises: [ { name: "Curtsy Lunge", type: "warm-up", pct: 33, reps: "6" }, { name: "Curtsy Lunge", type: "ramp", pct: 66, reps: "6" }, { name: "Curtsy Lunge", type: "working", pct: 80, reps: "amrap" }, { name: "Hip Abduction", type: "isolation", pct: 75, reps: "amrap" }, { name: "Calf Raise", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Pigeon Pose (30s per side)", "Figure-Four Stretch (30s per side)"] },
+            { id: 6, name: "6. Arnold Press", warmups: ["Shoulder Halos (8 each way)", "Face Pulls (20 reps)"], exercises: [ { name: "Arnold Press", type: "warm-up", pct: 33, reps: "6" }, { name: "Arnold Press", type: "ramp", pct: 66, reps: "6" }, { name: "Arnold Press", type: "working", pct: 80, reps: "amrap" }, { name: "Lateral Raise", type: "isolation", pct: 75, reps: "amrap" }, { name: "Reverse Fly", type: "isolation", pct: 75, reps: "amrap" }, { name: "Tricep Extension", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Cross-Body Shoulder Stretch (30s per side)", "Overhead Tricep Stretch (30s per side)"] },
+            { id: 7, name: "7. Romanian Deadlift", warmups: ["Cat-Cow (10 cycles)", "Good Mornings (Bodyweight, 12 reps)"], exercises: [ { name: "Romanian Deadlift", type: "warm-up", pct: 33, reps: "6" }, { name: "Romanian Deadlift", type: "ramp", pct: 66, reps: "6" }, { name: "Romanian Deadlift", type: "working", pct: 80, reps: "amrap" }, { name: "Back Extension", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Lying Hamstring Stretch (30s per side)", "Child's Pose (60s)"] },
+            { id: 8, name: "8. Pull-Up", warmups: ["Scapular Pull-ups (10 reps)", "Dead Hang (20s)"], exercises: [ { name: "Pull-Up", type: "warm-up", pct: 33, reps: "6" }, { name: "Pull-Up", type: "ramp", pct: 66, reps: "6" }, { name: "Pull-Up", type: "working", pct: 80, reps: "amrap" }, { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Doorway Lat Stretch (30s per side)", "Bicep Wall Stretch (30s per side)"] },
+            { id: 9, name: "9. Lat Pulldown", warmups: ["Scapular Retractions (15 reps)", "Light Band Pulldowns (15 reps)"], exercises: [ { name: "Lat Pulldown", type: "warm-up", pct: 33, reps: "6" }, { name: "Lat Pulldown", type: "ramp", pct: 66, reps: "6" }, { name: "Lat Pulldown", type: "working", pct: 80, reps: "amrap" }, { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Doorway Lat Stretch (30s per side)", "Bicep Wall Stretch (30s per side)"] }
+        ];
         workoutRoutines = JSON.parse(localStorage.getItem('workoutRoutines')) || defaultRoutines;
     }
 
@@ -147,8 +157,6 @@
         updateChart();
     }
     
-    // The saveGenericSet function has been removed
-    
     function completeStep(index, exerciseName) {
         const weightInput = document.getElementById(`wt-${index}`);
         const repsInput = document.getElementById(`rp-${index}`);
@@ -183,9 +191,6 @@
         DOMElements.exerciseSelect.addEventListener('change', updateChart);
         DOMElements.addExerciseRowBtn.addEventListener('click', addExerciseRow);
         DOMElements.saveRoutineBtn.addEventListener('click', saveRoutine);
-
-        // Event listener for logCustomSetBtn has been removed
-
         DOMElements.routineChecklist.addEventListener('click', (e) => {
             const button = e.target.closest('button');
             if (!button) return;
@@ -231,11 +236,9 @@
         }
     }
 
-    // Initialize application
     init();
 
-    // --- All other functions (UI, timer, etc.) are unchanged and omitted for brevity ---
-    // Stubs for remaining functions
+    // --- (The rest of the helper/utility functions are unchanged and omitted for brevity) ---
     function skipStep(index) { document.getElementById(`step-${index}`).classList.add('opacity-20', 'pointer-events-none', 'grayscale'); }
     function deleteRoutine(id) { if (!confirm("Delete this routine?")) return; workoutRoutines = workoutRoutines.filter(r => r.id !== id); saveRoutines(); renderRoutines(); populateRoutineDropdown(); }
     async function requestWakeLock() { try { if ('wakeLock' in navigator && (!wakeLock || wakeLock.released)) { wakeLock = await navigator.wakeLock.request('screen'); } } catch (err) {} }
