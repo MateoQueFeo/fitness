@@ -3,43 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quick Log</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Gym Log</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/000000/barbell.png">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen p-4 font-sans">
     <div class="max-w-md mx-auto">
-        <header class="flex justify-between items-center mb-6">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-4">
             <h1 class="text-2xl font-bold text-emerald-400">⚡ Gym Log</h1>
-            <button onclick="exportData()" class="bg-gray-800 text-xs px-3 py-1.5 rounded border border-gray-700 hover:bg-gray-700">Export CSV</button>
+            <button onclick="exportData()" class="bg-gray-800 text-xs px-3 py-1.5 rounded border border-gray-700 hover:bg-gray-700 transition">Export CSV</button>
         </header>
 
-        <!-- Log Workout Form -->
-        <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 mb-6">
-            <h2 class="text-lg font-semibold mb-3">Add Set</h2>
-            <div class="space-y-3">
-                <input id="exercise" type="text" placeholder="Exercise (e.g. Bench Press)" class="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500">
-                <div class="grid grid-cols-2 gap-3">
-                    <input id="weight" type="number" placeholder="Weight (lbs)" class="bg-gray-700 border border-gray-600 rounded p-2 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500">
-                    <input id="reps" type="number" placeholder="Reps" class="bg-gray-700 border border-gray-600 rounded p-2 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500">
+        <!-- Navigation Tabs -->
+        <div class="flex gap-2 mb-6 border-b border-gray-700 pb-2">
+            <button onclick="switchView('track')" id="tab-track" class="flex-1 font-semibold pb-2 border-b-2 border-emerald-500 text-emerald-400 transition">Track</button>
+            <button onclick="switchView('history')" id="tab-history" class="flex-1 font-semibold pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition">History</button>
+        </div>
+
+        <!-- ============================== -->
+        <!-- VIEW 1: TRACKING SCREEN        -->
+        <!-- ============================== -->
+        <div id="view-track" class="block">
+            
+            <!-- ⏱️ Rest Timer Widget -->
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 mb-6 flex flex-col items-center">
+                <div class="w-full flex justify-between items-center mb-2">
+                    <span class="text-sm font-semibold text-gray-400">⏱️ Rest Timer</span>
+                    <div class="flex gap-2">
+                        <button onclick="setTimer(60)" class="bg-gray-700 hover:bg-gray-600 text-xs px-2 py-1 rounded">1m</button>
+                        <button onclick="setTimer(90)" class="bg-gray-700 hover:bg-gray-600 text-xs px-2 py-1 rounded">1.5m</button>
+                        <button onclick="setTimer(120)" class="bg-gray-700 hover:bg-gray-600 text-xs px-2 py-1 rounded">2m</button>
+                    </div>
                 </div>
-                <button onclick="saveSet()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-gray-900 font-bold p-2.5 rounded transition">Log Set</button>
+                
+                <div class="flex items-center gap-4 w-full">
+                    <div id="timerDisplay" class="text-4xl font-mono font-black text-emerald-400 bg-gray-900 px-4 py-2 rounded-lg border border-gray-700 flex-1 text-center">
+                        01:30
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="timerBtn" onclick="toggleTimer()" class="bg-emerald-500 hover:bg-emerald-600 text-gray-900 font-bold px-4 py-3 rounded-lg transition">Start</button>
+                        <button onclick="resetTimer()" class="bg-gray-700 hover:bg-gray-600 font-bold px-4 py-3 rounded-lg transition">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Log Workout Form -->
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 mb-6">
+                <h2 class="text-lg font-semibold mb-3">Add Set</h2>
+                <div class="space-y-3">
+                    <input id="exercise" type="text" placeholder="Exercise (e.g. Bench Press)" class="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500">
+                    <div class="grid grid-cols-2 gap-3">
+                        <input id="weight" type="number" placeholder="Weight (lbs)" class="bg-gray-700 border border-gray-600 rounded p-2 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500">
+                        <input id="reps" type="number" placeholder="Reps" class="bg-gray-700 border border-gray-600 rounded p-2 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div class="flex items-center gap-2 text-sm text-gray-400 mt-1">
+                        <input type="checkbox" id="autoTimer" checked class="accent-emerald-500 h-4 w-4">
+                        <label for="autoTimer">Auto-start rest timer on logging set</label>
+                    </div>
+                    <button onclick="saveSet()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-gray-900 font-bold p-2.5 rounded transition">Log Set</button>
+                </div>
+            </div>
+
+            <!-- Today's Display -->
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
+                <h2 class="text-lg font-semibold mb-3">Today's Workout</h2>
+                <div id="logList" class="space-y-2">
+                    <!-- Today's logged items dynamically render here -->
+                </div>
             </div>
         </div>
 
-        <!-- History Display -->
-        <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
-            <h2 class="text-lg font-semibold mb-3">Today's Workout</h2>
-            <div id="logList" class="space-y-2">
-                <!-- Logged items will render here dynamically -->
+        <!-- ============================== -->
+        <!-- VIEW 2: HISTORY ARCHIVE        -->
+        <!-- ============================== -->
+        <div id="view-history" class="hidden">
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
+                <h2 class="text-lg font-semibold mb-4">Past Workouts</h2>
+                <div id="historyList" class="space-y-6">
+                    <!-- History gets rendered here -->
+                </div>
             </div>
         </div>
+
     </div>
 
     <script>
         let workoutLogs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+        
+        // -----------------------
+        // VIEW NAVIGATION
+        // -----------------------
+        function switchView(viewName) {
+            const viewTrack = document.getElementById('view-track');
+            const viewHistory = document.getElementById('view-history');
+            const tabTrack = document.getElementById('tab-track');
+            const tabHistory = document.getElementById('tab-history');
 
+            if (viewName === 'history') {
+                viewTrack.classList.replace('block', 'hidden');
+                viewHistory.classList.replace('hidden', 'block');
+                
+                // Update tab styles
+                tabHistory.classList.replace('border-transparent', 'border-emerald-500');
+                tabHistory.classList.replace('text-gray-400', 'text-emerald-400');
+                tabTrack.classList.replace('border-emerald-500', 'border-transparent');
+                tabTrack.classList.replace('text-emerald-400', 'text-gray-400');
+                
+                renderHistory();
+            } else {
+                viewTrack.classList.replace('hidden', 'block');
+                viewHistory.classList.replace('block', 'hidden');
+                
+                // Update tab styles
+                tabTrack.classList.replace('border-transparent', 'border-emerald-500');
+                tabTrack.classList.replace('text-gray-400', 'text-emerald-400');
+                tabHistory.classList.replace('border-emerald-500', 'border-transparent');
+                tabHistory.classList.replace('text-emerald-400', 'text-gray-400');
+                
+                renderLogs();
+            }
+        }
+
+        // -----------------------
+        // TIMER LOGIC
+        // -----------------------
+        let timerInstance = null;
+        let defaultSeconds = 90; 
+        let currentSecondsRemaining = defaultSeconds;
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(currentSecondsRemaining / 60);
+            const seconds = currentSecondsRemaining % 60;
+            document.getElementById('timerDisplay').innerText = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function setTimer(seconds) {
+            clearInterval(timerInstance);
+            timerInstance = null;
+            document.getElementById('timerBtn').innerText = "Start";
+            defaultSeconds = seconds;
+            currentSecondsRemaining = seconds;
+            updateTimerDisplay();
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('timerBtn');
+            if (timerInstance) {
+                clearInterval(timerInstance);
+                timerInstance = null;
+                btn.innerText = "Resume";
+            } else {
+                btn.innerText = "Pause";
+                timerInstance = setInterval(() => {
+                    if (currentSecondsRemaining > 0) {
+                        currentSecondsRemaining--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInstance);
+                        timerInstance = null;
+                        btn.innerText = "Start";
+                        alertUser(); // Only audio alert remains
+                        currentSecondsRemaining = defaultSeconds;
+                        updateTimerDisplay();
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInstance);
+            timerInstance = null;
+            document.getElementById('timerBtn').innerText = "Start";
+            currentSecondsRemaining = defaultSeconds;
+            updateTimerDisplay();
+        }
+
+        // 🔊 Audio Alert Only
+        function alertUser() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); 
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime); 
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.start();
+                setTimeout(() => { oscillator.stop(); }, 800);
+            } catch (e) {
+                console.log("Audio play blocked or unsupported: ", e);
+            }
+        }
+
+        // -----------------------
+        // LOGGING & DISPLAY LOGIC
+        // -----------------------
         function saveSet() {
             const exercise = document.getElementById('exercise').value.trim();
             const weight = document.getElementById('weight').value;
@@ -55,31 +221,78 @@
                 reps
             };
 
-            workoutLogs.unshift(log);
+            workoutLogs.unshift(log); // Add newest to the top
             localStorage.setItem('workoutLogs', JSON.stringify(workoutLogs));
             renderLogs();
             
-            // Clear inputs for next set
+            // Clear weight & reps for next set, leave exercise populated
             document.getElementById('weight').value = '';
             document.getElementById('reps').value = '';
+
+            if (document.getElementById('autoTimer').checked) {
+                resetTimer();
+                toggleTimer();
+            }
         }
 
+        // Renders only TODAY'S workout on the main screen
         function renderLogs() {
+            const todayDate = new Date().toLocaleDateString();
+            const todaysLogs = workoutLogs.filter(log => log.date === todayDate);
+
             const list = document.getElementById('logList');
-            list.innerHTML = workoutLogs.length ? '' : '<p class="text-gray-500 text-sm">No sets logged today.</p>';
+            list.innerHTML = todaysLogs.length ? '' : '<p class="text-gray-500 text-sm text-center py-2">No sets logged yet today.</p>';
             
-            workoutLogs.forEach(log => {
+            todaysLogs.forEach(log => {
                 const item = document.createElement('div');
                 item.className = "flex justify-between items-center bg-gray-700 p-3 rounded border border-gray-600";
                 item.innerHTML = `
-                    <div>
-                        <div class="font-semibold text-white">${log.exercise}</div>
-                        <div class="text-sm text-gray-400">${log.date}</div>
-                    </div>
-                    <div class="text-emerald-400 font-bold">${log.weight} lbs × ${log.reps} reps</div>
+                    <div class="font-semibold text-white">${log.exercise}</div>
+                    <div class="text-emerald-400 font-bold">${log.weight} lbs × ${log.reps}</div>
                 `;
                 list.appendChild(item);
             });
+        }
+
+        // Renders PAST workouts grouped by date on the History tab
+        function renderHistory() {
+            const todayDate = new Date().toLocaleDateString();
+            const pastLogs = workoutLogs.filter(log => log.date !== todayDate);
+            const list = document.getElementById('historyList');
+
+            if (pastLogs.length === 0) {
+                list.innerHTML = '<p class="text-gray-500 text-sm text-center py-4">No past history found.</p>';
+                return;
+            }
+
+            // Group logs by date
+            const groupedLogs = pastLogs.reduce((groups, log) => {
+                if (!groups[log.date]) groups[log.date] = [];
+                groups[log.date].push(log);
+                return groups;
+            }, {});
+
+            list.innerHTML = ''; // Clear previous renders
+            
+            // Generate HTML for each date group
+            for (const [date, logs] of Object.entries(groupedLogs)) {
+                const dateGroup = document.createElement('div');
+                
+                let setsHTML = logs.map(log => `
+                    <div class="flex justify-between items-center bg-gray-700 p-2 rounded border border-gray-600 text-sm mt-1">
+                        <span class="text-gray-200">${log.exercise}</span>
+                        <span class="text-emerald-400 font-semibold">${log.weight} lbs × ${log.reps}</span>
+                    </div>
+                `).join('');
+
+                dateGroup.innerHTML = `
+                    <div class="mb-4 border-l-2 border-emerald-500 pl-3">
+                        <h3 class="text-gray-400 font-bold text-sm mb-2">${date}</h3>
+                        <div class="space-y-1">${setsHTML}</div>
+                    </div>
+                `;
+                list.appendChild(dateGroup);
+            }
         }
 
         function exportData() {
@@ -96,6 +309,8 @@
             document.body.removeChild(link);
         }
 
+        // Initialize displays
+        updateTimerDisplay();
         renderLogs();
     </script>
 </body>
