@@ -1,0 +1,3 @@
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.check-anim { transition: all 0.2s ease-in-out; }
