@@ -8,19 +8,19 @@
     <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/000000/barbell.png">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen p-4 font-sans">
+<body class="bg-black text-gray-100 min-h-screen p-4 font-sans">
     <div class="max-w-md mx-auto">
         
         <!-- Header -->
         <header class="flex justify-between items-center mb-4">
-            <h1 class="text-2xl font-bold text-emerald-400">⚡ Gym Log</h1>
-            <button onclick="exportData()" class="bg-gray-800 text-xs px-3 py-1.5 rounded border border-gray-700 hover:bg-gray-700 transition">Export CSV</button>
+            <h1 class="text-2xl font-bold text-yellow-500">⚡ Gym Log</h1>
+            <button onclick="exportData()" class="bg-zinc-900 text-xs px-3 py-1.5 rounded border border-zinc-800 hover:bg-zinc-800 hover:border-yellow-500/50 text-yellow-500 transition font-semibold">Export CSV</button>
         </header>
 
         <!-- Navigation Tabs -->
-        <div class="flex gap-2 mb-6 border-b border-gray-700 pb-2">
-            <button onclick="switchView('track')" id="tab-track" class="flex-1 font-semibold pb-2 border-b-2 border-emerald-500 text-emerald-400 transition">Track</button>
-            <button onclick="switchView('history')" id="tab-history" class="flex-1 font-semibold pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition">History</button>
+        <div class="flex gap-2 mb-6 border-b border-zinc-800 pb-2">
+            <button onclick="switchView('track')" id="tab-track" class="flex-1 font-bold pb-2 border-b-2 border-yellow-500 text-yellow-500 transition">Track</button>
+            <button onclick="switchView('history')" id="tab-history" class="flex-1 font-bold pb-2 border-b-2 border-transparent text-gray-500 hover:text-gray-300 transition">History</button>
         </div>
 
         <!-- ============================== -->
@@ -29,47 +29,47 @@
         <div id="view-track" class="block">
             
             <!-- ⏱️ Rest Timer Widget -->
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 mb-6 flex flex-col items-center">
+            <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800 mb-6 flex flex-col items-center">
                 <div class="w-full flex justify-between items-center mb-2">
                     <span class="text-sm font-semibold text-gray-400">⏱️ Rest Timer</span>
                     <div class="flex gap-2">
-                        <button onclick="setTimer(60)" class="bg-gray-700 hover:bg-gray-600 text-xs px-2 py-1 rounded">1m</button>
-                        <button onclick="setTimer(90)" class="bg-gray-700 hover:bg-gray-600 text-xs px-2 py-1 rounded">1.5m</button>
-                        <button onclick="setTimer(120)" class="bg-gray-700 hover:bg-gray-600 text-xs px-2 py-1 rounded">2m</button>
+                        <button onclick="setTimer(60)" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-2 py-1 rounded border border-zinc-700 text-yellow-500 font-semibold">1m</button>
+                        <button onclick="setTimer(90)" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-2 py-1 rounded border border-zinc-700 text-yellow-500 font-semibold">1.5m</button>
+                        <button onclick="setTimer(120)" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-2 py-1 rounded border border-zinc-700 text-yellow-500 font-semibold">2m</button>
                     </div>
                 </div>
                 
                 <div class="flex items-center gap-4 w-full">
-                    <div id="timerDisplay" class="text-4xl font-mono font-black text-emerald-400 bg-gray-900 px-4 py-2 rounded-lg border border-gray-700 flex-1 text-center">
+                    <div id="timerDisplay" class="text-4xl font-mono font-black text-yellow-500 bg-black px-4 py-2 rounded-lg border border-zinc-800 flex-1 text-center">
                         01:30
                     </div>
                     <div class="flex gap-2">
-                        <button id="timerBtn" onclick="toggleTimer()" class="bg-emerald-500 hover:bg-emerald-600 text-gray-900 font-bold px-4 py-3 rounded-lg transition">Start</button>
-                        <button onclick="resetTimer()" class="bg-gray-700 hover:bg-gray-600 font-bold px-4 py-3 rounded-lg transition">Reset</button>
+                        <button id="timerBtn" onclick="toggleTimer()" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-4 py-3 rounded-lg transition">Start</button>
+                        <button onclick="resetTimer()" class="bg-zinc-800 hover:bg-zinc-700 font-bold px-4 py-3 rounded-lg border border-zinc-700 transition">Reset</button>
                     </div>
                 </div>
             </div>
 
             <!-- Log Workout Form -->
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 mb-6">
-                <h2 class="text-lg font-semibold mb-3">Add Set</h2>
+            <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800 mb-6">
+                <h2 class="text-lg font-bold text-gray-200 mb-3">Add Set</h2>
                 <div class="space-y-3">
-                    <input id="exercise" type="text" placeholder="Exercise (e.g. Bench Press)" class="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500">
+                    <input id="exercise" type="text" placeholder="Exercise (e.g. Bench Press)" class="w-full bg-zinc-800 border border-zinc-700 rounded p-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition">
                     <div class="grid grid-cols-2 gap-3">
-                        <input id="weight" type="number" placeholder="Weight (lbs)" class="bg-gray-700 border border-gray-600 rounded p-2 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500">
-                        <input id="reps" type="number" placeholder="Reps" class="bg-gray-700 border border-gray-600 rounded p-2 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500">
+                        <input id="weight" type="number" placeholder="Weight (lbs)" class="bg-zinc-800 border border-zinc-700 rounded p-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition">
+                        <input id="reps" type="number" placeholder="Reps" class="bg-zinc-800 border border-zinc-700 rounded p-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition">
                     </div>
                     <div class="flex items-center gap-2 text-sm text-gray-400 mt-1">
-                        <input type="checkbox" id="autoTimer" checked class="accent-emerald-500 h-4 w-4">
+                        <input type="checkbox" id="autoTimer" checked class="accent-yellow-500 h-4 w-4">
                         <label for="autoTimer">Auto-start rest timer on logging set</label>
                     </div>
-                    <button onclick="saveSet()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-gray-900 font-bold p-2.5 rounded transition">Log Set</button>
+                    <button onclick="saveSet()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold p-3 rounded-lg transition shadow-md shadow-yellow-500/10">Log Set</button>
                 </div>
             </div>
 
             <!-- Today's Display -->
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
-                <h2 class="text-lg font-semibold mb-3">Today's Workout</h2>
+            <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800">
+                <h2 class="text-lg font-bold text-gray-200 mb-3">Today's Workout</h2>
                 <div id="logList" class="space-y-2">
                     <!-- Today's logged items dynamically render here -->
                 </div>
@@ -80,8 +80,8 @@
         <!-- VIEW 2: HISTORY ARCHIVE        -->
         <!-- ============================== -->
         <div id="view-history" class="hidden">
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
-                <h2 class="text-lg font-semibold mb-4">Past Workouts</h2>
+            <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800">
+                <h2 class="text-lg font-bold text-gray-200 mb-4">Past Workouts</h2>
                 <div id="historyList" class="space-y-6">
                     <!-- History gets rendered here -->
                 </div>
@@ -107,10 +107,10 @@
                 viewHistory.classList.replace('hidden', 'block');
                 
                 // Update tab styles
-                tabHistory.classList.replace('border-transparent', 'border-emerald-500');
-                tabHistory.classList.replace('text-gray-400', 'text-emerald-400');
-                tabTrack.classList.replace('border-emerald-500', 'border-transparent');
-                tabTrack.classList.replace('text-emerald-400', 'text-gray-400');
+                tabHistory.classList.replace('border-transparent', 'border-yellow-500');
+                tabHistory.classList.replace('text-gray-500', 'text-yellow-500');
+                tabTrack.classList.replace('border-yellow-500', 'border-transparent');
+                tabTrack.classList.replace('text-yellow-500', 'text-gray-500');
                 
                 renderHistory();
             } else {
@@ -118,10 +118,10 @@
                 viewHistory.classList.replace('block', 'hidden');
                 
                 // Update tab styles
-                tabTrack.classList.replace('border-transparent', 'border-emerald-500');
-                tabTrack.classList.replace('text-gray-400', 'text-emerald-400');
-                tabHistory.classList.replace('border-emerald-500', 'border-transparent');
-                tabHistory.classList.replace('text-emerald-400', 'text-gray-400');
+                tabTrack.classList.replace('border-transparent', 'border-yellow-500');
+                tabTrack.classList.replace('text-gray-500', 'text-yellow-500');
+                tabHistory.classList.replace('border-yellow-500', 'border-transparent');
+                tabHistory.classList.replace('text-yellow-500', 'text-gray-500');
                 
                 renderLogs();
             }
@@ -166,7 +166,7 @@
                         clearInterval(timerInstance);
                         timerInstance = null;
                         btn.innerText = "Start";
-                        alertUser(); // Only audio alert remains
+                        alertUser(); 
                         currentSecondsRemaining = defaultSeconds;
                         updateTimerDisplay();
                     }
@@ -221,11 +221,10 @@
                 reps
             };
 
-            workoutLogs.unshift(log); // Add newest to the top
+            workoutLogs.unshift(log); 
             localStorage.setItem('workoutLogs', JSON.stringify(workoutLogs));
             renderLogs();
             
-            // Clear weight & reps for next set, leave exercise populated
             document.getElementById('weight').value = '';
             document.getElementById('reps').value = '';
 
@@ -235,20 +234,35 @@
             }
         }
 
+        // ❌ DELETE LOG FUNCTION
+        function deleteLog(id) {
+            if (confirm("Are you sure you want to delete this logged set?")) {
+                workoutLogs = workoutLogs.filter(log => log.id !== id);
+                localStorage.setItem('workoutLogs', JSON.stringify(workoutLogs));
+                
+                // Re-render whichever screen is currently active
+                renderLogs();
+                renderHistory();
+            }
+        }
+
         // Renders only TODAY'S workout on the main screen
         function renderLogs() {
             const todayDate = new Date().toLocaleDateString();
             const todaysLogs = workoutLogs.filter(log => log.date === todayDate);
 
             const list = document.getElementById('logList');
-            list.innerHTML = todaysLogs.length ? '' : '<p class="text-gray-500 text-sm text-center py-2">No sets logged yet today.</p>';
+            list.innerHTML = todaysLogs.length ? '' : '<p class="text-zinc-500 text-sm text-center py-2">No sets logged yet today.</p>';
             
             todaysLogs.forEach(log => {
                 const item = document.createElement('div');
-                item.className = "flex justify-between items-center bg-gray-700 p-3 rounded border border-gray-600";
+                item.className = "flex justify-between items-center bg-zinc-800 p-3 rounded-lg border border-zinc-700/60";
                 item.innerHTML = `
                     <div class="font-semibold text-white">${log.exercise}</div>
-                    <div class="text-emerald-400 font-bold">${log.weight} lbs × ${log.reps}</div>
+                    <div class="flex items-center gap-4">
+                        <span class="text-yellow-500 font-bold">${log.weight} lbs × ${log.reps}</span>
+                        <button onclick="deleteLog(${log.id})" class="text-red-400 hover:text-red-500 font-bold px-2 py-1 text-sm transition" title="Delete set">✕</button>
+                    </div>
                 `;
                 list.appendChild(item);
             });
@@ -261,32 +275,33 @@
             const list = document.getElementById('historyList');
 
             if (pastLogs.length === 0) {
-                list.innerHTML = '<p class="text-gray-500 text-sm text-center py-4">No past history found.</p>';
+                list.innerHTML = '<p class="text-zinc-500 text-sm text-center py-4">No past history found.</p>';
                 return;
             }
 
-            // Group logs by date
             const groupedLogs = pastLogs.reduce((groups, log) => {
                 if (!groups[log.date]) groups[log.date] = [];
                 groups[log.date].push(log);
                 return groups;
             }, {});
 
-            list.innerHTML = ''; // Clear previous renders
+            list.innerHTML = ''; 
             
-            // Generate HTML for each date group
             for (const [date, logs] of Object.entries(groupedLogs)) {
                 const dateGroup = document.createElement('div');
                 
                 let setsHTML = logs.map(log => `
-                    <div class="flex justify-between items-center bg-gray-700 p-2 rounded border border-gray-600 text-sm mt-1">
-                        <span class="text-gray-200">${log.exercise}</span>
-                        <span class="text-emerald-400 font-semibold">${log.weight} lbs × ${log.reps}</span>
+                    <div class="flex justify-between items-center bg-zinc-800 p-2.5 rounded-lg border border-zinc-700/50 text-sm mt-1.5">
+                        <span class="text-gray-300 font-medium">${log.exercise}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-yellow-500 font-semibold">${log.weight} lbs × ${log.reps}</span>
+                            <button onclick="deleteLog(${log.id})" class="text-red-400 hover:text-red-500 font-bold px-1.5 text-xs transition">✕</button>
+                        </div>
                     </div>
                 `).join('');
 
                 dateGroup.innerHTML = `
-                    <div class="mb-4 border-l-2 border-emerald-500 pl-3">
+                    <div class="mb-4 border-l-2 border-yellow-500 pl-3">
                         <h3 class="text-gray-400 font-bold text-sm mb-2">${date}</h3>
                         <div class="space-y-1">${setsHTML}</div>
                     </div>
