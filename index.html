@@ -98,7 +98,7 @@
         <div id="view-progress" class="hidden">
             <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800">
                 <h2 class="text-lg font-bold text-gray-200 mb-4">Strength Progress</h2>
-                <p class="text-sm text-gray-400 mb-3">Select an exercise to view your max weight lifted over time.</p>
+                <p class="text-sm text-gray-400 mb-3">Select an exercise to view your max weight and estimated 1RM.</p>
                 
                 <select id="exerciseSelect" onchange="updateChart()" class="w-full bg-zinc-800 border border-zinc-700 rounded p-2.5 text-white mb-6 focus:outline-none focus:border-yellow-500">
                     <option value="">Select Exercise...</option>
@@ -136,7 +136,6 @@
                 }
             });
 
-            // Call specific render functions based on view
             if (targetView === 'history') renderHistory();
             if (targetView === 'track') renderLogs();
             if (targetView === 'progress') {
@@ -149,7 +148,7 @@
         // TIMER LOGIC
         // -----------------------
         let timerInstance = null;
-        let defaultSeconds = 60; // Default changed to 60s (1m)
+        let defaultSeconds = 60; 
         let currentSecondsRemaining = defaultSeconds;
 
         function updateTimerDisplay() {
@@ -168,7 +167,6 @@
             updateTimerDisplay();
         }
 
-        // New feature: Add time dynamically
         function addTime(seconds) {
             currentSecondsRemaining += seconds;
             updateTimerDisplay();
@@ -206,24 +204,20 @@
             updateTimerDisplay();
         }
 
-        // 🔊 Audio Alert Only
         function alertUser() {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const oscillator = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
-
                 oscillator.type = 'sine';
                 oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); 
                 gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime); 
-
                 oscillator.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
-                
                 oscillator.start();
                 setTimeout(() => { oscillator.stop(); }, 800);
             } catch (e) {
-                console.log("Audio play blocked or unsupported: ", e);
+                console.log("Audio play blocked: ", e);
             }
         }
 
@@ -274,7 +268,6 @@
         function renderLogs() {
             const todayDate = new Date().toLocaleDateString();
             const todaysLogs = workoutLogs.filter(log => log.date === todayDate);
-
             const list = document.getElementById('logList');
             list.innerHTML = todaysLogs.length ? '' : '<p class="text-zinc-500 text-sm text-center py-2">No sets logged yet today.</p>';
             
@@ -309,7 +302,6 @@
             }, {});
 
             list.innerHTML = ''; 
-            
             for (const [date, logs] of Object.entries(groupedLogs)) {
                 const dateGroup = document.createElement('div');
                 let setsHTML = logs.map(log => `
@@ -340,8 +332,6 @@
         function populateExerciseDropdown() {
             const select = document.getElementById('exerciseSelect');
             const currentSelection = select.value;
-            
-            // Standardize exercise names to lowercase for grouping, but capitalize for display
             const uniqueExercises = [...new Set(workoutLogs.map(log => log.exercise.toLowerCase().trim()))].sort();
             
             select.innerHTML = '<option value="">Select Exercise...</option>';
@@ -351,10 +341,7 @@
                 opt.textContent = ex.charAt(0).toUpperCase() + ex.slice(1);
                 select.appendChild(opt);
             });
-            
-            if(uniqueExercises.includes(currentSelection)) {
-                select.value = currentSelection;
-            }
+            if(uniqueExercises.includes(currentSelection)) select.value = currentSelection;
         }
 
         function updateChart() {
@@ -366,25 +353,33 @@
                 return;
             }
 
-            // Filter logs for selected exercise
             const filteredLogs = workoutLogs.filter(log => log.exercise.toLowerCase().trim() === selectedExercise);
 
-            // Group by date and find MAX weight lifted on that date
+            // Calculate Max Weight and Max Estimated 1RM per date
             const maxWeightPerDate = {};
+            const max1RmPerDate = {};
+
             filteredLogs.forEach(log => {
                 const weight = parseFloat(log.weight);
+                const reps = parseInt(log.reps);
+                
+                // Epley Formula: 1RM = Weight * (1 + (Reps / 30))
+                const estimated1RM = Math.round(weight * (1 + (reps / 30)));
+
                 if (!maxWeightPerDate[log.date] || weight > maxWeightPerDate[log.date]) {
                     maxWeightPerDate[log.date] = weight;
                 }
+                if (!max1RmPerDate[log.date] || estimated1RM > max1RmPerDate[log.date]) {
+                    max1RmPerDate[log.date] = estimated1RM;
+                }
             });
 
-            // Sort dates chronologically
             const sortedDates = Object.keys(maxWeightPerDate).sort((a, b) => new Date(a) - new Date(b));
-            const dataPoints = sortedDates.map(date => maxWeightPerDate[date]);
+            const weightData = sortedDates.map(date => maxWeightPerDate[date]);
+            const oneRmData = sortedDates.map(date => max1RmPerDate[date]);
 
             if (progressChart) progressChart.destroy();
 
-            // Set global chart defaults for dark theme
             Chart.defaults.color = '#9ca3af'; 
             Chart.defaults.font.family = 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
@@ -392,33 +387,52 @@
                 type: 'line',
                 data: {
                     labels: sortedDates,
-                    datasets: [{
-                        label: 'Max Weight (lbs)',
-                        data: dataPoints,
-                        borderColor: '#eab308', // Tailwind yellow-500
-                        backgroundColor: 'rgba(234, 179, 8, 0.15)', // Semi-transparent yellow
-                        borderWidth: 3,
-                        pointBackgroundColor: '#eab308',
-                        pointBorderColor: '#000',
-                        pointBorderWidth: 2,
-                        pointRadius: 5,
-                        fill: true,
-                        tension: 0.3 // Smooth curves
-                    }]
+                    datasets: [
+                        {
+                            label: 'Max Weight (lbs)',
+                            data: weightData,
+                            borderColor: '#eab308', 
+                            backgroundColor: 'rgba(234, 179, 8, 0.15)',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#eab308',
+                            pointBorderColor: '#000',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Estimated 1RM (lbs)',
+                            data: oneRmData,
+                            borderColor: '#e5e7eb', // Silver/White for high contrast
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5], // Creates the dashed line effect
+                            pointBackgroundColor: '#e5e7eb',
+                            pointBorderColor: '#000',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     scales: {
                         y: { 
                             beginAtZero: false,
-                            grid: { color: 'rgba(63, 63, 70, 0.5)' } // zinc-700
+                            grid: { color: 'rgba(63, 63, 70, 0.5)' } 
                         },
                         x: { 
                             grid: { display: false } 
                         }
                     },
                     plugins: {
-                        legend: { display: false } // Hide legend to save space on mobile
+                        legend: { 
+                            display: true,
+                            labels: { color: '#d1d5db', usePointStyle: true }
+                        } 
                     }
                 }
             });
