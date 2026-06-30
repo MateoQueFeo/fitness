@@ -7,16 +7,21 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/000000/barbell.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js for graphing progress -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-black text-gray-100 min-h-screen p-4 font-sans">
     <div class="max-w-md mx-auto">
         
-        <!-- Header -->
-        <header class="flex justify-between items-center mb-4">
+        <!-- Header with Cloud Backup Controls -->
+        <header class="flex justify-between items-center mb-4 border-b border-zinc-800 pb-3">
             <h1 class="text-2xl font-bold text-yellow-500">⚡ Gym Log</h1>
-            <button onclick="exportData()" class="bg-zinc-900 text-xs px-3 py-1.5 rounded border border-zinc-800 hover:bg-zinc-800 hover:border-yellow-500/50 text-yellow-500 transition font-semibold">Export CSV</button>
+            <div class="flex gap-2">
+                <!-- Hidden file input for loading from Google Drive -->
+                <input type="file" id="restoreInput" accept=".json" class="hidden" onchange="restoreBackup(event)">
+                
+                <button onclick="document.getElementById('restoreInput').click()" class="bg-zinc-900 text-xs px-3 py-1.5 rounded border border-zinc-700 hover:border-yellow-500/50 text-gray-300 transition font-bold">Load</button>
+                <button onclick="backupData()" class="bg-yellow-500/10 text-xs px-3 py-1.5 rounded border border-yellow-500/50 hover:bg-yellow-500/20 text-yellow-500 transition font-bold">Save Backup</button>
+            </div>
         </header>
 
         <!-- Navigation Tabs -->
@@ -31,14 +36,21 @@
         <!-- ============================== -->
         <div id="view-track" class="block">
             
-            <!-- ⏱️ Automated Minimalist Rest Timer Widget -->
+            <!-- ⏱️ Automated Timer & Metronome Widget -->
             <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800 mb-6">
+                <!-- Top Row: Label & Metronome -->
+                <div class="flex justify-between items-center mb-3 pb-3 border-b border-zinc-800/50">
+                    <span class="text-sm font-semibold text-gray-400">⏱️ Auto-Timer</span>
+                    <button id="metronomeBtn" onclick="toggleMetronome()" class="text-xs bg-zinc-800 border border-zinc-700 text-gray-400 px-3 py-1.5 rounded hover:text-yellow-500 transition font-bold">
+                        🎵 Metronome: OFF
+                    </button>
+                </div>
+                
+                <!-- Bottom Row: Timer & Controls -->
                 <div class="flex items-center gap-4 w-full">
-                    <!-- Giant Countdown Timer -->
                     <div id="timerDisplay" class="text-4xl font-mono font-black text-yellow-500 bg-black px-4 py-2 rounded-lg border border-zinc-800 flex-1 text-center">
                         01:00
                     </div>
-                    <!-- Simplified Controls -->
                     <div class="flex gap-2">
                         <button onclick="addTime(60)" class="bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 font-bold px-4 py-3 rounded-lg transition">+1m</button>
                         <button onclick="resetTimer()" class="bg-zinc-800 hover:bg-zinc-700 font-bold px-4 py-3 rounded-lg border border-zinc-700 transition">Reset</button>
@@ -137,10 +149,57 @@
         }
 
         // -----------------------
+        // DATA BACKUP TO GOOGLE DRIVE
+        // -----------------------
+        function backupData() {
+            // Converts logs into a JSON file format
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(workoutLogs));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `gym-log-backup-${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchorNode); 
+            
+            // This triggers the native Android download/save-to-drive prompt
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function restoreBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedLogs = JSON.parse(e.target.result);
+                    if (Array.isArray(importedLogs)) {
+                        workoutLogs = importedLogs;
+                        localStorage.setItem('workoutLogs', JSON.stringify(workoutLogs));
+                        renderLogs();
+                        renderHistory();
+                        if(document.getElementById('view-progress').classList.contains('block')) {
+                            populateExerciseDropdown();
+                            updateChart();
+                        }
+                        alert("Backup loaded successfully!");
+                    } else {
+                        alert("Error: Invalid file format.");
+                    }
+                } catch (err) {
+                    alert("Error: Could not read backup file.");
+                }
+            };
+            reader.readAsText(file);
+            
+            // Reset the input so the same file can be loaded again if needed
+            event.target.value = '';
+        }
+
+        // -----------------------
         // AUTO Rest Timer Logic
         // -----------------------
         let timerInstance = null;
-        let defaultSeconds = 60; // 1 Minute Default
+        let defaultSeconds = 60; 
         let currentSecondsRemaining = defaultSeconds;
 
         function updateTimerDisplay() {
@@ -151,9 +210,7 @@
         }
 
         function startTimer() {
-            // Clear any active timer instances first
             clearInterval(timerInstance);
-            
             timerInstance = setInterval(() => {
                 if (currentSecondsRemaining > 0) {
                     currentSecondsRemaining--;
@@ -171,7 +228,6 @@
         function addTime(seconds) {
             currentSecondsRemaining += seconds;
             updateTimerDisplay();
-            // If the timer wasn't running, start it
             if (!timerInstance) {
                 startTimer();
             }
@@ -202,6 +258,51 @@
         }
 
         // -----------------------
+        // METRONOME LOGIC
+        // -----------------------
+        let metronomeInterval = null;
+        let metronomeAudioCtx = null;
+
+        function playMetronomeClick() {
+            try {
+                if (!metronomeAudioCtx) metronomeAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (metronomeAudioCtx.state === 'suspended') metronomeAudioCtx.resume();
+
+                const oscillator = metronomeAudioCtx.createOscillator();
+                const gainNode = metronomeAudioCtx.createGain();
+                
+                oscillator.type = 'square'; 
+                oscillator.frequency.setValueAtTime(1000, metronomeAudioCtx.currentTime); 
+                
+                gainNode.gain.setValueAtTime(0.3, metronomeAudioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, metronomeAudioCtx.currentTime + 0.05);
+
+                oscillator.connect(gainNode);
+                gainNode.connect(metronomeAudioCtx.destination);
+                
+                oscillator.start();
+                oscillator.stop(metronomeAudioCtx.currentTime + 0.05); 
+            } catch (e) {}
+        }
+
+        function toggleMetronome() {
+            const btn = document.getElementById('metronomeBtn');
+            if (metronomeInterval) {
+                clearInterval(metronomeInterval);
+                metronomeInterval = null;
+                btn.innerHTML = "🎵 Metronome: OFF";
+                btn.classList.remove('text-yellow-500', 'border-yellow-500');
+                btn.classList.add('text-gray-400', 'border-zinc-700');
+            } else {
+                playMetronomeClick(); 
+                metronomeInterval = setInterval(playMetronomeClick, 1000); 
+                btn.innerHTML = "🎵 Metronome: ON";
+                btn.classList.remove('text-gray-400', 'border-zinc-700');
+                btn.classList.add('text-yellow-500', 'border-yellow-500');
+            }
+        }
+
+        // -----------------------
         // LOGGING & DISPLAY LOGIC
         // -----------------------
         function saveSet() {
@@ -226,10 +327,10 @@
             document.getElementById('weight').value = '';
             document.getElementById('reps').value = '';
 
-            // Auto-start action trigger
             if (document.getElementById('autoTimer').checked) {
                 resetTimer();
                 startTimer();
+                if(metronomeInterval) toggleMetronome();
             }
         }
 
@@ -414,20 +515,6 @@
                     }
                 }
             });
-        }
-
-        function exportData() {
-            let csvContent = "data:text/csv;charset=utf-8,Date,Exercise,Weight,Reps\n";
-            workoutLogs.forEach(log => {
-                csvContent += `${log.date},"${log.exercise}",${log.weight},${log.reps}\n`;
-            });
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "workout_history.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
 
         // Initialize displays
