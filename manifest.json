@@ -1,15 +1,48 @@
 {
-  "name": "Gym Log Tracker",
   "short_name": "Gym Log",
-  "start_url": "./workout_tracker.html",
-  "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#eab308",
+  "name": "⚡ Gym Log Workout Tracker",
+  "description": "A lightweight, secure, offline-first gym logger and routine planner.",
   "icons": [
     {
+      "src": "https://img.icons8.com/color/48/000000/barbell.png",
+      "type": "image/png",
+      "sizes": "48x48",
+      "purpose": "any"
+    },
+    {
+      "src": "https://img.icons8.com/color/72/000000/barbell.png",
+      "type": "image/png",
+      "sizes": "72x72",
+      "purpose": "any"
+    },
+    {
+      "src": "https://img.icons8.com/color/96/000000/barbell.png",
+      "type": "image/png",
+      "sizes": "96x96",
+      "purpose": "any"
+    },
+    {
+      "src": "https://img.icons8.com/color/144/000000/barbell.png",
+      "type": "image/png",
+      "sizes": "144x144",
+      "purpose": "any"
+    },
+    {
       "src": "https://img.icons8.com/color/192/000000/barbell.png",
+      "type": "image/png",
       "sizes": "192x192",
-      "type": "image/png"
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://img.icons8.com/color/512/000000/barbell.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
     }
-  ]
+  ],
+  "start_url": "./workout_tracker.html",
+  "background_color": "#000000",
+  "theme_color": "#eab308",
+  "display": "standalone",
+  "orientation": "portrait"
 }
