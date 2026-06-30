@@ -195,7 +195,7 @@
             }
         };
 
-        // --- WAKE LOCK API (Prevents screen from turning off during rest) ---
+        // --- WAKE LOCK API ---
         async function requestWakeLock() {
             try {
                 if ('wakeLock' in navigator) {
@@ -221,9 +221,126 @@
 
         function loadData() {
             workoutLogs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+            
+            // FULL LIST OF ALL 9 ORIGINAL ROUTINES RESTORED
             const defaultRoutines = [
-                { id: 1, name: "1. Side Lunge & Adduction", warmups: ["Hip Circles (10 each way)", "Leg Swings (10 each leg)"], exercises: [ { name: "Side Lunge", type: "warm-up", pct: 33, reps: "6" }, { name: "Side Lunge", type: "ramp", pct: 66, reps: "6" }, { name: "Side Lunge", type: "working", pct: 80, reps: "amrap" }, { name: "Hip Adduction", type: "isolation", pct: 75, reps: "amrap" }, { name: "Calf Raise", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Butterfly Stretch (30s)", "Standing Calf Stretch (30s per side)"] },
-                { id: 2, name: "2. 30-deg Incline Press", warmups: ["Arm Circles (12 each way)", "Band Pull-Aparts (15 reps)"], exercises: [ { name: "30-degree Incline Press", type: "warm-up", pct: 33, reps: "6" }, { name: "30-degree Incline Press", type: "ramp", pct: 66, reps: "6" }, { name: "30-degree Incline Press", type: "working", pct: 80, reps: "amrap" }, { name: "Incline Fly", type: "isolation", pct: 75, reps: "amrap" }, { name: "Front Raise", type: "isolation", pct: 75, reps: "amrap" }, { name: "Tricep Extension", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Doorway Chest Stretch (30s)", "Overhead Tricep Stretch (30s per side)"] }
+                { 
+                    id: 1, 
+                    name: "1. Side Lunge & Adduction", 
+                    warmups: ["Hip Circles (10 each way)", "Leg Swings (10 each leg)"], 
+                    exercises: [ 
+                        { name: "Side Lunge", type: "warm-up", pct: 33, reps: "6" }, 
+                        { name: "Side Lunge", type: "ramp", pct: 66, reps: "6" }, 
+                        { name: "Side Lunge", type: "working", pct: 80, reps: "amrap" }, 
+                        { name: "Hip Adduction", type: "isolation", pct: 75, reps: "amrap" }, 
+                        { name: "Calf Raise", type: "isolation", pct: 75, reps: "amrap" } 
+                    ], 
+                    cooldowns: ["Butterfly Stretch (30s)", "Standing Calf Stretch (30s per side)"] 
+                },
+                { 
+                    id: 2, 
+                    name: "2. 30-deg Incline Press", 
+                    warmups: ["Arm Circles (12 each way)", "Band Pull-Aparts (15 reps)"], 
+                    exercises: [ 
+                        { name: "30-degree Incline Press", type: "warm-up", pct: 33, reps: "6" }, 
+                        { name: "30-degree Incline Press", type: "ramp", pct: 66, reps: "6" }, 
+                        { name: "30-degree Incline Press", type: "working", pct: 80, reps: "amrap" }, 
+                        { name: "Incline Fly", type: "isolation", pct: 75, reps: "amrap" }, 
+                        { name: "Front Raise", type: "isolation", pct: 75, reps: "amrap" }, 
+                        { name: "Tricep Extension", type: "isolation", pct: 75, reps: "amrap" } 
+                    ], 
+                    cooldowns: ["Doorway Chest Stretch (30s)", "Overhead Tricep Stretch (30s per side)"] 
+                },
+                { 
+                    id: 3, 
+                    name: "3. Walking Lunge & Back Ext", 
+                    warmups: ["Cat-Cow (10 cycles)", "Glute Bridges (15 reps)"], 
+                    exercises: [ 
+                        { name: "Walking Lunge", type: "warm-up", pct: 33, reps: "6" }, 
+                        { name: "Walking Lunge", type: "ramp", pct: 66, reps: "6" }, 
+                        { name: "Walking Lunge", type: "working", pct: 80, reps: "amrap" }, 
+                        { name: "Back Extension", type: "isolation", pct: 75, reps: "amrap" } 
+                    ], 
+                    cooldowns: ["Kneeling Hip Flexor Stretch (30s per side)", "Child's Pose (60s)"] 
+                },
+                { 
+                    id: 4, 
+                    name: "4. Bent-Over Row", 
+                    warmups: ["T-Spine Rotations (8 each side)", "Scapular Retractions (15 reps)"], 
+                    exercises: [ 
+                        { name: "Bent-Over Row", type: "warm-up", pct: 33, reps: "6" }, 
+                        { name: "Bent-Over Row", type: "ramp", pct: 66, reps: "6" }, 
+                        { name: "Bent-Over Row", type: "working", pct: 80, reps: "amrap" }, 
+                        { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, 
+                        { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" } 
+                    ], 
+                    cooldowns: ["Dead Hang (30s)", "Bicep Wall Stretch (30s per side)"] 
+                },
+                { 
+                    id: 5, 
+                    name: "5. Curtsy Lunge & Abduction", 
+                    warmups: ["Fire Hydrants (15 each side)", "Lateral Band Walks (10 each side)"], 
+                    exercises: [ 
+                        { name: "Curtsy Lunge", type: "warm-up", pct: 33, reps: "6" }, 
+                        { name: "Curtsy Lunge", type: "ramp", pct: 66, reps: "6" }, 
+                        { name: "Curtsy Lunge", type: "working", pct: 80, reps: "amrap" }, 
+                        { name: "Hip Abduction", type: "isolation", pct: 75, reps: "amrap" }, 
+                        { name: "Calf Raise", type: "isolation", pct: 75, reps: "amrap" } 
+                    ], 
+                    cooldowns: ["Pigeon Pose (30s per side)", "Figure-Four Stretch (30s per side)"] 
+                },
+                { 
+                    id: 6, 
+                    name: "6. Arnold Press", 
+                    warmups: ["Shoulder Halos (8 each way)", "Face Pulls (20 reps)"], 
+                    exercises: [ 
+                        { name: "Arnold Press", type: "warm-up", pct: 33, reps: "6" }, 
+                        { name: "Arnold Press", type: "ramp", pct: 66, reps: "6" }, 
+                        { name: "Arnold Press", type: "working", pct: 80, reps: "amrap" }, 
+                        { name: "Lateral Raise", type: "isolation", pct: 75, reps: "amrap" }, 
+                        { name: "Reverse Fly", type: "isolation", pct: 75, reps: "amrap" }, 
+                        { name: "Tricep Extension", type: "isolation", pct: 75, reps: "amrap" } 
+                    ], 
+                    cooldowns: ["Cross-Body Shoulder Stretch (30s per side)", "Overhead Tricep Stretch (30s per side)"] 
+                },
+                { 
+                    id: 7, 
+                    name: "7. Romanian Deadlift", 
+                    warmups: ["Cat-Cow (10 cycles)", "Good Mornings (Bodyweight, 12 reps)"], 
+                    exercises: [ 
+                        { name: "Romanian Deadlift", type: "warm-up", pct: 33, reps: "6" }, 
+                        { name: "Romanian Deadlift", type: "ramp", pct: 66, reps: "6" }, 
+                        { name: "Romanian Deadlift", type: "working", pct: 80, reps: "amrap" }, 
+                        { name: "Back Extension", type: "isolation", pct: 75, reps: "amrap" } 
+                    ], 
+                    cooldowns: ["Lying Hamstring Stretch (30s per side)", "Child's Pose (60s)"] 
+                },
+                { 
+                    id: 8, 
+                    name: "8. Pull-Up", 
+                    warmups: ["Scapular Pull-ups (10 reps)", "Dead Hang (20s)"], 
+                    exercises: [ 
+                        { name: "Pull-Up", type: "warm-up", pct: 33, reps: "6" }, 
+                        { name: "Pull-Up", type: "ramp", pct: 66, reps: "6" }, 
+                        { name: "Pull-Up", type: "working", pct: 80, reps: "amrap" }, 
+                        { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, 
+                        { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" } 
+                    ], 
+                    cooldowns: ["Doorway Lat Stretch (30s per side)", "Bicep Wall Stretch (30s per side)"] 
+                },
+                { 
+                    id: 9, 
+                    name: "9. Lat Pulldown", 
+                    warmups: ["Scapular Retractions (15 reps)", "Light Band Pulldowns (15 reps)"], 
+                    exercises: [ 
+                        { name: "Lat Pulldown", type: "warm-up", pct: 33, reps: "6" }, 
+                        { name: "Lat Pulldown", type: "ramp", pct: 66, reps: "6" }, 
+                        { name: "Lat Pulldown", type: "working", pct: 80, reps: "amrap" }, 
+                        { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, 
+                        { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" } 
+                    ], 
+                    cooldowns: ["Doorway Lat Stretch (30s per side)", "Bicep Wall Stretch (30s per side)"] 
+                }
             ];
             workoutRoutines = JSON.parse(localStorage.getItem('workoutRoutines')) || defaultRoutines;
         }
@@ -233,7 +350,6 @@
                 localStorage.setItem('workoutLogs', JSON.stringify(workoutLogs));
                 localStorage.setItem('workoutRoutines', JSON.stringify(workoutRoutines));
             } catch (error) {
-                // Handle 5MB Quota Limit efficiently
                 if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
                     alert("⚠️ Browser storage is full! Please click 'Save Backup' to download your history, then clear some old history items.");
                 } else {
@@ -321,13 +437,13 @@
 
         function startTimer() {
             clearInterval(timerInstance);
-            requestWakeLock(); // Keep screen awake when timer starts
+            requestWakeLock(); 
             timerInstance = setInterval(() => {
                 currentSecondsRemaining--;
                 if (currentSecondsRemaining <= 0) {
                     clearInterval(timerInstance);
                     timerInstance = null;
-                    releaseWakeLock(); // Let screen sleep again after timer finishes
+                    releaseWakeLock(); 
                     alertUser();
                     currentSecondsRemaining = defaultSeconds;
                 }
@@ -344,7 +460,7 @@
         function resetTimer() {
             clearInterval(timerInstance);
             timerInstance = null;
-            releaseWakeLock(); // Let screen sleep if user cancels timer
+            releaseWakeLock(); 
             currentSecondsRemaining = defaultSeconds;
             updateTimerDisplay();
         }
@@ -711,7 +827,7 @@
                 
                 if (!exName || !exPct || !exReps) {
                     alert("Please fill out Name, %1RM, and Reps for all exercises.");
-                    return; // Prevent data loss: exit early without wiping inputs
+                    return; 
                 }
                 exercises.push({ name: exName, type: exType, pct: parseInt(exPct), reps: exReps });
             }
@@ -723,7 +839,6 @@
             workoutRoutines.push(routine);
             saveData();
 
-            // Clear builder layout only on dynamic success
             DOMElements.routineName.value = '';
             DOMElements.warmupInput.value = '';
             DOMElements.cooldownInput.value = '';
@@ -885,7 +1000,6 @@
         function init() {
             loadData();
             setupEventListeners();
-            
             switchView('track'); 
             populateRoutineDropdown();
             updateTimerDisplay();
