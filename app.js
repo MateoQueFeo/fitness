@@ -76,6 +76,27 @@
         routineList: document.getElementById('routineList'),
     };
 
+    // --- WAKE LOCK API ---
+    async function requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator && (!wakeLock || wakeLock.released)) {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log('Screen Wake Lock acquired');
+            }
+        } catch (err) {
+            console.warn(`Wake Lock error: ${err.name}, ${err.message}`);
+        }
+    }
+
+    function releaseWakeLock() {
+        if (wakeLock !== null && !wakeLock.released) {
+            wakeLock.release().then(() => {
+                wakeLock = null;
+                console.log('Screen Wake Lock released');
+            });
+        }
+    }
+
     // --- DATA & PERSISTENCE (IndexedDB & LocalStorage) ---
     const getISODate = () => new Date().toISOString().slice(0, 10);
 
@@ -93,7 +114,6 @@
     }
     
     function loadRoutines() {
-        // CORRECTED: The full default routines array is now included.
         const defaultRoutines = [
             { id: 1, name: "1. Side Lunge & Adduction", warmups: ["Hip Circles (10 each way)", "Leg Swings (10 each leg)"], exercises: [ { name: "Side Lunge", type: "warm-up", pct: 33, reps: "6" }, { name: "Side Lunge", type: "ramp", pct: 66, reps: "6" }, { name: "Side Lunge", type: "working", pct: 80, reps: "amrap" }, { name: "Hip Adduction", type: "isolation", pct: 75, reps: "amrap" }, { name: "Calf Raise", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Butterfly Stretch (30s)", "Standing Calf Stretch (30s per side)"] },
             { id: 2, name: "2. 30-deg Incline Press", warmups: ["Arm Circles (12 each way)", "Band Pull-Aparts (15 reps)"], exercises: [ { name: "30-degree Incline Press", type: "warm-up", pct: 33, reps: "6" }, { name: "30-degree Incline Press", type: "ramp", pct: 66, reps: "6" }, { name: "30-degree Incline Press", type: "working", pct: 80, reps: "amrap" }, { name: "Incline Fly", type: "isolation", pct: 75, reps: "amrap" }, { name: "Front Raise", type: "isolation", pct: 75, reps: "amrap" }, { name: "Tricep Extension", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Doorway Chest Stretch (30s)", "Overhead Tricep Stretch (30s per side)"] },
@@ -112,6 +132,204 @@
         localStorage.setItem('workoutRoutines', JSON.stringify(workoutRoutines));
     }
 
+    function backupData() {
+        const payload = { logs: workoutLogs, routines: workoutRoutines };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", `gym-log-backup-${getISODate()}.json`);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    }
+
+    function restoreBackup(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                let logsToImport = [];
+                let routinesToImport = [];
+
+                if (importedData.logs && Array.isArray(importedData.logs)) {
+                    logsToImport = importedData.logs;
+                }
+                if (importedData.routines && Array.isArray(importedData.routines)) {
+                    routinesToImport = importedData.routines;
+                }
+
+                if (logsToImport.length > 0) {
+                    const tx = db.transaction(LOG_STORE_NAME, 'readwrite');
+                    const store = tx.objectStore(LOG_STORE_NAME);
+                    await Promise.all(logsToImport.map(log => new Promise((res, rej) => {
+                        const req = store.put(log);
+                        req.onsuccess = res;
+                        req.onerror = rej;
+                    })));
+                }
+                if(routinesToImport.length > 0){
+                    workoutRoutines = routinesToImport;
+                    saveRoutines();
+                }
+                
+                await loadData();
+                fullRender();
+                alert("Backup loaded successfully!");
+            } catch (err) {
+                alert("Error: Could not read backup file format.");
+                console.error(err);
+            } finally {
+                event.target.value = ''; // Reset input
+            }
+        };
+        reader.readAsText(file);
+    }
+    
+    // --- NAVIGATION ---
+    function switchView(targetView) {
+        DOMElements.views.forEach(view => {
+            view.classList.toggle('hidden', view.id !== `view-${targetView}`);
+        });
+        DOMElements.navTabs.forEach(tab => {
+            const isTarget = tab.dataset.view === targetView;
+            tab.classList.toggle('border-yellow-500', isTarget);
+            tab.classList.toggle('text-yellow-500', isTarget);
+            tab.classList.toggle('border-transparent', !isTarget);
+            tab.classList.toggle('text-gray-500', !isTarget);
+        });
+
+        if (targetView === 'history') renderHistory();
+        if (targetView === 'track') renderTodaysLogs();
+        if (targetView === 'progress') {
+            populateExerciseDropdown();
+            updateChart();
+        }
+        if (targetView === 'routines') renderRoutines();
+    }
+
+    // --- TIMER & AUDIO ---
+    function updateTimerDisplay() {
+        DOMElements.timerDisplay.innerText = `${String(Math.floor(currentSecondsRemaining / 60)).padStart(2, '0')}:${String(currentSecondsRemaining % 60).padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+        clearInterval(timerInstance);
+        requestWakeLock();
+        timerInstance = setInterval(() => {
+            currentSecondsRemaining--;
+            if (currentSecondsRemaining <= 0) {
+                clearInterval(timerInstance);
+                timerInstance = null;
+                releaseWakeLock();
+                alertUser();
+                currentSecondsRemaining = defaultSeconds;
+            }
+            updateTimerDisplay();
+        }, 1000);
+    }
+
+    function addTime(seconds) {
+        currentSecondsRemaining += seconds;
+        updateTimerDisplay();
+        if (!timerInstance) {
+            startTimer();
+        } else {
+            requestWakeLock();
+        }
+    }
+
+    function resetTimer() {
+        clearInterval(timerInstance);
+        timerInstance = null;
+        releaseWakeLock();
+        currentSecondsRemaining = defaultSeconds;
+        updateTimerDisplay();
+    }
+
+    function alertUser() {
+        try {
+            const audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator(),
+                gainNode = audioCtx.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            setTimeout(() => oscillator.stop(), 800);
+        } catch (e) {
+            console.warn("Audio play blocked", e);
+        }
+    }
+    
+    function accurateInterval(fn, time) {
+        let nextAt;
+        let timeout;
+        const wrapper = () => {
+            nextAt += time;
+            timeout = setTimeout(wrapper, nextAt - Date.now());
+            fn();
+        };
+        const start = () => {
+            nextAt = Date.now() + time;
+            timeout = setTimeout(wrapper, time);
+        };
+        const stop = () => clearTimeout(timeout);
+        return { start, stop };
+    }
+
+    function toggleMetronome() {
+        const btn = DOMElements.metronomeBtn;
+        if (metronomeInterval) {
+            metronomeInterval.stop();
+            metronomeInterval = null;
+            btn.classList.remove('text-yellow-500', 'border-yellow-500');
+            btn.classList.add('text-gray-400', 'border-zinc-700');
+        } else {
+            playMetronomeClick();
+            metronomeInterval = accurateInterval(playMetronomeClick, 1000);
+            metronomeInterval.start();
+            btn.classList.remove('text-gray-400', 'border-zinc-700');
+            btn.classList.add('text-yellow-500', 'border-yellow-500');
+        }
+    }
+    
+    function playMetronomeClick() {
+        try {
+            if (!metronomeAudioCtx) metronomeAudioCtx = new(window.AudioContext || window.webkitAudioContext)();
+            if (metronomeAudioCtx.state === 'suspended') metronomeAudioCtx.resume();
+            const oscillator = metronomeAudioCtx.createOscillator(),
+                gainNode = metronomeAudioCtx.createGain();
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(1000, metronomeAudioCtx.currentTime);
+            gainNode.gain.setValueAtTime(1.0, metronomeAudioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, metronomeAudioCtx.currentTime + 0.05);
+            oscillator.connect(gainNode);
+            gainNode.connect(metronomeAudioCtx.destination);
+            oscillator.start();
+            oscillator.stop(metronomeAudioCtx.currentTime + 0.05);
+        } catch (e) {
+            console.warn("Metronome click failed", e);
+        }
+    }
+
+    // --- 1RM CALCULATION ---
+    function getEstimated1RM(exerciseName) {
+        const filteredLogs = workoutLogs.filter(log => log.exercise.toLowerCase().trim() === exerciseName.toLowerCase().trim());
+        if (filteredLogs.length === 0) return null;
+        const maxE1RM = Math.max(...filteredLogs.map(log => {
+            const weight = parseFloat(log.weight);
+            const reps = parseInt(log.reps);
+            if (isNaN(weight) || isNaN(reps) || weight <= 0 || reps <= 0) return 0;
+            return weight * (1 + (reps / 30));
+        }));
+        return maxE1RM > 0 ? maxE1RM : null;
+    }
+    
+    // --- LOGGING & TRACKING UI ---
     async function addLog(log) {
         workoutLogs.unshift(log);
         const tx = db.transaction(LOG_STORE_NAME, 'readwrite');
@@ -121,14 +339,14 @@
             request.onsuccess = resolve;
             request.onerror = reject;
         });
-        console.log('Log added to IndexedDB');
-        addLogToView(log); 
-        populateExerciseDropdown(); 
-        updateChart(); 
+        addLogToView(log);
+        populateExerciseDropdown();
+        updateChart();
     }
 
     async function deleteLog(id) {
         if (!confirm("Delete this logged set?")) return;
+
         const tx = db.transaction(LOG_STORE_NAME, 'readwrite');
         const store = tx.objectStore(LOG_STORE_NAME);
         await new Promise((resolve, reject) => {
@@ -136,13 +354,15 @@
             request.onsuccess = resolve;
             request.onerror = reject;
         });
-        console.log('Log deleted from IndexedDB');
+
         const logIndex = workoutLogs.findIndex(log => log.id === id);
         if (logIndex > -1) {
             workoutLogs.splice(logIndex, 1);
         }
+
         const elementToRemoveToday = DOMElements.logList.querySelector(`[data-log-id="${id}"]`);
         if (elementToRemoveToday) elementToRemoveToday.remove();
+        
         const elementToRemoveHistory = DOMElements.historyList.querySelector(`[data-log-id="${id}"]`);
         if (elementToRemoveHistory) {
             const parentGroup = elementToRemoveHistory.parentElement;
@@ -151,12 +371,343 @@
                 parentGroup.parentElement.remove();
             }
         }
+
         if (DOMElements.logList.children.length === 0) renderTodaysLogs();
         if (DOMElements.historyList.children.length === 0) renderHistory();
         populateExerciseDropdown();
         updateChart();
     }
     
+    function createLogItemDOM(log) {
+        const item = document.createElement('div');
+        item.className = "flex justify-between items-center bg-zinc-800 p-3 rounded-lg border border-zinc-700/60";
+        item.setAttribute('data-log-id', log.id);
+        const exerciseDiv = document.createElement('div');
+        exerciseDiv.className = "font-semibold text-white";
+        exerciseDiv.textContent = log.exercise;
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = "flex items-center gap-4";
+        const statsSpan = document.createElement('span');
+        statsSpan.className = "text-yellow-500 font-bold";
+        statsSpan.textContent = `${log.weight} lbs × ${log.reps}`;
+        const deleteButton = document.createElement('button');
+        deleteButton.className = "text-red-400 hover:text-red-500 font-bold px-2 py-1 text-sm transition";
+        deleteButton.title = "Delete set";
+        deleteButton.innerHTML = '✕';
+        deleteButton.onclick = () => deleteLog(log.id);
+        controlsDiv.append(statsSpan, deleteButton);
+        item.append(exerciseDiv, controlsDiv);
+        return item;
+    }
+
+    function addLogToView(log) {
+        const placeholder = DOMElements.logList.querySelector('p');
+        if (placeholder) placeholder.remove();
+        const logItem = createLogItemDOM(log);
+        DOMElements.logList.prepend(logItem);
+    }
+    
+    function renderTodaysLogs() {
+        const list = DOMElements.logList;
+        list.innerHTML = '';
+        const today = getISODate();
+        const todaysLogs = workoutLogs.filter(log => log.date === today);
+        if (todaysLogs.length === 0) {
+            list.innerHTML = '<p class="text-zinc-500 text-sm text-center py-2">No sets logged yet today.</p>';
+        } else {
+            todaysLogs.forEach(log => list.appendChild(createLogItemDOM(log)));
+        }
+    }
+
+    function renderHistory() {
+        const list = DOMElements.historyList;
+        list.innerHTML = '';
+        const today = getISODate();
+        const pastLogs = workoutLogs.filter(log => log.date !== today);
+        if (pastLogs.length === 0) {
+            list.innerHTML = '<p class="text-zinc-500 text-sm text-center py-4">No past history found.</p>';
+            return;
+        }
+        const groupedLogs = pastLogs.reduce((groups, log) => {
+            if (!groups[log.date]) groups[log.date] = [];
+            groups[log.date].push(log);
+            return groups;
+        }, {});
+        const sortedDates = Object.keys(groupedLogs).sort((a, b) => new Date(b) - new Date(a));
+        for (const date of sortedDates) {
+            const logs = groupedLogs[date];
+            const dateGroup = document.createElement('div');
+            dateGroup.className = "mb-4 border-l-2 border-yellow-500 pl-3";
+            const dateHeader = document.createElement('h3');
+            dateHeader.className = "text-gray-400 font-bold text-sm mb-2";
+            dateHeader.textContent = new Date(date + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            const setsContainer = document.createElement('div');
+            setsContainer.className = "space-y-1";
+            logs.forEach(log => {
+                const setItem = document.createElement('div');
+                setItem.className = "flex justify-between items-center bg-zinc-800 p-2.5 rounded-lg border border-zinc-700/50 text-sm mt-1.5";
+                setItem.setAttribute('data-log-id', log.id);
+                setItem.innerHTML = `
+                    <span class="text-gray-300 font-medium">${log.exercise}</span>
+                    <div class="flex items-center gap-3">
+                        <span class="text-yellow-500 font-semibold">${log.weight} lbs × ${log.reps}</span>
+                        <button data-action="delete-log" data-id="${log.id}" class="text-red-400 hover:text-red-500 font-bold px-1.5 text-xs transition">✕</button>
+                    </div>`;
+                setsContainer.appendChild(setItem);
+            });
+            dateGroup.append(dateHeader, setsContainer);
+            list.appendChild(dateGroup);
+        }
+    }
+
+    // --- ROUTINE PLANS UI ---
+    function populateRoutineDropdown() {
+        const select = DOMElements.activeRoutineSelect;
+        select.innerHTML = '<option value="">-- Custom Workout --</option>';
+        workoutRoutines.forEach(routine => {
+            const opt = document.createElement('option');
+            opt.value = routine.id;
+            opt.textContent = routine.name;
+            select.appendChild(opt);
+        });
+    }
+
+    function renderRoutineChecklist() {
+        const selectId = DOMElements.activeRoutineSelect.value;
+        const container = DOMElements.routineChecklist;
+        if (!selectId) {
+            container.classList.add('hidden');
+            container.innerHTML = '';
+            return;
+        }
+        const routine = workoutRoutines.find(r => String(r.id) === selectId);
+        if (!routine) return;
+        container.classList.remove('hidden');
+        container.innerHTML = '';
+        if (routine.warmups && routine.warmups.length > 0) {
+            const content = routine.warmups.map(item => `<div class="p-2 border-b border-zinc-700/50 last:border-0 text-gray-300 text-sm">${item}</div>`).join('');
+            container.insertAdjacentHTML('beforeend', createCollapsibleWidget('🔥 Warm-Up Guidelines', content));
+        }
+        const groupedExercises = routine.exercises.reduce((acc, ex, originalIndex) => {
+            ex.originalIndex = originalIndex;
+            const group = acc.find(g => g.name === ex.name);
+            if (group) {
+                group.sets.push(ex);
+            } else {
+                acc.push({ name: ex.name, sets: [ex] });
+            }
+            return acc;
+        }, []);
+        groupedExercises.forEach(group => {
+            const estimated1RM = getEstimated1RM(group.name);
+            let setsHtml = '';
+            group.sets.forEach(ex => {
+                const index = ex.originalIndex;
+                let targetDisplay = `${ex.pct}%`;
+                let defaultWeight = "",
+                    defaultReps = ex.reps.toLowerCase() === 'amrap' ? '' : ex.reps;
+                if (estimated1RM) {
+                    const computedWeight = Math.round((estimated1RM * (ex.pct / 100)) / 5) * 5;
+                    targetDisplay = `${computedWeight} lbs`;
+                    defaultWeight = computedWeight;
+                }
+                setsHtml += `
+                <div id="step-${index}" class="flex items-center gap-3 py-3 border-b border-zinc-700/50 last:border-0 check-anim transition-all">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-950 border border-zinc-800 px-1.5 py-0.5 rounded">${ex.type}</span>
+                            <span class="text-[11px] font-bold text-yellow-500/90">Target: ${targetDisplay} × ${ex.reps}</span>
+                        </div>
+                        <div class="flex gap-2 items-center">
+                            <input type="number" id="wt-${index}" value="${defaultWeight}" placeholder="lbs" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition">
+                            <span class="text-zinc-600 text-sm font-bold">×</span>
+                            <input type="number" id="rp-${index}" value="${defaultReps}" placeholder="reps" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition">
+                        </div>
+                    </div>
+                    <div class="flex gap-1.5 items-stretch h-10 flex-shrink-0 self-end">
+                        <button data-action="skip" data-index="${index}" class="w-10 text-zinc-500 hover:text-red-400 bg-zinc-950 rounded border border-zinc-800 transition flex items-center justify-center" title="Skip Set">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                        </button>
+                        <button id="btn-complete-${index}" data-action="complete" data-index="${index}" data-exercise-name="${ex.name.replace(/"/g, '&quot;')}" class="w-12 bg-zinc-950 border border-zinc-600 rounded flex items-center justify-center text-transparent hover:border-yellow-500 hover:text-yellow-500/30 transition check-anim" title="Complete Set">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                        </button>
+                    </div>
+                </div>`;
+            });
+            container.insertAdjacentHTML('beforeend', `
+            <div class="bg-zinc-800 rounded-xl border border-zinc-700 overflow-hidden shadow-sm">
+                <div class="bg-zinc-700/30 px-4 py-2 border-b border-zinc-700"><h3 class="font-bold text-gray-200">${group.name}</h3></div>
+                <div class="px-3">${setsHtml}</div>
+            </div>`);
+        });
+        if (routine.cooldowns && routine.cooldowns.length > 0) {
+            const content = routine.cooldowns.map(item => `<div class="p-2 border-b border-zinc-700/50 last:border-0 text-gray-300 text-sm">${item}</div>`).join('');
+            container.insertAdjacentHTML('beforeend', createCollapsibleWidget('❄️ Cool-Down Guidelines', content));
+        }
+    }
+    
+    function createCollapsibleWidget(title, content) {
+        return `
+        <div class="bg-zinc-800 rounded-xl border border-zinc-700 overflow-hidden shadow-sm">
+            <details open>
+                <summary class="bg-zinc-700/30 px-4 py-2 cursor-pointer list-none flex justify-between items-center">
+                    <h3 class="font-bold text-gray-200 inline">${title}</h3>
+                    <span class="text-xs text-zinc-400">Tap to toggle</span>
+                </summary>
+                <div class="p-3">${content}</div>
+            </details>
+        </div>`;
+    }
+
+    function addExerciseRow() {
+        const template = document.getElementById('exerciseRowTemplate');
+        const clone = template.content.cloneNode(true);
+        DOMElements.exerciseRowsContainer.appendChild(clone);
+    }
+
+    function saveRoutine() {
+        const name = DOMElements.routineName.value.trim();
+        if (!name) return alert("Please provide a template name.");
+        const exerciseRows = DOMElements.exerciseRowsContainer.children;
+        if (exerciseRows.length === 0) return alert("Please add at least one exercise step.");
+        const exercises = [];
+        for (const row of exerciseRows) {
+            const exName = row.querySelector('.ex-name').value.trim();
+            const exType = row.querySelector('.ex-type').value;
+            const exPct = row.querySelector('.ex-pct').value.trim();
+            const exReps = row.querySelector('.ex-reps').value.trim();
+            if (!exName || !exPct || !exReps) {
+                alert("Please fill out Name, %1RM, and Reps for all exercises.");
+                return;
+            }
+            exercises.push({ name: exName, type: exType, pct: parseInt(exPct), reps: exReps });
+        }
+        const warmups = DOMElements.warmupInput.value.split('\n').filter(Boolean);
+        const cooldowns = DOMElements.cooldownInput.value.split('\n').filter(Boolean);
+        const routine = { id: Date.now(), name, warmups, exercises, cooldowns };
+        workoutRoutines.push(routine);
+        saveRoutines();
+        DOMElements.routineName.value = '';
+        DOMElements.warmupInput.value = '';
+        DOMElements.cooldownInput.value = '';
+        DOMElements.exerciseRowsContainer.innerHTML = '';
+        addExerciseRow();
+        renderRoutines();
+        populateRoutineDropdown();
+        alert("Routine saved!");
+    }
+    
+    function deleteRoutine(id) {
+        if (!confirm("Delete this routine?")) return;
+        workoutRoutines = workoutRoutines.filter(r => r.id !== id);
+        saveRoutines();
+        renderRoutines();
+        populateRoutineDropdown();
+    }
+
+    function renderRoutines() {
+        const list = DOMElements.routineList;
+        list.innerHTML = '';
+        if (workoutRoutines.length === 0) {
+            list.innerHTML = '<p class="text-zinc-500 text-sm">No saved routines.</p>';
+            return;
+        }
+        workoutRoutines.forEach(routine => {
+            const item = document.createElement('div');
+            item.className = "bg-zinc-800 p-3 rounded-lg border border-zinc-700";
+            const exList = routine.exercises.map(ex =>
+                `<span class="inline-block bg-zinc-700 text-gray-300 text-xs px-2 py-1 rounded mt-2 mr-1 border border-zinc-600">${ex.name} (${ex.type})</span>`
+            ).join('');
+            item.innerHTML = `
+            <div class="flex justify-between items-start">
+                <div class="font-bold text-yellow-500">${routine.name}</div>
+                <button data-action="delete-routine" data-id="${routine.id}" class="text-red-400 hover:text-red-500 font-bold px-2 text-sm transition">✕</button>
+            </div>
+            <div class="mt-1">${exList}</div>`;
+            list.appendChild(item);
+        });
+    }
+
+    // --- PROGRESS CHART ---
+    function populateExerciseDropdown() {
+        const select = DOMElements.exerciseSelect;
+        const currentSelection = select.value;
+        const uniqueExercises = [...new Set(workoutLogs.map(log => log.exercise.toLowerCase().trim()))].sort();
+        select.innerHTML = '<option value="">Select Exercise...</option>';
+        uniqueExercises.forEach(ex => {
+            const opt = document.createElement('option');
+            opt.value = ex;
+            opt.textContent = ex.charAt(0).toUpperCase() + ex.slice(1);
+            select.appendChild(opt);
+        });
+        if (uniqueExercises.includes(currentSelection)) {
+            select.value = currentSelection;
+        }
+    }
+
+    function updateChart() {
+        const selectedExercise = DOMElements.exerciseSelect.value;
+        if (progressChart) progressChart.destroy();
+        if (!selectedExercise) return;
+        const filteredLogs = workoutLogs.filter(log => log.exercise.toLowerCase().trim() === selectedExercise);
+        const maxWeightPerDate = {};
+        const max1RmPerDate = {};
+        filteredLogs.forEach(log => {
+            const weight = parseFloat(log.weight);
+            const reps = parseInt(log.reps);
+            if (isNaN(weight) || isNaN(reps) || weight <= 0 || reps <= 0) return;
+            const estimated1RM = Math.round(weight * (1 + (reps / 30)));
+            if (!maxWeightPerDate[log.date] || weight > maxWeightPerDate[log.date]) {
+                maxWeightPerDate[log.date] = weight;
+            }
+            if (!max1RmPerDate[log.date] || estimated1RM > max1RmPerDate[log.date]) {
+                max1RmPerDate[log.date] = estimated1RM;
+            }
+        });
+        const sortedDates = Object.keys(maxWeightPerDate).sort((a, b) => new Date(a) - new Date(b));
+        const weightData = sortedDates.map(date => maxWeightPerDate[date]);
+        const oneRmData = sortedDates.map(date => max1RmPerDate[date]);
+        Chart.defaults.color = '#9ca3af';
+        progressChart = new Chart(DOMElements.progressChartCtx, {
+            type: 'line',
+            data: {
+                labels: sortedDates,
+                datasets: [{
+                    label: 'Max Weight (lbs)',
+                    data: weightData,
+                    borderColor: '#eab308',
+                    backgroundColor: 'rgba(234, 179, 8, 0.15)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#eab308',
+                    pointBorderColor: '#000',
+                    fill: true,
+                    tension: 0.3
+                }, {
+                    label: 'Estimated 1RM (lbs)',
+                    data: oneRmData,
+                    borderColor: '#e5e7eb',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointBackgroundColor: '#e5e7eb',
+                    pointBorderColor: '#000',
+                    fill: false,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: false, grid: { color: 'rgba(63, 63, 70, 0.5)' } },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: { display: true, labels: { color: '#d1d5db', usePointStyle: true } }
+                }
+            }
+        });
+    }
+
     function completeStep(index, exerciseName) {
         const weightInput = document.getElementById(`wt-${index}`);
         const repsInput = document.getElementById(`rp-${index}`);
@@ -176,6 +727,10 @@
         btn.classList.replace('text-transparent', 'text-black');
         btn.classList.replace('border-zinc-600', 'border-yellow-500');
         btn.classList.replace('bg-zinc-950', 'bg-yellow-500');
+    }
+
+    function skipStep(index) {
+        document.getElementById(`step-${index}`).classList.add('opacity-20', 'pointer-events-none', 'grayscale');
     }
 
     // --- EVENT LISTENERS & SETUP ---
@@ -218,13 +773,21 @@
         });
     }
 
+    function fullRender() {
+        const activeView = document.querySelector('.nav-tab.text-yellow-500').dataset.view || 'track';
+        populateRoutineDropdown();
+        renderRoutines();
+        renderTodaysLogs();
+        switchView(activeView);
+    }
+    
     // --- INIT FUNCTION ---
     async function init() {
         try {
             await openDB();
             await loadData();
             setupEventListeners();
-            switchView('track'); 
+            switchView('track');
             populateRoutineDropdown();
             updateTimerDisplay();
             renderTodaysLogs();
@@ -237,35 +800,4 @@
     }
 
     init();
-
-    // --- (The rest of the helper/utility functions are unchanged and omitted for brevity) ---
-    function skipStep(index) { document.getElementById(`step-${index}`).classList.add('opacity-20', 'pointer-events-none', 'grayscale'); }
-    function deleteRoutine(id) { if (!confirm("Delete this routine?")) return; workoutRoutines = workoutRoutines.filter(r => r.id !== id); saveRoutines(); renderRoutines(); populateRoutineDropdown(); }
-    async function requestWakeLock() { try { if ('wakeLock' in navigator && (!wakeLock || wakeLock.released)) { wakeLock = await navigator.wakeLock.request('screen'); } } catch (err) {} }
-    function releaseWakeLock() { if (wakeLock !== null && !wakeLock.released) { wakeLock.release().then(() => { wakeLock = null; }); } }
-    function backupData() { /* unchanged */ }
-    function restoreBackup(event) { /* unchanged */ }
-    function switchView(targetView) { DOMElements.views.forEach(view => { view.classList.toggle('hidden', view.id !== `view-${targetView}`); }); DOMElements.navTabs.forEach(tab => { const isTarget = tab.dataset.view === targetView; tab.classList.toggle('border-yellow-500', isTarget); tab.classList.toggle('text-yellow-500', isTarget); tab.classList.toggle('border-transparent', !isTarget); tab.classList.toggle('text-gray-500', !isTarget); }); if (targetView === 'history') renderHistory(); if (targetView === 'track') renderTodaysLogs(); if (targetView === 'progress') { populateExerciseDropdown(); updateChart(); } if (targetView === 'routines') renderRoutines(); }
-    function updateTimerDisplay() { DOMElements.timerDisplay.innerText = `${String(Math.floor(currentSecondsRemaining / 60)).padStart(2, '0')}:${String(currentSecondsRemaining % 60).padStart(2, '0')}`; }
-    function startTimer() { clearInterval(timerInstance); requestWakeLock(); timerInstance = setInterval(() => { currentSecondsRemaining--; if (currentSecondsRemaining <= 0) { clearInterval(timerInstance); timerInstance = null; releaseWakeLock(); alertUser(); currentSecondsRemaining = defaultSeconds; } updateTimerDisplay(); }, 1000); }
-    function addTime(seconds) { currentSecondsRemaining += seconds; updateTimerDisplay(); if (!timerInstance) { startTimer(); } else { requestWakeLock(); } }
-    function resetTimer() { clearInterval(timerInstance); timerInstance = null; releaseWakeLock(); currentSecondsRemaining = defaultSeconds; updateTimerDisplay(); }
-    function alertUser() { try { const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const oscillator = audioCtx.createOscillator(), gainNode = audioCtx.createGain(); oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime); oscillator.connect(gainNode); gainNode.connect(audioCtx.destination); oscillator.start(); setTimeout(() => oscillator.stop(), 800); } catch (e) { console.warn("Audio play blocked", e); } }
-    function playMetronomeClick() { try { if (!metronomeAudioCtx) metronomeAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (metronomeAudioCtx.state === 'suspended') metronomeAudioCtx.resume(); const oscillator = metronomeAudioCtx.createOscillator(), gainNode = metronomeAudioCtx.createGain(); oscillator.type = 'square'; oscillator.frequency.setValueAtTime(1000, metronomeAudioCtx.currentTime); gainNode.gain.setValueAtTime(1.0, metronomeAudioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.001, metronomeAudioCtx.currentTime + 0.05); oscillator.connect(gainNode); gainNode.connect(metronomeAudioCtx.destination); oscillator.start(); oscillator.stop(metronomeAudioCtx.currentTime + 0.05); } catch (e) {} }
-    function accurateInterval(fn, time) { let n; let t; const w = () => { n += time; t = setTimeout(w, n - Date.now()); fn(); }; const s = () => { n = Date.now() + time; t = setTimeout(w, time); }; const p = () => clearTimeout(t); return { start: s, stop: p }; }
-    function toggleMetronome() { const btn = DOMElements.metronomeBtn; if (metronomeInterval) { metronomeInterval.stop(); metronomeInterval = null; btn.classList.remove('text-yellow-500', 'border-yellow-500'); btn.classList.add('text-gray-400', 'border-zinc-700'); } else { playMetronomeClick(); metronomeInterval = accurateInterval(playMetronomeClick, 1000); metronomeInterval.start(); btn.classList.remove('text-gray-400', 'border-zinc-700'); btn.classList.add('text-yellow-500', 'border-yellow-500'); } }
-    function getEstimated1RM(exerciseName) { const filtered = workoutLogs.filter(log => log.exercise.toLowerCase().trim() === exerciseName.toLowerCase().trim()); if (filtered.length === 0) return null; const max = Math.max(...filtered.map(l => { const w = parseFloat(l.weight), r = parseInt(l.reps); return (!w || !r || w<=0 || r<=0) ? 0 : w * (1 + (r / 30)); })); return max > 0 ? max : null; }
-    function createLogItemDOM(log) { const i = document.createElement('div'); i.className = "flex justify-between items-center bg-zinc-800 p-3 rounded-lg border border-zinc-700/60"; i.setAttribute('data-log-id', log.id); const e = document.createElement('div'); e.className = "font-semibold text-white"; e.textContent = log.exercise; const c = document.createElement('div'); c.className = "flex items-center gap-4"; const s = document.createElement('span'); s.className = "text-yellow-500 font-bold"; s.textContent = `${log.weight} lbs × ${log.reps}`; const d = document.createElement('button'); d.className = "text-red-400 hover:text-red-500 font-bold px-2 py-1 text-sm transition"; d.title = "Delete set"; d.innerHTML = '✕'; d.onclick = () => deleteLog(log.id); c.append(s, d); i.append(e, c); return i; }
-    function addLogToView(log) { const p = DOMElements.logList.querySelector('p'); if (p) p.remove(); const i = createLogItemDOM(log); DOMElements.logList.prepend(i); }
-    function renderTodaysLogs() { const l = DOMElements.logList; l.innerHTML = ''; const t = getISODate(); const logs = workoutLogs.filter(log => log.date === t); if (logs.length === 0) { l.innerHTML = '<p class="text-zinc-500 text-sm text-center py-2">No sets logged yet today.</p>'; } else { logs.forEach(log => l.appendChild(createLogItemDOM(log))); } }
-    function renderHistory() { /* Unchanged */ }
-    function populateRoutineDropdown() { /* Unchanged */ }
-    function renderRoutineChecklist() { /* Unchanged */ }
-    function createCollapsibleWidget(title, content) { /* Unchanged */ }
-    function addExerciseRow() { const t = document.getElementById('exerciseRowTemplate'); const c = t.content.cloneNode(true); DOMElements.exerciseRowsContainer.appendChild(c); }
-    function saveRoutine() { /* Unchanged */ }
-    function renderRoutines() { /* Unchanged */ }
-    function populateExerciseDropdown() { /* Unchanged */ }
-    function updateChart() { /* Unchanged */ }
-    function fullRender() { const v = document.querySelector('.nav-tab.text-yellow-500').dataset.view || 'track'; populateRoutineDropdown(); renderRoutines(); renderTodaysLogs(); switchView(v); }
 })();
