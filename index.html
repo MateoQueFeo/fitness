@@ -34,33 +34,22 @@
             <button onclick="switchView('progress')" id="tab-progress" class="flex-1 font-bold pb-2 border-b-2 border-transparent text-gray-500 hover:text-gray-300 transition">Progress</button>
             <button onclick="switchView('routines')" id="tab-routines" class="flex-1 font-bold pb-2 border-b-2 border-transparent text-gray-500 hover:text-gray-300 transition">Plans</button>
         </div>
+        
+        <!-- Sticky Timer Card -->
+        <div class="sticky top-4 z-50 bg-zinc-900/80 backdrop-blur-sm p-2.5 rounded-xl border border-zinc-800 mb-6 flex justify-between items-center gap-4 flex-wrap">
+            <div id="timerDisplay" class="text-3xl font-mono font-black text-yellow-500">01:00</div>
+            <div class="flex gap-2 items-center">
+                <button onclick="addTime(60)" class="bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 font-bold w-12 h-10 rounded-lg text-sm transition">+1m</button>
+                <button onclick="resetTimer()" class="bg-zinc-800 hover:bg-zinc-700 font-bold w-12 h-10 rounded-lg border border-zinc-700 transition text-xs">Reset</button>
+                <button id="metronomeBtn" onclick="toggleMetronome()" class="bg-zinc-800 border border-zinc-700 text-gray-400 w-12 h-10 rounded-lg hover:text-yellow-500 transition font-bold text-xl">🎵</button>
+            </div>
+        </div>
 
         <!-- ============================== -->
         <!-- VIEW 1: TRACKING SCREEN        -->
         <!-- ============================== -->
         <div id="view-track" class="block">
             
-            <!-- ⏱️ Automated Timer & Metronome Widget -->
-            <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800 mb-6">
-                <!-- Top Row: Metronome Only -->
-                <div class="flex justify-end items-center mb-3 pb-3 border-b border-zinc-800/50">
-                    <button id="metronomeBtn" onclick="toggleMetronome()" class="text-xs bg-zinc-800 border border-zinc-700 text-gray-400 px-3 py-1.5 rounded hover:text-yellow-500 transition font-bold">
-                        🎵 Metronome: OFF
-                    </button>
-                </div>
-                
-                <!-- Bottom Row: Timer & Controls -->
-                <div class="flex items-center gap-4 w-full">
-                    <div id="timerDisplay" class="text-4xl font-mono font-black text-yellow-500 bg-black px-4 py-2 rounded-lg border border-zinc-800 flex-1 text-center">
-                        01:00
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="addTime(60)" class="bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 font-bold px-4 py-3 rounded-lg transition">+1m</button>
-                        <button onclick="resetTimer()" class="bg-zinc-800 hover:bg-zinc-700 font-bold px-4 py-3 rounded-lg border border-zinc-700 transition">Reset</button>
-                    </div>
-                </div>
-            </div>
-
             <!-- Workout Execution Hub -->
             <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800 mb-6">
                 <div class="flex justify-between items-center mb-3">
@@ -79,7 +68,7 @@
 
                 <!-- 📋 Interactive Checklist Container -->
                 <div id="routineChecklist" class="space-y-4 hidden">
-                    <!-- Grouped exercise boxes inject here -->
+                    <!-- Widgets (Warmup, Exercises, Cooldown) inject here -->
                 </div>
 
                 <!-- Divider & Generic Add Set (for ad-hoc accessories) -->
@@ -149,11 +138,16 @@
                 <div class="space-y-4">
                     <input id="routineName" type="text" placeholder="Template Name (e.g. Chest Day)" class="w-full bg-zinc-800 border border-zinc-700 rounded p-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition">
                     
-                    <div id="exerciseRowsContainer" class="space-y-3">
+                    <textarea id="warmupInput" placeholder="Warm-up: enter one item per line..." rows="3" class="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-yellow-500 transition"></textarea>
+
+                    <div id="exerciseRowsContainer" class="space-y-3 pt-2 border-t border-zinc-800">
                         <!-- Dynamic Exercise Input Rows injected here -->
                     </div>
 
                     <button onclick="addExerciseRow()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-yellow-500 border border-zinc-700 font-bold p-2.5 rounded-lg transition">+ Add Exercise Step</button>
+                    
+                    <textarea id="cooldownInput" placeholder="Cool-down: enter one item per line..." rows="3" class="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-yellow-500 transition"></textarea>
+
                     <button onclick="saveRoutine()" class="w-full bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 border border-yellow-500/50 font-bold p-3 rounded-lg transition mt-4 shadow-sm">Save Template</button>
                 </div>
             </div>
@@ -175,655 +169,127 @@
         
         let workoutRoutines = JSON.parse(localStorage.getItem('workoutRoutines')) || [
             {
-                id: 1, name: "1. Side Lunge & Adduction Focus", exercises: [
-                    { name: "Side Lunge", type: "warm-up", pct: 33, reps: "6" },
-                    { name: "Side Lunge", type: "ramp", pct: 66, reps: "6" },
-                    { name: "Side Lunge", type: "working", pct: 80, reps: "amrap" },
-                    { name: "Hip Adduction", type: "isolation", pct: 75, reps: "amrap" },
-                    { name: "Calf Raise", type: "isolation", pct: 75, reps: "amrap" }
-                ]
+                id: 1, name: "1. Side Lunge & Adduction",
+                warmups: ["Hip Circles (10 each way)", "Leg Swings (10 each leg)"],
+                exercises: [
+                    { name: "Side Lunge", type: "warm-up", pct: 33, reps: "6" }, { name: "Side Lunge", type: "ramp", pct: 66, reps: "6" }, { name: "Side Lunge", type: "working", pct: 80, reps: "amrap" },
+                    { name: "Hip Adduction", type: "isolation", pct: 75, reps: "amrap" }, { name: "Calf Raise", type: "isolation", pct: 75, reps: "amrap" }
+                ],
+                cooldowns: ["Butterfly Stretch (30s)", "Standing Calf Stretch (30s per side)"]
             },
             {
-                id: 2, name: "2. 30-deg Incline Press Focus", exercises: [
-                    { name: "30-degree Incline Press", type: "warm-up", pct: 33, reps: "6" },
-                    { name: "30-degree Incline Press", type: "ramp", pct: 66, reps: "6" },
-                    { name: "30-degree Incline Press", type: "working", pct: 80, reps: "amrap" },
-                    { name: "Incline Fly", type: "isolation", pct: 75, reps: "amrap" },
-                    { name: "Front Raise", type: "isolation", pct: 75, reps: "amrap" },
-                    { name: "Tricep Extension", type: "isolation", pct: 75, reps: "amrap" }
-                ]
+                id: 2, name: "2. 30-deg Incline Press",
+                warmups: ["Arm Circles (12 each way)", "Band Pull-Aparts (15 reps)"],
+                exercises: [
+                    { name: "30-degree Incline Press", type: "warm-up", pct: 33, reps: "6" }, { name: "30-degree Incline Press", type: "ramp", pct: 66, reps: "6" }, { name: "30-degree Incline Press", type: "working", pct: 80, reps: "amrap" },
+                    { name: "Incline Fly", type: "isolation", pct: 75, reps: "amrap" }, { name: "Front Raise", type: "isolation", pct: 75, reps: "amrap" }, { name: "Tricep Extension", type: "isolation", pct: 75, reps: "amrap" }
+                ],
+                cooldowns: ["Doorway Chest Stretch (30s)", "Overhead Tricep Stretch (30s per side)"]
             },
             {
-                id: 3, name: "3. Walking Lunge & Back Ext Focus", exercises: [
-                    { name: "Walking Lunge", type: "warm-up", pct: 33, reps: "6" },
-                    { name: "Walking Lunge", type: "ramp", pct: 66, reps: "6" },
-                    { name: "Walking Lunge", type: "working", pct: 80, reps: "amrap" },
+                id: 3, name: "3. Walking Lunge & Back Ext",
+                warmups: ["Cat-Cow (10 cycles)", "Glute Bridges (15 reps)"],
+                exercises: [
+                    { name: "Walking Lunge", type: "warm-up", pct: 33, reps: "6" }, { name: "Walking Lunge", type: "ramp", pct: 66, reps: "6" }, { name: "Walking Lunge", type: "working", pct: 80, reps: "amrap" },
                     { name: "Back Extension", type: "isolation", pct: 75, reps: "amrap" }
-                ]
+                ],
+                cooldowns: ["Kneeling Hip Flexor Stretch (30s per side)", "Child's Pose (60s)"]
             },
             {
-                id: 4, name: "4. Bent-Over Row Focus", exercises: [
-                    { name: "Bent-Over Row", type: "warm-up", pct: 33, reps: "6" },
-                    { name: "Bent-Over Row", type: "ramp", pct: 66, reps: "6" },
-                    { name: "Bent-Over Row", type: "working", pct: 80, reps: "amrap" },
-                    { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" },
-                    { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" }
-                ]
+                id: 4, name: "4. Bent-Over Row",
+                warmups: ["T-Spine Rotations (8 each side)", "Scapular Retractions (15 reps)"],
+                exercises: [
+                    { name: "Bent-Over Row", type: "warm-up", pct: 33, reps: "6" }, { name: "Bent-Over Row", type: "ramp", pct: 66, reps: "6" }, { name: "Bent-Over Row", type: "working", pct: 80, reps: "amrap" },
+                    { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" }
+                ],
+                cooldowns: ["Dead Hang (30s)", "Bicep Wall Stretch (30s per side)"]
             },
             {
-                id: 5, name: "5. Curtsy Lunge & Abduction Focus", exercises: [
-                    { name: "Curtsy Lunge", type: "warm-up", pct: 33, reps: "6" },
-                    { name: "Curtsy Lunge", type: "ramp", pct: 66, reps: "6" },
-                    { name: "Curtsy Lunge", type: "working", pct: 80, reps: "amrap" },
-                    { name: "Hip Abduction", type: "isolation", pct: 75, reps: "amrap" },
-                    { name: "Calf Raise", type: "isolation", pct: 75, reps: "amrap" }
-                ]
+                id: 5, name: "5. Curtsy Lunge & Abduction",
+                warmups: ["Fire Hydrants (15 each side)", "Lateral Band Walks (10 each side)"],
+                exercises: [
+                    { name: "Curtsy Lunge", type: "warm-up", pct: 33, reps: "6" }, { name: "Curtsy Lunge", type: "ramp", pct: 66, reps: "6" }, { name: "Curtsy Lunge", type: "working", pct: 80, reps: "amrap" },
+                    { name: "Hip Abduction", type: "isolation", pct: 75, reps: "amrap" }, { name: "Calf Raise", type: "isolation", pct: 75, reps: "amrap" }
+                ],
+                cooldowns: ["Pigeon Pose (30s per side)", "Figure-Four Stretch (30s per side)"]
             },
             {
-                id: 6, name: "6. Arnold Press Focus", exercises: [
-                    { name: "Arnold Press", type: "warm-up", pct: 33, reps: "6" },
-                    { name: "Arnold Press", type: "ramp", pct: 66, reps: "6" },
-                    { name: "Arnold Press", type: "working", pct: 80, reps: "amrap" },
-                    { name: "Lateral Raise", type: "isolation", pct: 75, reps: "amrap" },
-                    { name: "Reverse Fly", type: "isolation", pct: 75, reps: "amrap" },
-                    { name: "Tricep Extension", type: "isolation", pct: 75, reps: "amrap" }
-                ]
+                id: 6, name: "6. Arnold Press",
+                warmups: ["Shoulder Halos (8 each way)", "Face Pulls (20 reps)"],
+                exercises: [
+                    { name: "Arnold Press", type: "warm-up", pct: 33, reps: "6" }, { name: "Arnold Press", type: "ramp", pct: 66, reps: "6" }, { name: "Arnold Press", type: "working", pct: 80, reps: "amrap" },
+                    { name: "Lateral Raise", type: "isolation", pct: 75, reps: "amrap" }, { name: "Reverse Fly", type: "isolation", pct: 75, reps: "amrap" }, { name: "Tricep Extension", type: "isolation", pct: 75, reps: "amrap" }
+                ],
+                cooldowns: ["Cross-Body Shoulder Stretch (30s per side)", "Overhead Tricep Stretch (30s per side)"]
             },
             {
-                id: 7, name: "7. Romanian Deadlift Focus", exercises: [
-                    { name: "Romanian Deadlift", type: "warm-up", pct: 33, reps: "6" },
-                    { name: "Romanian Deadlift", type: "ramp", pct: 66, reps: "6" },
-                    { name: "Romanian Deadlift", type: "working", pct: 80, reps: "amrap" },
+                id: 7, name: "7. Romanian Deadlift",
+                warmups: ["Cat-Cow (10 cycles)", "Good Mornings (Bodyweight, 12 reps)"],
+                exercises: [
+                    { name: "Romanian Deadlift", type: "warm-up", pct: 33, reps: "6" }, { name: "Romanian Deadlift", type: "ramp", pct: 66, reps: "6" }, { name: "Romanian Deadlift", type: "working", pct: 80, reps: "amrap" },
                     { name: "Back Extension", type: "isolation", pct: 75, reps: "amrap" }
-                ]
+                ],
+                cooldowns: ["Lying Hamstring Stretch (30s per side)", "Child's Pose (60s)"]
             },
             {
-                id: 8, name: "8. Pull-Up Focus", exercises: [
-                    { name: "Pull-Up", type: "warm-up", pct: 33, reps: "6" },
-                    { name: "Pull-Up", type: "ramp", pct: 66, reps: "6" },
-                    { name: "Pull-Up", type: "working", pct: 80, reps: "amrap" },
-                    { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" },
-                    { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" }
-                ]
+                id: 8, name: "8. Pull-Up",
+                warmups: ["Scapular Pull-ups (10 reps)", "Dead Hang (20s)"],
+                exercises: [
+                    { name: "Pull-Up", type: "warm-up", pct: 33, reps: "6" }, { name: "Pull-Up", type: "ramp", pct: 66, reps: "6" }, { name: "Pull-Up", type: "working", pct: 80, reps: "amrap" },
+                    { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" }
+                ],
+                cooldowns: ["Doorway Lat Stretch (30s per side)", "Bicep Wall Stretch (30s per side)"]
             },
             {
-                id: 9, name: "9. Lat Pulldown Focus", exercises: [
-                    { name: "Lat Pulldown", type: "warm-up", pct: 33, reps: "6" },
-                    { name: "Lat Pulldown", type: "ramp", pct: 66, reps: "6" },
-                    { name: "Lat Pulldown", type: "working", pct: 80, reps: "amrap" },
-                    { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" },
-                    { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" }
-                ]
+                id: 9, name: "9. Lat Pulldown",
+                warmups: ["Scapular Retractions (15 reps)", "Light Band Pulldowns (15 reps)"],
+                exercises: [
+                    { name: "Lat Pulldown", type: "warm-up", pct: 33, reps: "6" }, { name: "Lat Pulldown", type: "ramp", pct: 66, reps: "6" }, { name: "Lat Pulldown", type: "working", pct: 80, reps: "amrap" },
+                    { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" }
+                ],
+                cooldowns: ["Doorway Lat Stretch (30s per side)", "Bicep Wall Stretch (30s per side)"]
             }
         ];
         
-        // -----------------------
         // VIEW NAVIGATION
-        // -----------------------
         const views = ['track', 'history', 'progress', 'routines'];
+        function switchView(targetView) { views.forEach(view => { const el = document.getElementById(`view-${view}`); const tab = document.getElementById(`tab-${view}`); if (view === targetView) { el.classList.replace('hidden', 'block'); tab.classList.replace('border-transparent', 'border-yellow-500'); tab.classList.replace('text-gray-500', 'text-yellow-500'); } else { if (el.classList.contains('block')) el.classList.replace('block', 'hidden'); tab.classList.replace('border-yellow-500', 'border-transparent'); tab.classList.replace('text-yellow-500', 'text-gray-500'); } }); if (targetView === 'history') renderHistory(); if (targetView === 'track') { renderLogs(); populateRoutineDropdown(); } if (targetView === 'progress') { populateExerciseDropdown(); updateChart(); } if (targetView === 'routines') renderRoutines(); }
         
-        function switchView(targetView) {
-            views.forEach(view => {
-                const el = document.getElementById(`view-${view}`);
-                const tab = document.getElementById(`tab-${view}`);
-                if (view === targetView) {
-                    el.classList.replace('hidden', 'block');
-                    tab.classList.replace('border-transparent', 'border-yellow-500');
-                    tab.classList.replace('text-gray-500', 'text-yellow-500');
-                } else {
-                    if (el.classList.contains('block')) el.classList.replace('block', 'hidden');
-                    tab.classList.replace('border-yellow-500', 'border-transparent');
-                    tab.classList.replace('text-yellow-500', 'text-gray-500');
-                }
-            });
-
-            if (targetView === 'history') renderHistory();
-            if (targetView === 'track') {
-                renderLogs();
-                populateRoutineDropdown();
-            }
-            if (targetView === 'progress') {
-                populateExerciseDropdown();
-                updateChart();
-            }
-            if (targetView === 'routines') renderRoutines();
-        }
-
-        // -----------------------
         // DATA BACKUP & RESTORE
-        // -----------------------
-        function backupData() {
-            const payload = { logs: workoutLogs, routines: workoutRoutines };
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", `gym-log-backup-${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(downloadAnchorNode); 
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
-        }
+        function backupData() { const payload = { logs: workoutLogs, routines: workoutRoutines }; const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload)); const downloadAnchorNode = document.createElement('a'); downloadAnchorNode.setAttribute("href", dataStr); downloadAnchorNode.setAttribute("download", `gym-log-backup-${new Date().toISOString().slice(0,10)}.json`); document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove(); }
+        function restoreBackup(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const importedData = JSON.parse(e.target.result); if (Array.isArray(importedData)) { workoutLogs = importedData; } else if (importedData.logs) { workoutLogs = importedData.logs; if(importedData.routines) workoutRoutines = importedData.routines; } else { throw new Error("Format mismatch"); } localStorage.setItem('workoutLogs', JSON.stringify(workoutLogs)); localStorage.setItem('workoutRoutines', JSON.stringify(workoutRoutines)); renderLogs(); renderHistory(); renderRoutines(); populateRoutineDropdown(); if(document.getElementById('view-progress').classList.contains('block')) { populateExerciseDropdown(); updateChart(); } alert("Backup loaded successfully!"); } catch (err) { alert("Error: Could not read backup file format."); } }; reader.readAsText(file); event.target.value = ''; }
+        
+        // TIMER & AUDIO
+        let timerInstance = null, defaultSeconds = 60, currentSecondsRemaining = defaultSeconds;
+        function updateTimerDisplay() { document.getElementById('timerDisplay').innerText = `${String(Math.floor(currentSecondsRemaining / 60)).padStart(2, '0')}:${String(currentSecondsRemaining % 60).padStart(2, '0')}`; }
+        function startTimer() { clearInterval(timerInstance); timerInstance = setInterval(() => { currentSecondsRemaining--; if (currentSecondsRemaining <= 0) { clearInterval(timerInstance); timerInstance = null; alertUser(); currentSecondsRemaining = defaultSeconds; } updateTimerDisplay(); }, 1000); }
+        function addTime(seconds) { currentSecondsRemaining += seconds; updateTimerDisplay(); if (!timerInstance) startTimer(); }
+        function resetTimer() { clearInterval(timerInstance); timerInstance = null; currentSecondsRemaining = defaultSeconds; updateTimerDisplay(); }
+        function alertUser() { try { const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const oscillator = audioCtx.createOscillator(), gainNode = audioCtx.createGain(); oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime); oscillator.connect(gainNode); gainNode.connect(audioCtx.destination); oscillator.start(); setTimeout(() => oscillator.stop(), 800); } catch (e) { console.log("Audio play blocked", e); } }
+        let metronomeInterval = null, metronomeAudioCtx = null;
+        function playMetronomeClick() { try { if (!metronomeAudioCtx) metronomeAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (metronomeAudioCtx.state === 'suspended') metronomeAudioCtx.resume(); const oscillator = metronomeAudioCtx.createOscillator(), gainNode = metronomeAudioCtx.createGain(); oscillator.type = 'square'; oscillator.frequency.setValueAtTime(1000, metronomeAudioCtx.currentTime); gainNode.gain.setValueAtTime(1.0, metronomeAudioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.001, metronomeAudioCtx.currentTime + 0.05); oscillator.connect(gainNode); gainNode.connect(metronomeAudioCtx.destination); oscillator.start(); oscillator.stop(metronomeAudioCtx.currentTime + 0.05); } catch (e) {} }
+        function toggleMetronome() { const btn = document.getElementById('metronomeBtn'); if (metronomeInterval) { clearInterval(metronomeInterval); metronomeInterval = null; btn.classList.remove('text-yellow-500', 'border-yellow-500'); btn.classList.add('text-gray-400', 'border-zinc-700'); } else { playMetronomeClick(); metronomeInterval = setInterval(playMetronomeClick, 1000); btn.classList.remove('text-gray-400', 'border-zinc-700'); btn.classList.add('text-yellow-500', 'border-yellow-500'); } }
 
-        function restoreBackup(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    if (Array.isArray(importedData)) {
-                        workoutLogs = importedData;
-                    } else if (importedData.logs) {
-                        workoutLogs = importedData.logs;
-                        if(importedData.routines) workoutRoutines = importedData.routines;
-                    } else { throw new Error("Format mismatch"); }
-
-                    localStorage.setItem('workoutLogs', JSON.stringify(workoutLogs));
-                    localStorage.setItem('workoutRoutines', JSON.stringify(workoutRoutines));
-                    
-                    renderLogs(); renderHistory(); renderRoutines(); populateRoutineDropdown();
-                    if(document.getElementById('view-progress').classList.contains('block')) {
-                        populateExerciseDropdown(); updateChart();
-                    }
-                    alert("Backup loaded successfully!");
-                } catch (err) { alert("Error: Could not read backup file format."); }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        }
-
-        // -----------------------
-        // AUTO Rest Timer Logic
-        // -----------------------
-        let timerInstance = null;
-        let defaultSeconds = 60; 
-        let currentSecondsRemaining = defaultSeconds;
-
-        function updateTimerDisplay() {
-            const minutes = Math.floor(currentSecondsRemaining / 60);
-            const seconds = currentSecondsRemaining % 60;
-            document.getElementById('timerDisplay').innerText = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
-
-        function startTimer() {
-            clearInterval(timerInstance);
-            timerInstance = setInterval(() => {
-                if (currentSecondsRemaining > 0) {
-                    currentSecondsRemaining--;
-                    updateTimerDisplay();
-                } else {
-                    clearInterval(timerInstance);
-                    timerInstance = null;
-                    alertUser(); 
-                    currentSecondsRemaining = defaultSeconds;
-                    updateTimerDisplay();
-                }
-            }, 1000);
-        }
-
-        function addTime(seconds) {
-            currentSecondsRemaining += seconds;
-            updateTimerDisplay();
-            if (!timerInstance) startTimer();
-        }
-
-        function resetTimer() {
-            clearInterval(timerInstance);
-            timerInstance = null;
-            currentSecondsRemaining = defaultSeconds;
-            updateTimerDisplay();
-        }
-
-        function alertUser() {
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); 
-                gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime); 
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                oscillator.start();
-                setTimeout(() => { oscillator.stop(); }, 800);
-            } catch (e) { console.log("Audio play blocked", e); }
-        }
-
-        // -----------------------
-        // METRONOME LOGIC
-        // -----------------------
-        let metronomeInterval = null;
-        let metronomeAudioCtx = null;
-
-        function playMetronomeClick() {
-            try {
-                if (!metronomeAudioCtx) metronomeAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (metronomeAudioCtx.state === 'suspended') metronomeAudioCtx.resume();
-                const oscillator = metronomeAudioCtx.createOscillator();
-                const gainNode = metronomeAudioCtx.createGain();
-                
-                oscillator.type = 'square'; 
-                oscillator.frequency.setValueAtTime(1000, metronomeAudioCtx.currentTime); 
-                gainNode.gain.setValueAtTime(1.0, metronomeAudioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, metronomeAudioCtx.currentTime + 0.05);
-
-                oscillator.connect(gainNode);
-                gainNode.connect(metronomeAudioCtx.destination);
-                oscillator.start();
-                oscillator.stop(metronomeAudioCtx.currentTime + 0.05); 
-            } catch (e) {}
-        }
-
-        function toggleMetronome() {
-            const btn = document.getElementById('metronomeBtn');
-            if (metronomeInterval) {
-                clearInterval(metronomeInterval);
-                metronomeInterval = null;
-                btn.innerHTML = "🎵 Metronome: OFF";
-                btn.classList.remove('text-yellow-500', 'border-yellow-500');
-                btn.classList.add('text-gray-400', 'border-zinc-700');
-            } else {
-                playMetronomeClick(); 
-                metronomeInterval = setInterval(playMetronomeClick, 1000); 
-                btn.innerHTML = "🎵 Metronome: ON";
-                btn.classList.remove('text-gray-400', 'border-zinc-700');
-                btn.classList.add('text-yellow-500', 'border-yellow-500');
-            }
-        }
-
-        // -----------------------
-        // ESTIMATED 1RM CALCULATION
-        // -----------------------
-        function getEstimated1RM(exerciseName) {
-            const filteredLogs = workoutLogs.filter(log => log.exercise.toLowerCase().trim() === exerciseName.toLowerCase().trim());
-            if (filteredLogs.length === 0) return null;
-
-            let max1RM = 0;
-            filteredLogs.forEach(log => {
-                const weight = parseFloat(log.weight);
-                const reps = parseInt(log.reps);
-                const estimated1RM = weight * (1 + (reps / 30));
-                if (estimated1RM > max1RM) max1RM = estimated1RM;
-            });
-            return max1RM;
-        }
-
-        // -----------------------
-        // INLINE CHECKLIST WORKFLOW
-        // -----------------------
-        function populateRoutineDropdown() {
-            const select = document.getElementById('activeRoutineSelect');
-            select.innerHTML = '<option value="">-- Custom Workout (No Template) --</option>';
-            workoutRoutines.forEach(routine => {
-                const opt = document.createElement('option');
-                opt.value = routine.id;
-                opt.textContent = routine.name;
-                select.appendChild(opt);
-            });
-            renderRoutineChecklist();
-        }
-
-        function renderRoutineChecklist() {
-            const selectId = document.getElementById('activeRoutineSelect').value;
-            const container = document.getElementById('routineChecklist');
-            
-            if(!selectId) {
-                container.classList.add('hidden');
-                container.innerHTML = '';
-                return;
-            }
-
-            const routine = workoutRoutines.find(r => r.id.toString() === selectId);
-            if(!routine) return;
-
-            container.classList.remove('hidden');
-            container.innerHTML = '';
-
-            // Group exercises sequentially by name
-            const groupedExercises = [];
-            const groupMap = new Map();
-
-            routine.exercises.forEach((ex, originalIndex) => {
-                ex.originalIndex = originalIndex; 
-                if (!groupMap.has(ex.name)) {
-                    const group = { name: ex.name, sets: [] };
-                    groupMap.set(ex.name, group);
-                    groupedExercises.push(group);
-                }
-                groupMap.get(ex.name).sets.push(ex);
-            });
-
-            // Render each grouped exercise card
-            groupedExercises.forEach(group => {
-                const estimated1RM = getEstimated1RM(group.name);
-                let setsHtml = '';
-
-                group.sets.forEach(ex => {
-                    const index = ex.originalIndex;
-                    let targetDisplay = `${ex.pct}%`;
-                    let defaultWeight = "";
-                    let defaultReps = ex.reps.toLowerCase() === 'amrap' ? '' : ex.reps;
-
-                    if (estimated1RM) {
-                        const computedWeight = Math.round((estimated1RM * (ex.pct / 100)) / 5) * 5; 
-                        targetDisplay = `${computedWeight} lbs`;
-                        defaultWeight = computedWeight;
-                    }
-
-                    setsHtml += `
-                        <div id="step-${index}" class="flex items-center gap-3 py-3 border-b border-zinc-700/50 last:border-0 check-anim transition-all">
-                            
-                            <!-- Left: Set Info & Manual Inputs -->
-                            <div class="flex-1 min-w-0">
-                                <div class="flex justify-between items-center mb-1.5">
-                                    <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-950 border border-zinc-800 px-1.5 py-0.5 rounded">${ex.type}</span>
-                                    <span class="text-[11px] font-bold text-yellow-500/90">Tgt: ${targetDisplay} × ${ex.reps}</span>
-                                </div>
-                                <div class="flex gap-2 items-center">
-                                    <input type="number" id="wt-${index}" value="${defaultWeight}" placeholder="lbs" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition">
-                                    <span class="text-zinc-600 text-sm font-bold">×</span>
-                                    <input type="number" id="rp-${index}" value="${defaultReps}" placeholder="reps" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition">
-                                </div>
-                            </div>
-
-                            <!-- Right: Skip and Complete Action Buttons grouped tightly together -->
-                            <div class="flex gap-1.5 items-stretch h-10 flex-shrink-0 self-end">
-                                <!-- Skip Button -->
-                                <button onclick="skipStep(${index})" class="text-[10px] text-zinc-500 hover:text-red-400 font-bold uppercase bg-zinc-950 px-2.5 rounded border border-zinc-800 transition flex items-center justify-center">Skip</button>
-                                
-                                <!-- Complete Checkbox Button -->
-                                <button id="btn-complete-${index}" onclick="completeStep(${index}, '${ex.name.replace(/'/g, "\\'")}')" class="w-12 bg-zinc-950 border border-zinc-600 rounded flex items-center justify-center text-transparent hover:border-yellow-500 transition check-anim">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                                </button>
-                            </div>
-
-                        </div>
-                    `;
-                });
-
-                // Wrap sets in the Exercise Card
-                const cardHtml = `
-                    <div class="bg-zinc-800 rounded-xl border border-zinc-700 overflow-hidden shadow-sm">
-                        <div class="bg-zinc-700/30 px-4 py-2 border-b border-zinc-700">
-                            <h3 class="font-bold text-gray-200">${group.name}</h3>
-                        </div>
-                        <div class="px-3">
-                            ${setsHtml}
-                        </div>
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', cardHtml);
-            });
-        }
-
-        function completeStep(index, exerciseName) {
-            const weightInput = document.getElementById(`wt-${index}`);
-            const repsInput = document.getElementById(`rp-${index}`);
-            
-            const weight = weightInput.value.trim();
-            const reps = repsInput.value.trim();
-
-            if (!weight || !reps) return alert('Please input your actual weight and reps to complete this set.');
-
-            // Log it
-            const log = { id: Date.now(), date: new Date().toLocaleDateString(), exercise: exerciseName, weight: weight, reps: reps };
-            workoutLogs.unshift(log); 
-            localStorage.setItem('workoutLogs', JSON.stringify(workoutLogs));
-            renderLogs();
-
-            // Auto-Timer logic
-            if (document.getElementById('autoTimer').checked) {
-                resetTimer();
-                startTimer();
-                if(metronomeInterval) toggleMetronome();
-            }
-
-            // Visual Checkmark Update
-            const stepDiv = document.getElementById(`step-${index}`);
-            const btn = document.getElementById(`btn-complete-${index}`);
-            
-            stepDiv.classList.add('opacity-30', 'pointer-events-none');
-            btn.classList.replace('text-transparent', 'text-black');
-            btn.classList.replace('border-zinc-600', 'border-yellow-500');
-            btn.classList.replace('bg-zinc-950', 'bg-yellow-500');
-        }
-
-        function skipStep(index) {
-            const stepDiv = document.getElementById(`step-${index}`);
-            stepDiv.classList.add('opacity-20', 'pointer-events-none', 'grayscale');
-        }
-
-        // Generic Add Set for Ad-Hoc / Custom exercises
-        function saveGenericSet() {
-            const exercise = document.getElementById('exercise').value.trim();
-            const weight = document.getElementById('weight').value;
-            const reps = document.getElementById('reps').value;
-
-            if (!exercise || !weight || !reps) return alert('Please fill in all fields!');
-
-            const log = { id: Date.now(), date: new Date().toLocaleDateString(), exercise, weight, reps };
-            workoutLogs.unshift(log); 
-            localStorage.setItem('workoutLogs', JSON.stringify(workoutLogs));
-            renderLogs();
-            
-            document.getElementById('weight').value = '';
-            document.getElementById('reps').value = '';
-
-            if (document.getElementById('autoTimer').checked) {
-                resetTimer(); startTimer();
-                if(metronomeInterval) toggleMetronome();
-            }
-        }
-
-        // -----------------------
-        // HISTORY / UI DISPLAY
-        // -----------------------
-        function deleteLog(id) {
-            if (confirm("Delete this logged set?")) {
-                workoutLogs = workoutLogs.filter(log => log.id !== id);
-                localStorage.setItem('workoutLogs', JSON.stringify(workoutLogs));
-                renderLogs(); renderHistory();
-                if(document.getElementById('view-progress').classList.contains('block')) {
-                    populateExerciseDropdown(); updateChart();
-                }
-            }
-        }
-
-        function renderLogs() {
-            const todayDate = new Date().toLocaleDateString();
-            const todaysLogs = workoutLogs.filter(log => log.date === todayDate);
-            const list = document.getElementById('logList');
-            list.innerHTML = todaysLogs.length ? '' : '<p class="text-zinc-500 text-sm text-center py-2">No sets logged yet today.</p>';
-            
-            todaysLogs.forEach(log => {
-                const item = document.createElement('div');
-                item.className = "flex justify-between items-center bg-zinc-800 p-3 rounded-lg border border-zinc-700/60";
-                item.innerHTML = `
-                    <div class="font-semibold text-white">${log.exercise}</div>
-                    <div class="flex items-center gap-4">
-                        <span class="text-yellow-500 font-bold">${log.weight} lbs × ${log.reps}</span>
-                        <button onclick="deleteLog(${log.id})" class="text-red-400 hover:text-red-500 font-bold px-2 py-1 text-sm transition" title="Delete set">✕</button>
-                    </div>
-                `;
-                list.appendChild(item);
-            });
-        }
-
-        function renderHistory() {
-            const todayDate = new Date().toLocaleDateString();
-            const pastLogs = workoutLogs.filter(log => log.date !== todayDate);
-            const list = document.getElementById('historyList');
-
-            if (pastLogs.length === 0) {
-                list.innerHTML = '<p class="text-zinc-500 text-sm text-center py-4">No past history found.</p>';
-                return;
-            }
-
-            const groupedLogs = pastLogs.reduce((groups, log) => {
-                if (!groups[log.date]) groups[log.date] = [];
-                groups[log.date].push(log); return groups;
-            }, {});
-
-            list.innerHTML = ''; 
-            for (const [date, logs] of Object.entries(groupedLogs)) {
-                const dateGroup = document.createElement('div');
-                let setsHTML = logs.map(log => `
-                    <div class="flex justify-between items-center bg-zinc-800 p-2.5 rounded-lg border border-zinc-700/50 text-sm mt-1.5">
-                        <span class="text-gray-300 font-medium">${log.exercise}</span>
-                        <div class="flex items-center gap-3">
-                            <span class="text-yellow-500 font-semibold">${log.weight} lbs × ${log.reps}</span>
-                            <button onclick="deleteLog(${log.id})" class="text-red-400 hover:text-red-500 font-bold px-1.5 text-xs transition">✕</button>
-                        </div>
-                    </div>
-                `).join('');
-
-                dateGroup.innerHTML = `
-                    <div class="mb-4 border-l-2 border-yellow-500 pl-3">
-                        <h3 class="text-gray-400 font-bold text-sm mb-2">${date}</h3>
-                        <div class="space-y-1">${setsHTML}</div>
-                    </div>
-                `;
-                list.appendChild(dateGroup);
-            }
-        }
-
-        // -----------------------
-        // ROUTINE BUILDER UI
-        // -----------------------
-        function addExerciseRow() {
-            const container = document.getElementById('exerciseRowsContainer');
-            const row = document.createElement('div');
-            row.className = "flex items-start gap-2 bg-zinc-950 p-2.5 rounded-lg border border-zinc-800 shadow-inner";
-            row.innerHTML = `
-                <div class="flex-1 space-y-2">
-                    <input type="text" placeholder="Exercise (e.g. Side Lunge)" class="ex-name w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-sm focus:outline-none focus:border-yellow-500">
-                    <div class="flex gap-2">
-                        <select class="ex-type w-1/3 bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-xs focus:outline-none focus:border-yellow-500">
-                            <option value="warm-up">warm-up</option>
-                            <option value="ramp">ramp</option>
-                            <option value="working" selected>working</option>
-                            <option value="isolation">isolation</option>
-                        </select>
-                        <input type="number" placeholder="%1RM" class="ex-pct w-1/3 bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-sm focus:outline-none focus:border-yellow-500">
-                        <input type="text" placeholder="Reps/AMRAP" class="ex-reps w-1/3 bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-sm focus:outline-none focus:border-yellow-500">
-                    </div>
-                </div>
-                <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-500 font-bold px-2 py-2 mt-1 rounded hover:bg-red-500/10 transition">✕</button>
-            `;
-            container.appendChild(row);
-        }
-
-        function saveRoutine() {
-            const name = document.getElementById('routineName').value.trim();
-            if (!name) return alert("Please provide a template name.");
-
-            const container = document.getElementById('exerciseRowsContainer');
-            const rows = container.children;
-            if (rows.length === 0) return alert("Please add at least one exercise step.");
-
-            const exercises = [];
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                const exName = row.querySelector('.ex-name').value.trim();
-                const exType = row.querySelector('.ex-type').value;
-                const exPct = row.querySelector('.ex-pct').value.trim();
-                const exReps = row.querySelector('.ex-reps').value.trim();
-
-                if (!exName || !exPct || !exReps) return alert("Please fill out Name, %1RM, and Reps for all exercises.");
-
-                exercises.push({ name: exName, type: exType, pct: parseInt(exPct), reps: exReps });
-            }
-
-            const routine = { id: Date.now(), name, exercises };
-            workoutRoutines.push(routine);
-            localStorage.setItem('workoutRoutines', JSON.stringify(workoutRoutines));
-            
-            document.getElementById('routineName').value = '';
-            container.innerHTML = ''; addExerciseRow(); 
-            renderRoutines(); populateRoutineDropdown();
-        }
-
-        function deleteRoutine(id) {
-            if(confirm("Delete this routine?")) {
-                workoutRoutines = workoutRoutines.filter(r => r.id !== id);
-                localStorage.setItem('workoutRoutines', JSON.stringify(workoutRoutines));
-                renderRoutines(); populateRoutineDropdown();
-            }
-        }
-
-        function renderRoutines() {
-            const list = document.getElementById('routineList');
-            list.innerHTML = workoutRoutines.length ? '' : '<p class="text-zinc-500 text-sm">No saved routines.</p>';
-            
-            workoutRoutines.forEach(routine => {
-                const item = document.createElement('div');
-                item.className = "bg-zinc-800 p-3 rounded-lg border border-zinc-700";
-                const exList = routine.exercises.map(ex => `<span class="inline-block bg-zinc-700 text-gray-300 text-xs px-2 py-1 rounded mt-2 mr-1 border border-zinc-600">${ex.name} (${ex.type})</span>`).join('');
-
-                item.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div class="font-bold text-yellow-500">${routine.name}</div>
-                        <button onclick="deleteRoutine(${routine.id})" class="text-red-400 hover:text-red-500 font-bold px-2 text-sm transition">✕</button>
-                    </div><div class="mt-1">${exList}</div>`;
-                list.appendChild(item);
-            });
-        }
-
-        // -----------------------
-        // CHART & PROGRESS LOGIC
-        // -----------------------
+        // 1RM CALCULATION
+        function getEstimated1RM(exerciseName) { const filteredLogs = workoutLogs.filter(log => log.exercise.toLowerCase().trim() === exerciseName.toLowerCase().trim()); if (filteredLogs.length === 0) return null; let max1RM = 0; filteredLogs.forEach(log => { const estimated1RM = parseFloat(log.weight) * (1 + (parseInt(log.reps) / 30)); if (estimated1RM > max1RM) max1RM = estimated1RM; }); return max1RM; }
+        
+        // UI & WORKFLOW
+        function populateRoutineDropdown() { const select = document.getElementById('activeRoutineSelect'); select.innerHTML = '<option value="">-- Custom Workout --</option>'; workoutRoutines.forEach(routine => { const opt = document.createElement('option'); opt.value = routine.id; opt.textContent = routine.name; select.appendChild(opt); }); renderRoutineChecklist(); }
+        function renderRoutineChecklist() { const selectId = document.getElementById('activeRoutineSelect').value, container = document.getElementById('routineChecklist'); if (!selectId) { container.classList.add('hidden'); container.innerHTML = ''; return; } const routine = workoutRoutines.find(r => r.id.toString() === selectId); if (!routine) return; container.classList.remove('hidden'); container.innerHTML = ''; if (routine.warmups && routine.warmups.length > 0) container.insertAdjacentHTML('beforeend', createCollapsibleWidget('🔥 Warm-Up', routine.warmups.map(item => `<div class="p-2 border-b border-zinc-700/50 last:border-0 text-gray-300 text-sm">${item}</div>`).join(''))); const groupedExercises = []; const groupMap = new Map(); routine.exercises.forEach((ex, originalIndex) => { ex.originalIndex = originalIndex; if (!groupMap.has(ex.name)) { const group = { name: ex.name, sets: [] }; groupMap.set(ex.name, group); groupedExercises.push(group); } groupMap.get(ex.name).sets.push(ex); }); groupedExercises.forEach(group => { const estimated1RM = getEstimated1RM(group.name); let setsHtml = ''; group.sets.forEach(ex => { const index = ex.originalIndex; let targetDisplay = `${ex.pct}%`, defaultWeight = "", defaultReps = ex.reps.toLowerCase() === 'amrap' ? '' : ex.reps; if (estimated1RM) { const computedWeight = Math.round((estimated1RM * (ex.pct / 100)) / 5) * 5; targetDisplay = `${computedWeight} lbs`; defaultWeight = computedWeight; } setsHtml += `<div id="step-${index}" class="flex items-center gap-3 py-3 border-b border-zinc-700/50 last:border-0 check-anim transition-all"><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1.5"><span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-950 border border-zinc-800 px-1.5 py-0.5 rounded">${ex.type}</span><span class="text-[11px] font-bold text-yellow-500/90">Tgt: ${targetDisplay} × ${ex.reps}</span></div><div class="flex gap-2 items-center"><input type="number" id="wt-${index}" value="${defaultWeight}" placeholder="lbs" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition"><span class="text-zinc-600 text-sm font-bold">×</span><input type="number" id="rp-${index}" value="${defaultReps}" placeholder="reps" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition"></div></div><div class="flex gap-1.5 items-stretch h-10 flex-shrink-0 self-end"><button onclick="skipStep(${index})" class="w-10 text-zinc-500 hover:text-red-400 bg-zinc-950 rounded border border-zinc-800 transition flex items-center justify-center" title="Skip Set"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg></button><button id="btn-complete-${index}" onclick="completeStep(${index}, '${ex.name.replace(/'/g, "\\'")}')" class="w-12 bg-zinc-950 border border-zinc-600 rounded flex items-center justify-center text-transparent hover:border-yellow-500 hover:text-yellow-500/30 transition check-anim" title="Complete Set"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></button></div></div>`; }); container.insertAdjacentHTML('beforeend', `<div class="bg-zinc-800 rounded-xl border border-zinc-700 overflow-hidden shadow-sm"><div class="bg-zinc-700/30 px-4 py-2 border-b border-zinc-700"><h3 class="font-bold text-gray-200">${group.name}</h3></div><div class="px-3">${setsHtml}</div></div>`); }); if (routine.cooldowns && routine.cooldowns.length > 0) container.insertAdjacentHTML('beforeend', createCollapsibleWidget('❄️ Cool-Down', routine.cooldowns.map(item => `<div class="p-2 border-b border-zinc-700/50 last:border-0 text-gray-300 text-sm">${item}</div>`).join(''))); }
+        function createCollapsibleWidget(title, content) { return `<div class="bg-zinc-800 rounded-xl border border-zinc-700 overflow-hidden shadow-sm"><details open><summary class="bg-zinc-700/30 px-4 py-2 cursor-pointer list-none flex justify-between items-center"><h3 class="font-bold text-gray-200 inline">${title}</h3><span class="text-xs text-zinc-400">Tap to toggle</span></summary><div class="p-3">${content}</div></details></div>`; }
+        function completeStep(index, exerciseName) { const weight = document.getElementById(`wt-${index}`).value.trim(), reps = document.getElementById(`rp-${index}`).value.trim(); if (!weight || !reps) return alert('Please input actual weight and reps.'); const log = { id: Date.now(), date: new Date().toLocaleDateString(), exercise: exerciseName, weight, reps }; workoutLogs.unshift(log); localStorage.setItem('workoutLogs', JSON.stringify(workoutLogs)); renderLogs(); if (document.getElementById('autoTimer').checked) { resetTimer(); startTimer(); if(metronomeInterval) toggleMetronome(); } const stepDiv = document.getElementById(`step-${index}`), btn = document.getElementById(`btn-complete-${index}`); stepDiv.classList.add('opacity-30', 'pointer-events-none'); btn.classList.replace('text-transparent', 'text-black'); btn.classList.replace('border-zinc-600', 'border-yellow-500'); btn.classList.replace('bg-zinc-950', 'bg-yellow-500'); }
+        function skipStep(index) { document.getElementById(`step-${index}`).classList.add('opacity-20', 'pointer-events-none', 'grayscale'); }
+        function saveGenericSet() { const exercise = document.getElementById('exercise').value.trim(), weight = document.getElementById('weight').value, reps = document.getElementById('reps').value; if (!exercise || !weight || !reps) return alert('Please fill in all fields!'); const log = { id: Date.now(), date: new Date().toLocaleDateString(), exercise, weight, reps }; workoutLogs.unshift(log); localStorage.setItem('workoutLogs', JSON.stringify(workoutLogs)); renderLogs(); document.getElementById('weight').value = ''; document.getElementById('reps').value = ''; if (document.getElementById('autoTimer').checked) { resetTimer(); startTimer(); if(metronomeInterval) toggleMetronome(); } }
+        function deleteLog(id) { if (confirm("Delete this logged set?")) { workoutLogs = workoutLogs.filter(log => log.id !== id); localStorage.setItem('workoutLogs', JSON.stringify(workoutLogs)); renderLogs(); renderHistory(); if(document.getElementById('view-progress').classList.contains('block')) { populateExerciseDropdown(); updateChart(); } } }
+        function renderLogs() { const todayDate = new Date().toLocaleDateString(); const todaysLogs = workoutLogs.filter(log => log.date === todayDate); const list = document.getElementById('logList'); list.innerHTML = todaysLogs.length ? '' : '<p class="text-zinc-500 text-sm text-center py-2">No sets logged yet today.</p>'; todaysLogs.forEach(log => { const item = document.createElement('div'); item.className = "flex justify-between items-center bg-zinc-800 p-3 rounded-lg border border-zinc-700/60"; item.innerHTML = `<div class="font-semibold text-white">${log.exercise}</div><div class="flex items-center gap-4"><span class="text-yellow-500 font-bold">${log.weight} lbs × ${log.reps}</span><button onclick="deleteLog(${log.id})" class="text-red-400 hover:text-red-500 font-bold px-2 py-1 text-sm transition" title="Delete set">✕</button></div>`; list.appendChild(item); }); }
+        function renderHistory() { const todayDate = new Date().toLocaleDateString(); const pastLogs = workoutLogs.filter(log => log.date !== todayDate); const list = document.getElementById('historyList'); if (pastLogs.length === 0) { list.innerHTML = '<p class="text-zinc-500 text-sm text-center py-4">No past history found.</p>'; return; } const groupedLogs = pastLogs.reduce((groups, log) => { if (!groups[log.date]) groups[log.date] = []; groups[log.date].push(log); return groups; }, {}); list.innerHTML = ''; for (const [date, logs] of Object.entries(groupedLogs)) { const dateGroup = document.createElement('div'); let setsHTML = logs.map(log => `<div class="flex justify-between items-center bg-zinc-800 p-2.5 rounded-lg border border-zinc-700/50 text-sm mt-1.5"><span class="text-gray-300 font-medium">${log.exercise}</span><div class="flex items-center gap-3"><span class="text-yellow-500 font-semibold">${log.weight} lbs × ${log.reps}</span><button onclick="deleteLog(${log.id})" class="text-red-400 hover:text-red-500 font-bold px-1.5 text-xs transition">✕</button></div></div>`).join(''); dateGroup.innerHTML = `<div class="mb-4 border-l-2 border-yellow-500 pl-3"><h3 class="text-gray-400 font-bold text-sm mb-2">${date}</h3><div class="space-y-1">${setsHTML}</div></div>`; list.appendChild(dateGroup); } }
+        function addExerciseRow() { const container = document.getElementById('exerciseRowsContainer'); const row = document.createElement('div'); row.className = "flex items-start gap-2 bg-zinc-950 p-2.5 rounded-lg border border-zinc-800 shadow-inner"; row.innerHTML = `<div class="flex-1 space-y-2"><input type="text" placeholder="Exercise (e.g. Side Lunge)" class="ex-name w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-sm focus:outline-none focus:border-yellow-500"><div class="flex gap-2"><select class="ex-type w-1/3 bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-xs focus:outline-none focus:border-yellow-500"><option value="warm-up">warm-up</option><option value="ramp">ramp</option><option value="working" selected>working</option><option value="isolation">isolation</option></select><input type="number" placeholder="%1RM" class="ex-pct w-1/3 bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-sm focus:outline-none focus:border-yellow-500"><input type="text" placeholder="Reps/AMRAP" class="ex-reps w-1/3 bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-sm focus:outline-none focus:border-yellow-500"></div></div><button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-500 font-bold px-2 py-2 mt-1 rounded hover:bg-red-500/10 transition">✕</button>`; container.appendChild(row); }
+        function saveRoutine() { const name = document.getElementById('routineName').value.trim(); if (!name) return alert("Please provide a template name."); const exerciseRows = document.getElementById('exerciseRowsContainer').children; if (exerciseRows.length === 0) return alert("Please add at least one exercise step."); const exercises = []; for (let i = 0; i < exerciseRows.length; i++) { const row = exerciseRows[i]; const exName = row.querySelector('.ex-name').value.trim(), exType = row.querySelector('.ex-type').value, exPct = row.querySelector('.ex-pct').value.trim(), exReps = row.querySelector('.ex-reps').value.trim(); if (!exName || !exPct || !exReps) return alert("Please fill out Name, %1RM, and Reps for all exercises."); exercises.push({ name: exName, type: exType, pct: parseInt(exPct), reps: exReps }); } const warmups = document.getElementById('warmupInput').value.split('\n').filter(Boolean); const cooldowns = document.getElementById('cooldownInput').value.split('\n').filter(Boolean); const routine = { id: Date.now(), name, warmups, exercises, cooldowns }; workoutRoutines.push(routine); localStorage.setItem('workoutRoutines', JSON.stringify(workoutRoutines)); document.getElementById('routineName').value = ''; document.getElementById('warmupInput').value = ''; document.getElementById('cooldownInput').value = ''; document.getElementById('exerciseRowsContainer').innerHTML = ''; addExerciseRow(); renderRoutines(); populateRoutineDropdown(); }
+        function deleteRoutine(id) { if(confirm("Delete this routine?")) { workoutRoutines = workoutRoutines.filter(r => r.id !== id); localStorage.setItem('workoutRoutines', JSON.stringify(workoutRoutines)); renderRoutines(); populateRoutineDropdown(); } }
+        function renderRoutines() { const list = document.getElementById('routineList'); list.innerHTML = workoutRoutines.length ? '' : '<p class="text-zinc-500 text-sm">No saved routines.</p>'; workoutRoutines.forEach(routine => { const item = document.createElement('div'); item.className = "bg-zinc-800 p-3 rounded-lg border border-zinc-700"; const exList = routine.exercises.map(ex => `<span class="inline-block bg-zinc-700 text-gray-300 text-xs px-2 py-1 rounded mt-2 mr-1 border border-zinc-600">${ex.name} (${ex.type})</span>`).join(''); item.innerHTML = `<div class="flex justify-between items-start"><div class="font-bold text-yellow-500">${routine.name}</div><button onclick="deleteRoutine(${routine.id})" class="text-red-400 hover:text-red-500 font-bold px-2 text-sm transition">✕</button></div><div class="mt-1">${exList}</div>`; list.appendChild(item); }); }
         let progressChart = null;
-        function populateExerciseDropdown() {
-            const select = document.getElementById('exerciseSelect');
-            const currentSelection = select.value;
-            const uniqueExercises = [...new Set(workoutLogs.map(log => log.exercise.toLowerCase().trim()))].sort();
-            
-            select.innerHTML = '<option value="">Select Exercise...</option>';
-            uniqueExercises.forEach(ex => {
-                const opt = document.createElement('option');
-                opt.value = ex; opt.textContent = ex.charAt(0).toUpperCase() + ex.slice(1);
-                select.appendChild(opt);
-            });
-            if(uniqueExercises.includes(currentSelection)) select.value = currentSelection;
-        }
-
-        function updateChart() {
-            const selectedExercise = document.getElementById('exerciseSelect').value;
-            const ctx = document.getElementById('progressChart').getContext('2d');
-
-            if (!selectedExercise) { if (progressChart) progressChart.destroy(); return; }
-
-            const filteredLogs = workoutLogs.filter(log => log.exercise.toLowerCase().trim() === selectedExercise);
-            const maxWeightPerDate = {}; const max1RmPerDate = {};
-
-            filteredLogs.forEach(log => {
-                const weight = parseFloat(log.weight);
-                const reps = parseInt(log.reps);
-                const estimated1RM = Math.round(weight * (1 + (reps / 30)));
-
-                if (!maxWeightPerDate[log.date] || weight > maxWeightPerDate[log.date]) maxWeightPerDate[log.date] = weight;
-                if (!max1RmPerDate[log.date] || estimated1RM > max1RmPerDate[log.date]) max1RmPerDate[log.date] = estimated1RM;
-            });
-
-            const sortedDates = Object.keys(maxWeightPerDate).sort((a, b) => new Date(a) - new Date(b));
-            const weightData = sortedDates.map(date => maxWeightPerDate[date]);
-            const oneRmData = sortedDates.map(date => max1RmPerDate[date]);
-
-            if (progressChart) progressChart.destroy();
-            Chart.defaults.color = '#9ca3af'; 
-
-            progressChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: sortedDates,
-                    datasets: [
-                        { label: 'Max Weight (lbs)', data: weightData, borderColor: '#eab308', backgroundColor: 'rgba(234, 179, 8, 0.15)', borderWidth: 3, pointBackgroundColor: '#eab308', pointBorderColor: '#000', fill: true, tension: 0.3 },
-                        { label: 'Estimated 1RM (lbs)', data: oneRmData, borderColor: '#e5e7eb', backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 5], pointBackgroundColor: '#e5e7eb', pointBorderColor: '#000', fill: false, tension: 0.3 }
-                    ]
-                },
-                options: { responsive: true, scales: { y: { beginAtZero: false, grid: { color: 'rgba(63, 63, 70, 0.5)' } }, x: { grid: { display: false } } }, plugins: { legend: { display: true, labels: { color: '#d1d5db', usePointStyle: true } } } }
-            });
-        }
+        function populateExerciseDropdown() { const select = document.getElementById('exerciseSelect'); const currentSelection = select.value; const uniqueExercises = [...new Set(workoutLogs.map(log => log.exercise.toLowerCase().trim()))].sort(); select.innerHTML = '<option value="">Select Exercise...</option>'; uniqueExercises.forEach(ex => { const opt = document.createElement('option'); opt.value = ex; opt.textContent = ex.charAt(0).toUpperCase() + ex.slice(1); select.appendChild(opt); }); if(uniqueExercises.includes(currentSelection)) select.value = currentSelection; }
+        function updateChart() { const selectedExercise = document.getElementById('exerciseSelect').value; const ctx = document.getElementById('progressChart').getContext('2d'); if (!selectedExercise) { if (progressChart) progressChart.destroy(); return; } const filteredLogs = workoutLogs.filter(log => log.exercise.toLowerCase().trim() === selectedExercise); const maxWeightPerDate = {}; const max1RmPerDate = {}; filteredLogs.forEach(log => { const weight = parseFloat(log.weight), reps = parseInt(log.reps), estimated1RM = Math.round(weight * (1 + (reps / 30))); if (!maxWeightPerDate[log.date] || weight > maxWeightPerDate[log.date]) maxWeightPerDate[log.date] = weight; if (!max1RmPerDate[log.date] || estimated1RM > max1RmPerDate[log.date]) max1RmPerDate[log.date] = estimated1RM; }); const sortedDates = Object.keys(maxWeightPerDate).sort((a, b) => new Date(a) - new Date(b)); const weightData = sortedDates.map(date => maxWeightPerDate[date]); const oneRmData = sortedDates.map(date => max1RmPerDate[date]); if (progressChart) progressChart.destroy(); Chart.defaults.color = '#9ca3af'; progressChart = new Chart(ctx, { type: 'line', data: { labels: sortedDates, datasets: [ { label: 'Max Weight (lbs)', data: weightData, borderColor: '#eab308', backgroundColor: 'rgba(234, 179, 8, 0.15)', borderWidth: 3, pointBackgroundColor: '#eab308', pointBorderColor: '#000', fill: true, tension: 0.3 }, { label: 'Estimated 1RM (lbs)', data: oneRmData, borderColor: '#e5e7eb', backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 5], pointBackgroundColor: '#e5e7eb', pointBorderColor: '#000', fill: false, tension: 0.3 } ] }, options: { responsive: true, scales: { y: { beginAtZero: false, grid: { color: 'rgba(63, 63, 70, 0.5)' } }, x: { grid: { display: false } } }, plugins: { legend: { display: true, labels: { color: '#d1d5db', usePointStyle: true } } } } }); }
 
         // Initialize displays
         addExerciseRow(); 
