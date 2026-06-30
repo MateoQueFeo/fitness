@@ -3,22 +3,40 @@
     // --- INDEXEDDB DATABASE HELPER ---
     let db;
     const DB_NAME = 'GymLogDB';
-    const DB_VERSION = 1;
+    // MODIFIED: Incremented DB_VERSION to force an upgrade and clear old data.
+    const DB_VERSION = 2;
     const LOG_STORE_NAME = 'workoutLogs';
 
     function openDB() {
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+            // MODIFIED: This function now handles upgrades by deleting the old,
+            // potentially corrupt data store before creating a new one.
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
-                if (!db.objectStoreNames.contains(LOG_STORE_NAME)) {
-                    const store = db.createObjectStore(LOG_STORE_NAME, { keyPath: 'id' });
-                    store.createIndex('date', 'date', { unique: false });
-                    store.createIndex('exercise', 'exercise', { unique: false });
+                console.log('Database upgrade needed...');
+                
+                // If the old store exists, delete it to ensure a clean slate.
+                if (db.objectStoreNames.contains(LOG_STORE_NAME)) {
+                    console.log('Deleting old workoutLogs store...');
+                    db.deleteObjectStore(LOG_STORE_NAME);
                 }
+
+                console.log('Creating new workoutLogs store...');
+                const store = db.createObjectStore(LOG_STORE_NAME, { keyPath: 'id' });
+                store.createIndex('date', 'date', { unique: false });
+                store.createIndex('exercise', 'exercise', { unique: false });
+                console.log('Database setup complete.');
             };
-            request.onerror = (event) => reject(event.target.errorCode);
+
+            request.onerror = (event) => {
+                console.error('Database error:', event.target.errorCode);
+                reject(event.target.errorCode);
+            };
+
             request.onsuccess = (event) => {
+                console.log('Database opened successfully.');
                 db = event.target.result;
                 resolve();
             };
@@ -522,22 +540,11 @@
             if (!exName || !exPct || !exReps) {
                 return alert("Please fill out Name, %1RM, and Reps for all exercises.");
             }
-            exercises.push({
-                name: exName,
-                type: exType,
-                pct: parseInt(exPct),
-                reps: exReps
-            });
+            exercises.push({ name: exName, type: exType, pct: parseInt(exPct), reps: exReps });
         }
         const warmups = DOMElements.warmupInput.value.split('\n').filter(Boolean);
         const cooldowns = DOMElements.cooldownInput.value.split('\n').filter(Boolean);
-        const routine = {
-            id: Date.now(),
-            name,
-            warmups,
-            exercises,
-            cooldowns
-        };
+        const routine = { id: Date.now(), name, warmups, exercises, cooldowns };
         workoutRoutines.push(routine);
         saveRoutines();
         DOMElements.routineName.value = '';
@@ -558,6 +565,22 @@
         populateRoutineDropdown();
     }
     
+    function renderRoutines() {
+        const list = DOMElements.routineList;
+        list.innerHTML = '';
+        if (workoutRoutines.length === 0) {
+            list.innerHTML = '<p class="text-zinc-500 text-sm">No saved routines.</p>';
+            return;
+        }
+        workoutRoutines.forEach(routine => {
+            const item = document.createElement('div');
+            item.className = "bg-zinc-800 p-3 rounded-lg border border-zinc-700";
+            const exList = routine.exercises.map(ex => `<span class="inline-block bg-zinc-700 text-gray-300 text-xs px-2 py-1 rounded mt-2 mr-1 border border-zinc-600">${ex.name} (${ex.type})</span>`).join('');
+            item.innerHTML = `<div class="flex justify-between items-start"><div class="font-bold text-yellow-500">${routine.name}</div><button data-action="delete-routine" data-id="${routine.id}" class="text-red-400 hover:text-red-500 font-bold px-2 text-sm transition">✕</button></div><div class="mt-1">${exList}</div>`;
+            list.appendChild(item);
+        });
+    }
+
     function populateExerciseDropdown() {
         const select = DOMElements.exerciseSelect;
         const currentSelection = select.value;
@@ -599,56 +622,8 @@
         Chart.defaults.color = '#9ca3af';
         progressChart = new Chart(DOMElements.progressChartCtx, {
             type: 'line',
-            data: {
-                labels: sortedDates,
-                datasets: [{
-                    label: 'Max Weight (lbs)',
-                    data: weightData,
-                    borderColor: '#eab308',
-                    backgroundColor: 'rgba(234, 179, 8, 0.15)',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#eab308',
-                    pointBorderColor: '#000',
-                    fill: true,
-                    tension: 0.3
-                }, {
-                    label: 'Estimated 1RM (lbs)',
-                    data: oneRmData,
-                    borderColor: '#e5e7eb',
-                    backgroundColor: 'transparent',
-                    borderWidth: 2,
-                    borderDash: [5, 5],
-                    pointBackgroundColor: '#e5e7eb',
-                    pointBorderColor: '#000',
-                    fill: false,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        grid: {
-                            color: 'rgba(63, 63, 70, 0.5)'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: true,
-                        labels: {
-                            color: '#d1d5db',
-                            usePointStyle: true
-                        }
-                    }
-                }
-            }
+            data: { labels: sortedDates, datasets: [{ label: 'Max Weight (lbs)', data: weightData, borderColor: '#eab308', backgroundColor: 'rgba(234, 179, 8, 0.15)', borderWidth: 3, pointBackgroundColor: '#eab308', pointBorderColor: '#000', fill: true, tension: 0.3 }, { label: 'Estimated 1RM (lbs)', data: oneRmData, borderColor: '#e5e7eb', backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 5], pointBackgroundColor: '#e5e7eb', pointBorderColor: '#000', fill: false, tension: 0.3 }] },
+            options: { responsive: true, scales: { y: { beginAtZero: false, grid: { color: 'rgba(63, 63, 70, 0.5)' } }, x: { grid: { display: false } } }, plugins: { legend: { display: true, labels: { color: '#d1d5db', usePointStyle: true } } } }
         });
     }
     
@@ -658,13 +633,7 @@
         const weight = weightInput.value.trim();
         const reps = repsInput.value.trim();
         if (!weight || !reps) return alert('Please input actual weight and reps.');
-        const log = {
-            id: Date.now(),
-            date: getISODate(),
-            exercise: exerciseName,
-            weight,
-            reps
-        };
+        const log = { id: Date.now(), date: getISODate(), exercise: exerciseName, weight, reps };
         addLog(log);
         if (DOMElements.autoTimerCheck.checked) {
             resetTimer();
@@ -679,17 +648,8 @@
         btn.classList.replace('bg-zinc-950', 'bg-yellow-500');
     }
     
-    function skipStep(index) {
-        document.getElementById(`step-${index}`).classList.add('opacity-20', 'pointer-events-none', 'grayscale');
-    }
-    
-    function fullRender() {
-        const activeView = document.querySelector('.nav-tab.text-yellow-500').dataset.view || 'track';
-        populateRoutineDropdown();
-        renderRoutines();
-        renderTodaysLogs();
-        switchView(activeView);
-    }
+    function skipStep(index) { document.getElementById(`step-${index}`).classList.add('opacity-20', 'pointer-events-none', 'grayscale'); }
+    function fullRender() { const activeView = document.querySelector('.nav-tab.text-yellow-500').dataset.view || 'track'; populateRoutineDropdown(); renderRoutines(); renderTodaysLogs(); switchView(activeView); }
     
     function setupEventListeners() {
         DOMElements.loadButton.addEventListener('click', () => DOMElements.restoreInput.click());
