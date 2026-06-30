@@ -86,56 +86,89 @@
         setTimeout(() => DOMElements.exerciseModal.classList.add('hidden'), 200);
     }
     
-    // --- DATA & PERSISTENCE ---
-    const getISODate = () => new Date().toISOString().slice(0, 10);
-
-    async function loadData() {
-        const store = db.transaction(LOG_STORE_NAME, 'readonly').objectStore(LOG_STORE_NAME);
-        workoutLogs = (await new Promise((resolve, reject) => {
-            const request = store.getAll();
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        })).sort((a, b) => b.id - a.id);
-        loadRoutines();
-    }
-
-    function loadRoutines() {
-        const defaultRoutines = [
-            { id: 1, name: "1. Side Lunge & Adduction", warmups: ["Hip Circles (10 each way)", "Leg Swings (10 each leg)"], exercises: [ { name: "Side Lunge", type: "warm-up", pct: 33, reps: "6" }, { name: "Side Lunge", type: "ramp", pct: 66, reps: "6" }, { name: "Side Lunge", type: "working", pct: 80, reps: "amrap" }, { name: "Hip Adduction", type: "isolation", pct: 75, reps: "amrap" }, { name: "Calf Raise", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Butterfly Stretch (30s)", "Standing Calf Stretch (30s per side)"] },
-            { id: 2, name: "2. 30-deg Incline Press", warmups: ["Arm Circles (12 each way)", "Band Pull-Aparts (15 reps)"], exercises: [ { name: "30-degree Incline Press", type: "warm-up", pct: 33, reps: "6" }, { name: "30-degree Incline Press", type: "ramp", pct: 66, reps: "6" }, { name: "30-degree Incline Press", type: "working", pct: 80, reps: "amrap" }, { name: "Incline Fly", type: "isolation", pct: 75, reps: "amrap" }, { name: "Front Raise", type: "isolation", pct: 75, reps: "amrap" }, { name: "Tricep Extension", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Doorway Chest Stretch (30s)", "Overhead Tricep Stretch (30s per side)"] },
-            { id: 3, name: "3. Walking Lunge & Back Ext", warmups: ["Cat-Cow (10 cycles)", "Glute Bridges (15 reps)"], exercises: [ { name: "Walking Lunge", type: "warm-up", pct: 33, reps: "6" }, { name: "Walking Lunge", type: "ramp", pct: 66, reps: "6" }, { name: "Walking Lunge", type: "working", pct: 80, reps: "amrap" }, { name: "Back Extension", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Kneeling Hip Flexor Stretch (30s per side)", "Child's Pose (60s)"] },
-            { id: 4, name: "4. Bent-Over Row", warmups: ["T-Spine Rotations (8 each side)", "Scapular Retractions (15 reps)"], exercises: [ { name: "Bent-Over Row", type: "warm-up", pct: 33, reps: "6" }, { name: "Bent-Over Row", type: "ramp", pct: 66, reps: "6" }, { name: "Bent-Over Row", type: "working", pct: 80, reps: "amrap" }, { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Dead Hang (30s)", "Bicep Wall Stretch (30s per side)"] },
-            { id: 5, name: "5. Curtsy Lunge & Abduction", warmups: ["Fire Hydrants (15 each side)", "Lateral Band Walks (10 each side)"], exercises: [ { name: "Curtsy Lunge", type: "warm-up", pct: 33, reps: "6" }, { name: "Curtsy Lunge", type: "ramp", pct: 66, reps: "6" }, { name: "Curtsy Lunge", type: "working", pct: 80, reps: "amrap" }, { name: "Hip Abduction", type: "isolation", pct: 75, reps: "amrap" }, { name: "Calf Raise", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Pigeon Pose (30s per side)", "Figure-Four Stretch (30s per side)"] },
-            { id: 6, name: "6. Arnold Press", warmups: ["Shoulder Halos (8 each way)", "Face Pulls (20 reps)"], exercises: [ { name: "Arnold Press", type: "warm-up", pct: 33, reps: "6" }, { name: "Arnold Press", type: "ramp", pct: 66, reps: "6" }, { name: "Arnold Press", type: "working", pct: 80, reps: "amrap" }, { name: "Lateral Raise", type: "isolation", pct: 75, reps: "amrap" }, { name: "Reverse Fly", type: "isolation", pct: 75, reps: "amrap" }, { name: "Tricep Extension", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Cross-Body Shoulder Stretch (30s per side)", "Overhead Tricep Stretch (30s per side)"] },
-            { id: 7, name: "7. Romanian Deadlift", warmups: ["Cat-Cow (10 cycles)", "Good Mornings (Bodyweight, 12 reps)"], exercises: [ { name: "Romanian Deadlift", type: "warm-up", pct: 33, reps: "6" }, { name: "Romanian Deadlift", type: "ramp", pct: 66, reps: "6" }, { name: "Romanian Deadlift", type: "working", pct: 80, reps: "amrap" }, { name: "Back Extension", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Lying Hamstring Stretch (30s per side)", "Child's Pose (60s)"] },
-            { id: 8, name: "8. Pull-Up", warmups: ["Scapular Pull-ups (10 reps)", "Dead Hang (20s)"], exercises: [ { name: "Pull-Up", type: "warm-up", pct: 33, reps: "6" }, { name: "Pull-Up", type: "ramp", pct: 66, reps: "6" }, { name: "Pull-Up", type: "working", pct: 80, reps: "amrap" }, { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Doorway Lat Stretch (30s per side)", "Bicep Wall Stretch (30s per side)"] },
-            { id: 9, name: "9. Lat Pulldown", warmups: ["Scapular Retractions (15 reps)", "Light Band Pulldowns (15 reps)"], exercises: [ { name: "Lat Pulldown", type: "warm-up", pct: 33, reps: "6" }, { name: "Lat Pulldown", type: "ramp", pct: 66, reps: "6" }, { name: "Lat Pulldown", type: "working", pct: 80, reps: "amrap" }, { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Doorway Lat Stretch (30s per side)", "Bicep Wall Stretch (30s per side)"] }
-        ];
-        workoutRoutines = JSON.parse(localStorage.getItem('workoutRoutines')) || defaultRoutines;
-    }
-
-    function saveRoutines() { localStorage.setItem('workoutRoutines', JSON.stringify(workoutRoutines)); }
-    function backupData() { /* ... unchanged ... */ }
-    function restoreBackup(event) { /* ... unchanged ... */ }
-
-    // --- RENDERING & UI ---
-    function renderRoutines() {
-        const list = DOMElements.routineList;
-        list.innerHTML = '';
-        if (workoutRoutines.length === 0) {
-            list.innerHTML = '<p class="text-zinc-500 text-sm">No saved routines.</p>';
+    // --- RENDER ROUTINE CHECKLIST (MODIFIED) ---
+    function renderRoutineChecklist() {
+        const selectId = DOMElements.activeRoutineSelect.value;
+        const container = DOMElements.routineChecklist;
+        if (!selectId) {
+            container.classList.add('hidden');
+            container.innerHTML = '';
             return;
         }
-        workoutRoutines.forEach(routine => {
-            const item = document.createElement('div');
-            item.className = "bg-zinc-800 p-3 rounded-lg border border-zinc-700";
-            const exList = routine.exercises.map(ex => `<span class="inline-block bg-zinc-700 text-gray-300 text-xs px-2 py-1 rounded mt-2 mr-1 border border-zinc-600">${ex.name} (${ex.type})</span>`).join('');
-            item.innerHTML = `<div class="flex justify-between items-start"><div class="font-bold text-yellow-500">${routine.name}</div><button data-action="delete-routine" data-id="${routine.id}" class="text-red-400 hover:text-red-500 font-bold px-2 text-sm transition">✕</button></div><div class="mt-1">${exList}</div>`;
-            list.appendChild(item);
+        const routine = workoutRoutines.find(r => String(r.id) === selectId);
+        if (!routine) return;
+
+        container.classList.remove('hidden');
+        container.innerHTML = '';
+
+        if (routine.warmups && routine.warmups.length > 0) {
+            const content = routine.warmups.map(item => `<div class="p-2 border-b border-zinc-700/50 last:border-0 text-gray-300 text-sm">${item}</div>`).join('');
+            container.insertAdjacentHTML('beforeend', createCollapsibleWidget('🔥 Warm-Up Guidelines', content));
+        }
+
+        const groupedExercises = routine.exercises.reduce((acc, ex, originalIndex) => {
+            ex.originalIndex = originalIndex;
+            const group = acc.find(g => g.name === ex.name);
+            if (group) group.sets.push(ex);
+            else acc.push({ name: ex.name, sets: [ex] });
+            return acc;
+        }, []);
+
+        groupedExercises.forEach(group => {
+            const estimated1RM = getEstimated1RM(group.name);
+            let setsHtml = '';
+
+            group.sets.forEach(ex => {
+                const index = ex.originalIndex;
+                let defaultWeight = "", defaultReps = ex.reps.toLowerCase() === 'amrap' ? '' : ex.reps;
+
+                if (estimated1RM) {
+                    const computedWeight = Math.round((estimated1RM * (ex.pct / 100)) / 5) * 5;
+                    defaultWeight = computedWeight;
+                }
+
+                // MODIFIED: Removed the badge and target display from here
+                setsHtml += `
+                <div id="step-${index}" class="flex items-center gap-3 py-3 border-b border-zinc-700/50 last:border-0 check-anim transition-all">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex gap-2 items-center">
+                            <input type="number" id="wt-${index}" value="${defaultWeight}" placeholder="lbs" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition">
+                            <span class="text-zinc-600 text-sm font-bold">×</span>
+                            <input type="number" id="rp-${index}" value="${defaultReps}" placeholder="reps" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition">
+                        </div>
+                    </div>
+                    <div class="flex gap-1.5 items-stretch h-10 flex-shrink-0 self-end">
+                        <button data-action="skip" data-index="${index}" class="w-10 text-zinc-500 hover:text-red-400 bg-zinc-950 rounded border border-zinc-800 transition flex items-center justify-center" title="Skip Set"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg></button>
+                        <button id="btn-complete-${index}" data-action="complete" data-index="${index}" data-exercise-name="${ex.name.replace(/"/g, '&quot;')}" class="w-12 bg-zinc-950 border border-zinc-600 rounded flex items-center justify-center text-transparent hover:border-yellow-500 hover:text-yellow-500/30 transition check-anim" title="Complete Set"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></button>
+                    </div>
+                </div>`;
+            });
+
+            // MODIFIED: Added flexbox and the new e1RM badge to the title bar
+            container.insertAdjacentHTML('beforeend', `
+            <div class="bg-zinc-800 rounded-xl border border-zinc-700 overflow-hidden shadow-sm">
+                <div class="bg-zinc-700/30 px-4 py-2 border-b border-zinc-700 flex justify-between items-center">
+                    <button class="font-bold text-gray-200 exercise-info-btn" data-action="show-info" data-exercise-name="${group.name.replace(/"/g, '&quot;')}">${group.name}</button>
+                    ${estimated1RM ? `<span class="text-xs font-bold text-yellow-500 bg-zinc-900 px-2 py-1 rounded-md">e1RM: ${Math.round(estimated1RM)} lbs</span>` : ''}
+                </div>
+                <div class="px-3">${setsHtml}</div>
+            </div>`);
         });
+
+        if (routine.cooldowns && routine.cooldowns.length > 0) {
+            const content = routine.cooldowns.map(item => `<div class="p-2 border-b border-zinc-700/50 last:border-0 text-gray-300 text-sm">${item}</div>`).join('');
+            container.insertAdjacentHTML('beforeend', createCollapsibleWidget('❄️ Cool-Down Guidelines', content));
+        }
     }
 
-    // --- (All other functions are unchanged and included below) ---
+    // --- (The rest of the file is unchanged) ---
+
+    function getISODate(){return new Date().toISOString().slice(0,10)}
+    async function loadData(){const e=db.transaction(LOG_STORE_NAME,"readonly").objectStore(LOG_STORE_NAME);workoutLogs=(await new Promise((t,n)=>{const o=e.getAll();o.onsuccess=()=>t(o.result),o.onerror=()=>n(o.error)})).sort((e,t)=>t.id-e.id),loadRoutines()}
+    function loadRoutines(){const e=[{id:1,name:"1. Side Lunge & Adduction",warmups:["Hip Circles (10 each way)","Leg Swings (10 each leg)"],exercises:[{name:"Side Lunge",type:"warm-up",pct:33,reps:"6"},{name:"Side Lunge",type:"ramp",pct:66,reps:"6"},{name:"Side Lunge",type:"working",pct:80,reps:"amrap"},{name:"Hip Adduction",type:"isolation",pct:75,reps:"amrap"},{name:"Calf Raise",type:"isolation",pct:75,reps:"amrap"}],cooldowns:["Butterfly Stretch (30s)","Standing Calf Stretch (30s per side)"]},{id:2,name:"2. 30-deg Incline Press",warmups:["Arm Circles (12 each way)","Band Pull-Aparts (15 reps)"],exercises:[{name:"30-degree Incline Press",type:"warm-up",pct:33,reps:"6"},{name:"30-degree Incline Press",type:"ramp",pct:66,reps:"6"},{name:"30-degree Incline Press",type:"working",pct:80,reps:"amrap"},{name:"Incline Fly",type:"isolation",pct:75,reps:"amrap"},{name:"Front Raise",type:"isolation",pct:75,reps:"amrap"},{name:"Tricep Extension",type:"isolation",pct:75,reps:"amrap"}],cooldowns:["Doorway Chest Stretch (30s)","Overhead Tricep Stretch (30s per side)"]},{id:3,name:"3. Walking Lunge & Back Ext",warmups:["Cat-Cow (10 cycles)","Glute Bridges (15 reps)"],exercises:[{name:"Walking Lunge",type:"warm-up",pct:33,reps:"6"},{name:"Walking Lunge",type:"ramp",pct:66,reps:"6"},{name:"Walking Lunge",type:"working",pct:80,reps:"amrap"},{name:"Back Extension",type:"isolation",pct:75,reps:"amrap"}],cooldowns:["Kneeling Hip Flexor Stretch (30s per side)","Child's Pose (60s)"]},{id:4,name:"4. Bent-Over Row",warmups:["T-Spine Rotations (8 each side)","Scapular Retractions (15 reps)"],exercises:[{name:"Bent-Over Row",type:"warm-up",pct:33,reps:"6"},{name:"Bent-Over Row",type:"ramp",pct:66,reps:"6"},{name:"Bent-Over Row",type:"working",pct:80,reps:"amrap"},{name:"Straight-Arm Pulldown",type:"isolation",pct:75,reps:"amrap"},{name:"Incline Curl",type:"isolation",pct:75,reps:"amrap"}],cooldowns:["Dead Hang (30s)","Bicep Wall Stretch (30s per side)"]},{id:5,name:"5. Curtsy Lunge & Abduction",warmups:["Fire Hydrants (15 each side)","Lateral Band Walks (10 each side)"],exercises:[{name:"Curtsy Lunge",type:"warm-up",pct:33,reps:"6"},{name:"Curtsy Lunge",type:"ramp",pct:66,reps:"6"},{name:"Curtsy Lunge",type:"working",pct:80,reps:"amrap"},{name:"Hip Abduction",type:"isolation",pct:75,reps:"amrap"},{name:"Calf Raise",type:"isolation",pct:75,reps:"amrap"}],cooldowns:["Pigeon Pose (30s per side)","Figure-Four Stretch (30s per side)"]},{id:6,name:"6. Arnold Press",warmups:["Shoulder Halos (8 each way)","Face Pulls (20 reps)"],exercises:[{name:"Arnold Press",type:"warm-up",pct:33,reps:"6"},{name:"Arnold Press",type:"ramp",pct:66,reps:"6"},{name:"Arnold Press",type:"working",pct:80,reps:"amrap"},{name:"Lateral Raise",type:"isolation",pct:75,reps:"amrap"},{name:"Reverse Fly",type:"isolation",pct:75,reps:"amrap"},{name:"Tricep Extension",type:"isolation",pct:75,reps:"amrap"}],cooldowns:["Cross-Body Shoulder Stretch (30s per side)","Overhead Tricep Stretch (30s per side)"]},{id:7,name:"7. Romanian Deadlift",warmups:["Cat-Cow (10 cycles)","Good Mornings (Bodyweight, 12 reps)"],exercises:[{name:"Romanian Deadlift",type:"warm-up",pct:33,reps:"6"},{name:"Romanian Deadlift",type:"ramp",pct:66,reps:"6"},{name:"Romanian Deadlift",type:"working",pct:80,reps:"amrap"},{name:"Back Extension",type:"isolation",pct:75,reps:"amrap"}],cooldowns:["Lying Hamstring Stretch (30s per side)","Child's Pose (60s)"]},{id:8,name:"8. Pull-Up",warmups:["Scapular Pull-ups (10 reps)","Dead Hang (20s)"],exercises:[{name:"Pull-Up",type:"warm-up",pct:33,reps:"6"},{name:"Pull-Up",type:"ramp",pct:66,reps:"6"},{name:"Pull-Up",type:"working",pct:80,reps:"amrap"},{name:"Straight-Arm Pulldown",type:"isolation",pct:75,reps:"amrap"},{name:"Incline Curl",type:"isolation",pct:75,reps:"amrap"}],cooldowns:["Doorway Lat Stretch (30s per side)","Bicep Wall Stretch (30s per side)"]},{id:9,name:"9. Lat Pulldown",warmups:["Scapular Retractions (15 reps)","Light Band Pulldowns (15 reps)"],exercises:[{name:"Lat Pulldown",type:"warm-up",pct:33,reps:"6"},{name:"Lat Pulldown",type:"ramp",pct:66,reps:"6"},{name:"Lat Pulldown",type:"working",pct:80,reps:"amrap"},{name:"Straight-Arm Pulldown",type:"isolation",pct:75,reps:"amrap"},{name:"Incline Curl",type:"isolation",pct:75,reps:"amrap"}],cooldowns:["Doorway Lat Stretch (30s per side)","Bicep Wall Stretch (30s per side)"]}];workoutRoutines=JSON.parse(localStorage.getItem("workoutRoutines"))||e}
+    function saveRoutines(){localStorage.setItem("workoutRoutines",JSON.stringify(workoutRoutines))}
+    function backupData() { const payload = { logs: workoutLogs, routines: workoutRoutines }; const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2)); const downloadAnchorNode = document.createElement('a'); downloadAnchorNode.setAttribute("href", dataStr); downloadAnchorNode.setAttribute("download", `gym-log-backup-${getISODate()}.json`); document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove(); }
+    async function restoreBackup(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async function(e) { try { const importedData = JSON.parse(e.target.result); let logsToImport = (importedData.logs && Array.isArray(importedData.logs)) ? importedData.logs : []; let routinesToImport = (importedData.routines && Array.isArray(importedData.routines)) ? importedData.routines : []; if (logsToImport.length > 0) { const tx = db.transaction(LOG_STORE_NAME, 'readwrite'); const store = tx.objectStore(LOG_STORE_NAME); await Promise.all(logsToImport.map(log => new Promise((res, rej) => { const req = store.put(log); req.onsuccess = res; req.onerror = rej; }))); } if(routinesToImport.length > 0){ workoutRoutines = routinesToImport; saveRoutines(); } await loadData(); fullRender(); alert("Backup loaded successfully!"); } catch (err) { alert("Error reading backup file."); console.error(err); } finally { event.target.value = ''; } }; reader.readAsText(file); }
     async function requestWakeLock() { try { if ('wakeLock' in navigator && (!wakeLock || wakeLock.released)) { wakeLock = await navigator.wakeLock.request('screen'); } } catch (err) { console.warn(`Wake Lock error: ${err.name}, ${err.message}`); } }
     function releaseWakeLock() { if (wakeLock !== null && !wakeLock.released) { wakeLock.release().then(() => { wakeLock = null; }); } }
     function switchView(targetView) { DOMElements.views.forEach(view => { view.classList.toggle('hidden', view.id !== `view-${targetView}`); }); DOMElements.navTabs.forEach(tab => { const isTarget = tab.dataset.view === targetView; tab.classList.toggle('border-yellow-500', isTarget); tab.classList.toggle('text-yellow-500', isTarget); tab.classList.toggle('border-transparent', !isTarget); tab.classList.toggle('text-gray-500', !isTarget); }); if (targetView === 'history') renderHistory(); if (targetView === 'track') renderTodaysLogs(); if (targetView === 'progress') { populateExerciseDropdown(); updateChart(); } if (targetView === 'routines') renderRoutines(); }
@@ -155,7 +188,6 @@
     function renderTodaysLogs() { const list = DOMElements.logList; list.innerHTML = ''; const today = getISODate(); const todaysLogs = workoutLogs.filter(log => log.date === today); if (todaysLogs.length === 0) { list.innerHTML = '<p class="text-zinc-500 text-sm text-center py-2">No sets logged yet today.</p>'; } else { todaysLogs.forEach(log => list.appendChild(createLogItemDOM(log))); } }
     function renderHistory() { const list = DOMElements.historyList; list.innerHTML = ''; const today = getISODate(); const pastLogs = workoutLogs.filter(log => log.date !== today); if (pastLogs.length === 0) { list.innerHTML = '<p class="text-zinc-500 text-sm text-center py-4">No past history found.</p>'; return; } const groupedLogs = pastLogs.reduce((groups, log) => { if (!groups[log.date]) groups[log.date] = []; groups[log.date].push(log); return groups; }, {}); const sortedDates = Object.keys(groupedLogs).sort((a, b) => new Date(b) - new Date(a)); for (const date of sortedDates) { const logs = groupedLogs[date]; const dateGroup = document.createElement('div'); dateGroup.className = "mb-4 border-l-2 border-yellow-500 pl-3"; const dateHeader = document.createElement('h3'); dateHeader.className = "text-gray-400 font-bold text-sm mb-2"; dateHeader.textContent = new Date(date + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }); const setsContainer = document.createElement('div'); setsContainer.className = "space-y-1"; logs.forEach(log => { const setItem = document.createElement('div'); setItem.className = "flex justify-between items-center bg-zinc-800 p-2.5 rounded-lg border border-zinc-700/50 text-sm mt-1.5"; setItem.setAttribute('data-log-id', log.id); setItem.innerHTML = `<span class="text-gray-300 font-medium">${log.exercise}</span><div class="flex items-center gap-3"><span class="text-yellow-500 font-semibold">${log.weight} lbs × ${log.reps}</span><button data-action="delete-log" data-id="${log.id}" class="text-red-400 hover:text-red-500 font-bold px-1.5 text-xs transition">✕</button></div>`; setsContainer.appendChild(setItem); }); dateGroup.append(dateHeader, setsContainer); list.appendChild(dateGroup); } }
     function populateRoutineDropdown() { const select = DOMElements.activeRoutineSelect; select.innerHTML = '<option value="">-- Custom Workout --</option>'; workoutRoutines.forEach(routine => { const opt = document.createElement('option'); opt.value = routine.id; opt.textContent = routine.name; select.appendChild(opt); }); }
-    function renderRoutineChecklist() { const selectId = DOMElements.activeRoutineSelect.value; const container = DOMElements.routineChecklist; if (!selectId) { container.classList.add('hidden'); container.innerHTML = ''; return; } const routine = workoutRoutines.find(r => String(r.id) === selectId); if (!routine) return; container.classList.remove('hidden'); container.innerHTML = ''; if (routine.warmups && routine.warmups.length > 0) { const content = routine.warmups.map(item => `<div class="p-2 border-b border-zinc-700/50 last:border-0 text-gray-300 text-sm">${item}</div>`).join(''); container.insertAdjacentHTML('beforeend', createCollapsibleWidget('🔥 Warm-Up Guidelines', content)); } const groupedExercises = routine.exercises.reduce((acc, ex, originalIndex) => { ex.originalIndex = originalIndex; const group = acc.find(g => g.name === ex.name); if (group) group.sets.push(ex); else acc.push({ name: ex.name, sets: [ex] }); return acc; }, []); groupedExercises.forEach(group => { const estimated1RM = getEstimated1RM(group.name); let setsHtml = ''; group.sets.forEach(ex => { const index = ex.originalIndex; let targetDisplay = `${ex.pct}%`; let defaultWeight = "", defaultReps = ex.reps.toLowerCase() === 'amrap' ? '' : ex.reps; if (estimated1RM) { const computedWeight = Math.round((estimated1RM * (ex.pct / 100)) / 5) * 5; targetDisplay = `${computedWeight} lbs`; defaultWeight = computedWeight; } setsHtml += `<div id="step-${index}" class="flex items-center gap-3 py-3 border-b border-zinc-700/50 last:border-0 check-anim transition-all"><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1.5"><span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-950 border border-zinc-800 px-1.5 py-0.5 rounded">${ex.type}</span><span class="text-[11px] font-bold text-yellow-500/90">Target: ${targetDisplay} × ${ex.reps}</span></div><div class="flex gap-2 items-center"><input type="number" id="wt-${index}" value="${defaultWeight}" placeholder="lbs" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition"><span class="text-zinc-600 text-sm font-bold">×</span><input type="number" id="rp-${index}" value="${defaultReps}" placeholder="reps" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition"></div></div><div class="flex gap-1.5 items-stretch h-10 flex-shrink-0 self-end"><button data-action="skip" data-index="${index}" class="w-10 text-zinc-500 hover:text-red-400 bg-zinc-950 rounded border border-zinc-800 transition flex items-center justify-center" title="Skip Set"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg></button><button id="btn-complete-${index}" data-action="complete" data-index="${index}" data-exercise-name="${ex.name.replace(/"/g, '&quot;')}" class="w-12 bg-zinc-950 border border-zinc-600 rounded flex items-center justify-center text-transparent hover:border-yellow-500 hover:text-yellow-500/30 transition check-anim" title="Complete Set"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></button></div></div>`; }); container.insertAdjacentHTML('beforeend', `<div class="bg-zinc-800 rounded-xl border border-zinc-700 overflow-hidden shadow-sm"><div class="bg-zinc-700/30 px-4 py-2 border-b border-zinc-700"><button class="font-bold text-gray-200 exercise-info-btn" data-action="show-info" data-exercise-name="${group.name.replace(/"/g, '&quot;')}">${group.name}</button></div><div class="px-3">${setsHtml}</div></div>`); }); if (routine.cooldowns && routine.cooldowns.length > 0) { const content = routine.cooldowns.map(item => `<div class="p-2 border-b border-zinc-700/50 last:border-0 text-gray-300 text-sm">${item}</div>`).join(''); container.insertAdjacentHTML('beforeend', createCollapsibleWidget('❄️ Cool-Down Guidelines', content)); } }
     function createCollapsibleWidget(title, content) { return `<div class="bg-zinc-800 rounded-xl border border-zinc-700 overflow-hidden shadow-sm"><details open><summary class="bg-zinc-700/30 px-4 py-2 cursor-pointer list-none flex justify-between items-center"><h3 class="font-bold text-gray-200 inline">${title}</h3><span class="text-xs text-zinc-400">Tap to toggle</span></summary><div class="p-3">${content}</div></details></div>`; }
     function addExerciseRow() { const template = document.getElementById('exerciseRowTemplate'); const clone = template.content.cloneNode(true); DOMElements.exerciseRowsContainer.appendChild(clone); }
     function saveRoutine() { const name = DOMElements.routineName.value.trim(); if (!name) return alert("Please provide a template name."); const exerciseRows = DOMElements.exerciseRowsContainer.children; if (exerciseRows.length === 0) return alert("Please add at least one exercise step."); const exercises = []; for (const row of exerciseRows) { const exName = row.querySelector('.ex-name').value.trim(); const exType = row.querySelector('.ex-type').value; const exPct = row.querySelector('.ex-pct').value.trim(); const exReps = row.querySelector('.ex-reps').value.trim(); if (!exName || !exPct || !exReps) { return alert("Please fill out Name, %1RM, and Reps for all exercises."); } exercises.push({ name: exName, type: exType, pct: parseInt(exPct), reps: exReps }); } const warmups = DOMElements.warmupInput.value.split('\n').filter(Boolean); const cooldowns = DOMElements.cooldownInput.value.split('\n').filter(Boolean); const routine = { id: Date.now(), name, warmups, exercises, cooldowns }; workoutRoutines.push(routine); saveRoutines(); DOMElements.routineName.value = ''; DOMElements.warmupInput.value = ''; DOMElements.cooldownInput.value = ''; DOMElements.exerciseRowsContainer.innerHTML = ''; addExerciseRow(); renderRoutines(); populateRoutineDropdown(); alert("Routine saved!"); }
