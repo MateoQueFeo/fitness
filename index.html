@@ -7,6 +7,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/000000/barbell.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for graphing progress -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-black text-gray-100 min-h-screen p-4 font-sans">
     <div class="max-w-md mx-auto">
@@ -21,6 +23,7 @@
         <div class="flex gap-2 mb-6 border-b border-zinc-800 pb-2">
             <button onclick="switchView('track')" id="tab-track" class="flex-1 font-bold pb-2 border-b-2 border-yellow-500 text-yellow-500 transition">Track</button>
             <button onclick="switchView('history')" id="tab-history" class="flex-1 font-bold pb-2 border-b-2 border-transparent text-gray-500 hover:text-gray-300 transition">History</button>
+            <button onclick="switchView('progress')" id="tab-progress" class="flex-1 font-bold pb-2 border-b-2 border-transparent text-gray-500 hover:text-gray-300 transition">Progress</button>
         </div>
 
         <!-- ============================== -->
@@ -36,12 +39,13 @@
                         <button onclick="setTimer(60)" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-2 py-1 rounded border border-zinc-700 text-yellow-500 font-semibold">1m</button>
                         <button onclick="setTimer(90)" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-2 py-1 rounded border border-zinc-700 text-yellow-500 font-semibold">1.5m</button>
                         <button onclick="setTimer(120)" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-2 py-1 rounded border border-zinc-700 text-yellow-500 font-semibold">2m</button>
+                        <button onclick="addTime(60)" class="bg-yellow-500/20 hover:bg-yellow-500/30 text-xs px-2 py-1 rounded border border-yellow-500/50 text-yellow-500 font-bold">+1m</button>
                     </div>
                 </div>
                 
                 <div class="flex items-center gap-4 w-full">
                     <div id="timerDisplay" class="text-4xl font-mono font-black text-yellow-500 bg-black px-4 py-2 rounded-lg border border-zinc-800 flex-1 text-center">
-                        01:30
+                        01:00
                     </div>
                     <div class="flex gap-2">
                         <button id="timerBtn" onclick="toggleTimer()" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-4 py-3 rounded-lg transition">Start</button>
@@ -88,6 +92,24 @@
             </div>
         </div>
 
+        <!-- ============================== -->
+        <!-- VIEW 3: PROGRESS GRAPHS        -->
+        <!-- ============================== -->
+        <div id="view-progress" class="hidden">
+            <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800">
+                <h2 class="text-lg font-bold text-gray-200 mb-4">Strength Progress</h2>
+                <p class="text-sm text-gray-400 mb-3">Select an exercise to view your max weight lifted over time.</p>
+                
+                <select id="exerciseSelect" onchange="updateChart()" class="w-full bg-zinc-800 border border-zinc-700 rounded p-2.5 text-white mb-6 focus:outline-none focus:border-yellow-500">
+                    <option value="">Select Exercise...</option>
+                </select>
+
+                <div class="w-full bg-black p-2 rounded-lg border border-zinc-800">
+                    <canvas id="progressChart"></canvas>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -96,34 +118,30 @@
         // -----------------------
         // VIEW NAVIGATION
         // -----------------------
-        function switchView(viewName) {
-            const viewTrack = document.getElementById('view-track');
-            const viewHistory = document.getElementById('view-history');
-            const tabTrack = document.getElementById('tab-track');
-            const tabHistory = document.getElementById('tab-history');
+        const views = ['track', 'history', 'progress'];
+        
+        function switchView(targetView) {
+            views.forEach(view => {
+                const el = document.getElementById(`view-${view}`);
+                const tab = document.getElementById(`tab-${view}`);
+                
+                if (view === targetView) {
+                    el.classList.replace('hidden', 'block');
+                    tab.classList.replace('border-transparent', 'border-yellow-500');
+                    tab.classList.replace('text-gray-500', 'text-yellow-500');
+                } else {
+                    if (el.classList.contains('block')) el.classList.replace('block', 'hidden');
+                    tab.classList.replace('border-yellow-500', 'border-transparent');
+                    tab.classList.replace('text-yellow-500', 'text-gray-500');
+                }
+            });
 
-            if (viewName === 'history') {
-                viewTrack.classList.replace('block', 'hidden');
-                viewHistory.classList.replace('hidden', 'block');
-                
-                // Update tab styles
-                tabHistory.classList.replace('border-transparent', 'border-yellow-500');
-                tabHistory.classList.replace('text-gray-500', 'text-yellow-500');
-                tabTrack.classList.replace('border-yellow-500', 'border-transparent');
-                tabTrack.classList.replace('text-yellow-500', 'text-gray-500');
-                
-                renderHistory();
-            } else {
-                viewTrack.classList.replace('hidden', 'block');
-                viewHistory.classList.replace('block', 'hidden');
-                
-                // Update tab styles
-                tabTrack.classList.replace('border-transparent', 'border-yellow-500');
-                tabTrack.classList.replace('text-gray-500', 'text-yellow-500');
-                tabHistory.classList.replace('border-yellow-500', 'border-transparent');
-                tabHistory.classList.replace('text-yellow-500', 'text-gray-500');
-                
-                renderLogs();
+            // Call specific render functions based on view
+            if (targetView === 'history') renderHistory();
+            if (targetView === 'track') renderLogs();
+            if (targetView === 'progress') {
+                populateExerciseDropdown();
+                updateChart();
             }
         }
 
@@ -131,7 +149,7 @@
         // TIMER LOGIC
         // -----------------------
         let timerInstance = null;
-        let defaultSeconds = 90; 
+        let defaultSeconds = 60; // Default changed to 60s (1m)
         let currentSecondsRemaining = defaultSeconds;
 
         function updateTimerDisplay() {
@@ -147,6 +165,12 @@
             document.getElementById('timerBtn').innerText = "Start";
             defaultSeconds = seconds;
             currentSecondsRemaining = seconds;
+            updateTimerDisplay();
+        }
+
+        // New feature: Add time dynamically
+        function addTime(seconds) {
+            currentSecondsRemaining += seconds;
             updateTimerDisplay();
         }
 
@@ -234,19 +258,19 @@
             }
         }
 
-        // ❌ DELETE LOG FUNCTION
         function deleteLog(id) {
             if (confirm("Are you sure you want to delete this logged set?")) {
                 workoutLogs = workoutLogs.filter(log => log.id !== id);
                 localStorage.setItem('workoutLogs', JSON.stringify(workoutLogs));
-                
-                // Re-render whichever screen is currently active
                 renderLogs();
                 renderHistory();
+                if(document.getElementById('view-progress').classList.contains('block')) {
+                    populateExerciseDropdown();
+                    updateChart();
+                }
             }
         }
 
-        // Renders only TODAY'S workout on the main screen
         function renderLogs() {
             const todayDate = new Date().toLocaleDateString();
             const todaysLogs = workoutLogs.filter(log => log.date === todayDate);
@@ -268,7 +292,6 @@
             });
         }
 
-        // Renders PAST workouts grouped by date on the History tab
         function renderHistory() {
             const todayDate = new Date().toLocaleDateString();
             const pastLogs = workoutLogs.filter(log => log.date !== todayDate);
@@ -289,7 +312,6 @@
             
             for (const [date, logs] of Object.entries(groupedLogs)) {
                 const dateGroup = document.createElement('div');
-                
                 let setsHTML = logs.map(log => `
                     <div class="flex justify-between items-center bg-zinc-800 p-2.5 rounded-lg border border-zinc-700/50 text-sm mt-1.5">
                         <span class="text-gray-300 font-medium">${log.exercise}</span>
@@ -310,6 +332,98 @@
             }
         }
 
+        // -----------------------
+        // CHART & PROGRESS LOGIC
+        // -----------------------
+        let progressChart = null;
+
+        function populateExerciseDropdown() {
+            const select = document.getElementById('exerciseSelect');
+            const currentSelection = select.value;
+            
+            // Standardize exercise names to lowercase for grouping, but capitalize for display
+            const uniqueExercises = [...new Set(workoutLogs.map(log => log.exercise.toLowerCase().trim()))].sort();
+            
+            select.innerHTML = '<option value="">Select Exercise...</option>';
+            uniqueExercises.forEach(ex => {
+                const opt = document.createElement('option');
+                opt.value = ex;
+                opt.textContent = ex.charAt(0).toUpperCase() + ex.slice(1);
+                select.appendChild(opt);
+            });
+            
+            if(uniqueExercises.includes(currentSelection)) {
+                select.value = currentSelection;
+            }
+        }
+
+        function updateChart() {
+            const selectedExercise = document.getElementById('exerciseSelect').value;
+            const ctx = document.getElementById('progressChart').getContext('2d');
+
+            if (!selectedExercise) {
+                if (progressChart) progressChart.destroy();
+                return;
+            }
+
+            // Filter logs for selected exercise
+            const filteredLogs = workoutLogs.filter(log => log.exercise.toLowerCase().trim() === selectedExercise);
+
+            // Group by date and find MAX weight lifted on that date
+            const maxWeightPerDate = {};
+            filteredLogs.forEach(log => {
+                const weight = parseFloat(log.weight);
+                if (!maxWeightPerDate[log.date] || weight > maxWeightPerDate[log.date]) {
+                    maxWeightPerDate[log.date] = weight;
+                }
+            });
+
+            // Sort dates chronologically
+            const sortedDates = Object.keys(maxWeightPerDate).sort((a, b) => new Date(a) - new Date(b));
+            const dataPoints = sortedDates.map(date => maxWeightPerDate[date]);
+
+            if (progressChart) progressChart.destroy();
+
+            // Set global chart defaults for dark theme
+            Chart.defaults.color = '#9ca3af'; 
+            Chart.defaults.font.family = 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+
+            progressChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedDates,
+                    datasets: [{
+                        label: 'Max Weight (lbs)',
+                        data: dataPoints,
+                        borderColor: '#eab308', // Tailwind yellow-500
+                        backgroundColor: 'rgba(234, 179, 8, 0.15)', // Semi-transparent yellow
+                        borderWidth: 3,
+                        pointBackgroundColor: '#eab308',
+                        pointBorderColor: '#000',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        fill: true,
+                        tension: 0.3 // Smooth curves
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { 
+                            beginAtZero: false,
+                            grid: { color: 'rgba(63, 63, 70, 0.5)' } // zinc-700
+                        },
+                        x: { 
+                            grid: { display: false } 
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false } // Hide legend to save space on mobile
+                    }
+                }
+            });
+        }
+
         function exportData() {
             let csvContent = "data:text/csv;charset=utf-8,Date,Exercise,Weight,Reps\n";
             workoutLogs.forEach(log => {
@@ -324,7 +438,7 @@
             document.body.removeChild(link);
         }
 
-        // Initialize displays
+        // Initialize display
         updateTimerDisplay();
         renderLogs();
     </script>
