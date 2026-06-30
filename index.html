@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym Log</title>
-    <!-- Links to your PWA manifest for "Add to Homescreen" functionality -->
+    <!-- Links -->
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/000000/barbell.png">
-    
-    <!-- Link to external CSS -->
     <link rel="stylesheet" href="styles.css">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -58,21 +55,7 @@
                     </div>
                     <select id="activeRoutineSelect" class="w-full bg-zinc-950 border border-zinc-700 text-yellow-500 font-semibold rounded p-2 mb-4 focus:outline-none focus:border-yellow-500 transition"></select>
                     <div id="routineChecklist" class="space-y-4 hidden"></div>
-                    <div id="customSetContainer">
-                        <div class="flex items-center gap-2 my-4">
-                            <div class="h-px bg-zinc-800 flex-1"></div>
-                            <span class="text-xs text-zinc-500 font-bold tracking-widest uppercase">Custom Set</span>
-                            <div class="h-px bg-zinc-800 flex-1"></div>
-                        </div>
-                        <div class="space-y-3">
-                            <input id="exercise" type="text" placeholder="Exercise Name" class="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-sm focus:outline-none focus:border-yellow-500 transition">
-                            <div class="grid grid-cols-2 gap-3">
-                                <input id="weight" type="number" placeholder="Weight (lbs)" class="bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-sm focus:outline-none focus:border-yellow-500 transition">
-                                <input id="reps" type="number" placeholder="Reps" class="bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-sm focus:outline-none focus:border-yellow-500 transition">
-                            </div>
-                            <button id="logCustomSetBtn" class="w-full bg-zinc-800 hover:bg-zinc-700 text-yellow-500 border border-zinc-700 font-bold p-2.5 rounded-lg transition">Log Custom Set</button>
-                        </div>
-                    </div>
+                    <!-- The "Custom Set" container that was here has been removed -->
                 </div>
                 <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800">
                     <h2 class="text-lg font-bold text-gray-200 mb-3">Completed Log</h2>
