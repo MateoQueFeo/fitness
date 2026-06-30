@@ -38,9 +38,8 @@
             
             <!-- ⏱️ Automated Timer & Metronome Widget -->
             <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800 mb-6">
-                <!-- Top Row: Label & Metronome -->
-                <div class="flex justify-between items-center mb-3 pb-3 border-b border-zinc-800/50">
-                    <span class="text-sm font-semibold text-gray-400">⏱️ Auto-Timer</span>
+                <!-- Top Row: Metronome Only -->
+                <div class="flex justify-end items-center mb-3 pb-3 border-b border-zinc-800/50">
                     <button id="metronomeBtn" onclick="toggleMetronome()" class="text-xs bg-zinc-800 border border-zinc-700 text-gray-400 px-3 py-1.5 rounded hover:text-yellow-500 transition font-bold">
                         🎵 Metronome: OFF
                     </button>
@@ -152,14 +151,11 @@
         // DATA BACKUP TO GOOGLE DRIVE
         // -----------------------
         function backupData() {
-            // Converts logs into a JSON file format
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(workoutLogs));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
             downloadAnchorNode.setAttribute("download", `gym-log-backup-${new Date().toISOString().slice(0,10)}.json`);
             document.body.appendChild(downloadAnchorNode); 
-            
-            // This triggers the native Android download/save-to-drive prompt
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
         }
@@ -190,8 +186,6 @@
                 }
             };
             reader.readAsText(file);
-            
-            // Reset the input so the same file can be loaded again if needed
             event.target.value = '';
         }
 
