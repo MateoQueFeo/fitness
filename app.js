@@ -1,6 +1,6 @@
-// Self-invoking function to prevent global scope pollution
+
 (function() {
-    // --- INDEXEDDB DATABASE HELPER ---
+    
     let db;
     const DB_NAME = 'GymLogDB';
     const DB_VERSION = 2;
@@ -25,7 +25,7 @@
         });
     }
 
-    // --- SERVICE WORKER REGISTRATION ---
+    
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')
@@ -34,7 +34,7 @@
         });
     }
 
-    // --- STATE MANAGEMENT & DATA ---
+    
     let workoutLogs = [];
     let workoutRoutines = [];
     let timerInstance = null;
@@ -133,7 +133,7 @@
         modalTitle: document.getElementById('modalTitle'), modalBody: document.getElementById('modalBody'), modalCloseBtn: document.getElementById('modalCloseBtn'),
     };
 
-    // --- TOAST NOTIFICATION SYSTEM ---
+    
     function showToast(message, type = 'info') {
         const container = document.getElementById('toastContainer');
         if (!container) return;
@@ -244,7 +244,7 @@
         downloadAnchorNode.remove();
     }
     
-    // --- [NEW] ROBUST RESTORE BACKUP FUNCTION ---
+    
     async function restoreBackup(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -688,7 +688,7 @@
     function updateChart() {
         if (progressChart) progressChart.destroy();
         const selectedExercise = DOMElements.exerciseSelect.value;
-        // CORRECTED: Added a guard clause to prevent crash on empty selection
+        
         if (!selectedExercise) return;
         const filteredLogs = workoutLogs.filter(log => log.exercise.toLowerCase().trim() === selectedExercise);
         const maxWeightPerDate = {}, max1RmPerDate = {};
@@ -764,7 +764,7 @@
         });
     }
 
-    // --- INIT FUNCTION ---
+    
     async function init() {
         try {
             await openDB();
