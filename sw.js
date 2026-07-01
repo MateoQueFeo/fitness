@@ -3,7 +3,7 @@ const CACHE_NAME = 'gym-log-v5';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css',
+  './style.css',
   './app.js',
   './manifest.json',
   'https://cdn.tailwindcss.com',
