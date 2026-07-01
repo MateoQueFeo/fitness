@@ -59,8 +59,8 @@
     let metronomeAudioCtx = null;
     let progressChart = null;
     let wakeLock = null;
+    let timerEndTime = null; // For accurate timer
 
-    // CORRECTED: Added all missing exercises from default routines.
     const exerciseInfo = {
         'Side Lunge': { title: 'Side Lunge (Lateral Lunge)', body: `<p>A unilateral exercise targeting the inner/outer thighs, glutes, and quads.</p><strong>Key Points:</strong><ul><li>Keep your chest up and back straight.</li><li>Step out to one side, keeping the trailing leg straight.</li><li>Lower your hips down and back, as if sitting in a chair.</li></ul>`},
         '30-degree Incline Press': { title: '30-Degree Incline Press', body: `<p>This press variation emphasizes the upper (clavicular) head of the pectoralis major.</p><strong>Key Points:</strong><ul><li>Set the bench to a low incline (around 30 degrees).</li><li>Keep your shoulder blades retracted on the bench.</li><li>Lower the weight to your upper chest, then press back up.</li></ul>`},
@@ -152,6 +152,7 @@
         downloadAnchorNode.remove();
     }
     
+    // CORRECTED: Added robust error handling
     async function restoreBackup(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -159,8 +160,18 @@
         reader.onload = async function(e) {
             try {
                 const importedData = JSON.parse(e.target.result);
-                let logsToImport = (importedData.logs && Array.isArray(importedData.logs)) ? importedData.logs : [];
-                let routinesToImport = (importedData.routines && Array.isArray(importedData.routines)) ? importedData.routines : [];
+
+                // NEW: Strict structure validation
+                if (!importedData || typeof importedData !== 'object') {
+                    throw new Error("Invalid file format: Data is not a JSON object.");
+                }
+                if (!Array.isArray(importedData.logs) || !Array.isArray(importedData.routines)) {
+                    throw new Error("Invalid backup structure: Missing 'logs' or 'routines' arrays.");
+                }
+
+                let logsToImport = importedData.logs;
+                let routinesToImport = importedData.routines;
+
                 if (logsToImport.length > 0) {
                     const tx = db.transaction(LOG_STORE_NAME, 'readwrite');
                     const store = tx.objectStore(LOG_STORE_NAME);
@@ -178,7 +189,8 @@
                 fullRender();
                 alert("Backup loaded successfully!");
             } catch (err) {
-                alert("Error reading backup file.");
+                // NEW: More descriptive error messages
+                alert(`Error reading backup file: ${err.message || "Invalid format."}`);
                 console.error(err);
             } finally {
                 event.target.value = '';
@@ -229,24 +241,41 @@
         DOMElements.timerDisplay.innerText = `${String(Math.floor(currentSecondsRemaining / 60)).padStart(2, '0')}:${String(currentSecondsRemaining % 60).padStart(2, '0')}`;
     }
     
+    // CORRECTED: Accurate timer logic
     function startTimer() {
         clearInterval(timerInstance);
         requestWakeLock();
+        
+        // Calculate the exact timestamp when the timer should end
+        timerEndTime = Date.now() + (currentSecondsRemaining * 1000);
+        
         timerInstance = setInterval(() => {
-            currentSecondsRemaining--;
-            if (currentSecondsRemaining <= 0) {
+            const now = Date.now();
+            // Calculate remaining seconds based on the actual time difference
+            const remaining = Math.round((timerEndTime - now) / 1000);
+            
+            if (remaining <= 0) {
                 clearInterval(timerInstance);
                 timerInstance = null;
                 releaseWakeLock();
                 alertUser();
                 currentSecondsRemaining = defaultSeconds;
+            } else {
+                currentSecondsRemaining = remaining;
             }
             updateTimerDisplay();
-        }, 1000);
+        }, 250); // Checking more frequently (250ms) makes the UI feel more responsive
     }
     
+    // CORRECTED: Accurate timer logic
     function addTime(seconds) {
-        currentSecondsRemaining += seconds;
+        if (timerInstance) {
+            // If running, push the target end time forward
+            timerEndTime += (seconds * 1000);
+            currentSecondsRemaining += seconds;
+        } else {
+            currentSecondsRemaining += seconds;
+        }
         updateTimerDisplay();
         if (!timerInstance) {
             startTimer();
@@ -258,6 +287,7 @@
     function resetTimer() {
         clearInterval(timerInstance);
         timerInstance = null;
+        timerEndTime = null;
         releaseWakeLock();
         currentSecondsRemaining = defaultSeconds;
         updateTimerDisplay();
@@ -562,11 +592,25 @@
         alert("Routine saved!");
     }
     
+    // CORRECTED: More efficient DOM manipulation
     function deleteRoutine(id) {
         if (!confirm("Delete this routine?")) return;
+        
         workoutRoutines = workoutRoutines.filter(r => r.id !== id);
         saveRoutines();
-        renderRoutines();
+        
+        // NEW: Targeted DOM removal instead of calling renderRoutines()
+        const deleteBtn = DOMElements.routineList.querySelector(`button[data-id="${id}"]`);
+        if (deleteBtn) {
+            // Remove the parent container of the routine
+            deleteBtn.closest('.bg-zinc-800').remove();
+        }
+        
+        // Handle empty state gracefully
+        if (workoutRoutines.length === 0) {
+            DOMElements.routineList.innerHTML = '<p class="text-zinc-500 text-sm">No saved routines.</p>';
+        }
+    
         populateRoutineDropdown();
     }
     
@@ -632,6 +676,7 @@
         });
     }
     
+    // CORRECTED: Removed automatic metronome toggle
     function completeStep(index, exerciseName) {
         const weightInput = document.getElementById(`wt-${index}`);
         const repsInput = document.getElementById(`rp-${index}`);
@@ -643,7 +688,7 @@
         if (DOMElements.autoTimerCheck.checked) {
             resetTimer();
             startTimer();
-            if (metronomeInterval) toggleMetronome();
+            // REMOVED: if (metronomeInterval) toggleMetronome();
         }
         const stepDiv = document.getElementById(`step-${index}`);
         const btn = document.getElementById(`btn-complete-${index}`);
