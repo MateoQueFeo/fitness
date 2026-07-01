@@ -1,15 +1,22 @@
 // sw.js - Service Worker for Offline Gym Use
 
 // Increment the version number to trigger the update
-const CACHE_NAME = 'gym-log-v3'; 
+const CACHE_NAME = 'gym-log-v4';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './app.js',
+  './manifest.json',
   'https://cdn.tailwindcss.com',
   'https://cdn.jsdelivr.net/npm/chart.js',
-  'https://img.icons8.com/color/192/000000/barbell.png'
+  // Caching all icon sizes specified in manifest.json for full PWA support
+  'https://img.icons8.com/color/48/000000/barbell.png',
+  'https://img.icons8.com/color/72/000000/barbell.png',
+  'https://img.icons8.com/color/96/000000/barbell.png',
+  'https://img.icons8.com/color/144/000000/barbell.png',
+  'https://img.icons8.com/color/192/000000/barbell.png',
+  'https://img.icons8.com/color/512/000000/barbell.png'
 ];
 
 // The 'install' event is fired when the service worker is first installed.

@@ -3,7 +3,7 @@
     // --- INDEXEDDB DATABASE HELPER ---
     let db;
     const DB_NAME = 'GymLogDB';
-    // MODIFIED: Incremented DB_VERSION to force an upgrade and clear old data.
+    // DB_VERSION can be incremented for future, safe migrations
     const DB_VERSION = 2;
     const LOG_STORE_NAME = 'workoutLogs';
 
@@ -11,23 +11,20 @@
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-            // MODIFIED: This function now handles upgrades by deleting the old,
-            // potentially corrupt data store before creating a new one.
+            // CORRECTED: This function is now non-destructive. It will only create the
+            // object store if it doesn't already exist, preventing data loss on upgrade.
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
                 console.log('Database upgrade needed...');
                 
-                // If the old store exists, delete it to ensure a clean slate.
-                if (db.objectStoreNames.contains(LOG_STORE_NAME)) {
-                    console.log('Deleting old workoutLogs store...');
-                    db.deleteObjectStore(LOG_STORE_NAME);
+                // If the store does NOT exist, create it. This is a safe operation.
+                if (!db.objectStoreNames.contains(LOG_STORE_NAME)) {
+                    console.log('Creating new workoutLogs store...');
+                    const store = db.createObjectStore(LOG_STORE_NAME, { keyPath: 'id' });
+                    store.createIndex('date', 'date', { unique: false });
+                    store.createIndex('exercise', 'exercise', { unique: false });
                 }
-
-                console.log('Creating new workoutLogs store...');
-                const store = db.createObjectStore(LOG_STORE_NAME, { keyPath: 'id' });
-                store.createIndex('date', 'date', { unique: false });
-                store.createIndex('exercise', 'exercise', { unique: false });
-                console.log('Database setup complete.');
+                console.log('Database setup/upgrade complete.');
             };
 
             request.onerror = (event) => {
@@ -63,10 +60,18 @@
     let progressChart = null;
     let wakeLock = null;
 
+    // CORRECTED: Added all missing exercises from default routines.
     const exerciseInfo = {
         'Side Lunge': { title: 'Side Lunge (Lateral Lunge)', body: `<p>A unilateral exercise targeting the inner/outer thighs, glutes, and quads.</p><strong>Key Points:</strong><ul><li>Keep your chest up and back straight.</li><li>Step out to one side, keeping the trailing leg straight.</li><li>Lower your hips down and back, as if sitting in a chair.</li></ul>`},
         '30-degree Incline Press': { title: '30-Degree Incline Press', body: `<p>This press variation emphasizes the upper (clavicular) head of the pectoralis major.</p><strong>Key Points:</strong><ul><li>Set the bench to a low incline (around 30 degrees).</li><li>Keep your shoulder blades retracted on the bench.</li><li>Lower the weight to your upper chest, then press back up.</li></ul>`},
-        'Bent-Over Row': { title: 'Bent-Over Row', body: `<p>A compound exercise for building a strong back, targeting the lats, rhomboids, and rear delts.</p><strong>Key Points:</strong><ul><li>Hinge at your hips, keeping your back straight.</li><li>Pull the weight towards your lower chest/upper abdomen.</li><li>Squeeze your shoulder blades together at the top.</li></ul>`}
+        'Bent-Over Row': { title: 'Bent-Over Row', body: `<p>A compound exercise for building a strong back, targeting the lats, rhomboids, and rear delts.</p><strong>Key Points:</strong><ul><li>Hinge at your hips, keeping your back straight.</li><li>Pull the weight towards your lower chest/upper abdomen.</li><li>Squeeze your shoulder blades together at the top.</li></ul>`},
+        'Walking Lunge': { title: 'Walking Lunge', body: `<p>A dynamic lunge variation that improves balance, coordination, and single-leg strength.</p><strong>Key Points:</strong><ul><li>Step forward, lowering your hips until both knees are bent at a 90-degree angle.</li><li>Push off the back foot to bring it forward and step into the next lunge.</li><li>Keep your torso upright and core engaged.</li></ul>`},
+        'Back Extension': { title: 'Back Extension', body: `<p>An exercise that targets the lower back (erector spinae) as well as the glutes and hamstrings.</p><strong>Key Points:</strong><ul><li>Hinge at the hips, keeping your back straight.</li><li>Raise your torso until your body forms a straight line.</li><li>Avoid hyperextending your back at the top.</li></ul>`},
+        'Pull-Up': { title: 'Pull-Up', body: `<p>A challenging bodyweight exercise that builds upper body pulling strength, primarily targeting the lats and biceps.</p><strong>Key Points:</strong><ul><li>Start from a dead hang with arms fully extended.</li><li>Pull your chest towards the bar.</li><li>Lower yourself in a controlled manner.</li></ul>`},
+        'Lat Pulldown': { title: 'Lat Pulldown', body: `<p>A machine-based alternative to pull-ups, targeting the latissimus dorsi muscles of the back.</p><strong>Key Points:</strong><ul><li>Keep your chest up and shoulders down.</li><li>Pull the bar down to your upper chest.</li><li>Squeeze your shoulder blades together.</li></ul>`},
+        'Curtsy Lunge': { title: 'Curtsy Lunge', body: `<p>A lunge variation that targets the gluteus medius and inner thighs more than a traditional lunge.</p><strong>Key Points:</strong><ul><li>Step one leg behind you and to the opposite side, as if doing a curtsy.</li><li>Keep your front knee aligned with your front ankle.</li><li>Maintain an upright torso.</li></ul>`},
+        'Arnold Press': { title: 'Arnold Press', body: `<p>A dumbbell shoulder press variation that incorporates rotation to target all three heads of the deltoid.</p><strong>Key Points:</strong><ul><li>Start with palms facing you, then rotate to palms-forward as you press overhead.</li><li>Perform the movement in a smooth, controlled arc.</li></ul>`},
+        'Romanian Deadlift': { title: 'Romanian Deadlift (RDL)', body: `<p>A hamstring-focused hinge movement that also works the glutes and lower back.</p><strong>Key Points:</strong><ul><li>Keep a slight bend in your knees but do not squat.</li><li>Hinge at your hips, keeping the weight close to your legs.</li><li>Maintain a flat back throughout the movement.</li></ul>`}
     };
 
     // --- DOM ELEMENTS MAP ---
