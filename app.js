@@ -1,4 +1,3 @@
-
 (function() {
     
     let db;
@@ -257,8 +256,13 @@
                     throw new Error("Invalid backup structure. It must contain 'logs' and 'routines' arrays.");
                 }
                 for (const log of importedData.logs) {
-                    if (typeof log.id === 'undefined' || typeof log.date === 'undefined' || typeof log.exercise === 'undefined') {
+                    if (typeof log.id === 'undefined' || typeof log.date === 'undefined' || typeof log.exercise === 'undefined' || typeof log.weight === 'undefined' || typeof log.reps === 'undefined') {
                         throw new Error(`Corrupted log data found. Entry with ID ${log.id || '(unknown)'} is missing required fields.`);
+                    }
+                }
+                 for (const routine of importedData.routines) {
+                    if (typeof routine.id === 'undefined' || typeof routine.name === 'undefined' || !Array.isArray(routine.exercises)) {
+                        throw new Error(`Corrupted routine data found. Entry with ID ${routine.id || '(unknown)'} is missing required fields.`);
                     }
                 }
             } catch (err) {
@@ -306,17 +310,19 @@
     }
     
     async function requestWakeLock() {
-        try {
-            if ('wakeLock' in navigator && (!wakeLock || wakeLock.released)) {
-                wakeLock = await navigator.wakeLock.request('screen');
+        if ('wakeLock' in navigator) {
+            try {
+                if (!wakeLock || wakeLock.released) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.warn(`Wake Lock error: ${err.name}, ${err.message}`);
             }
-        } catch (err) {
-            console.warn(`Wake Lock error: ${err.name}, ${err.message}`);
         }
     }
     
     function releaseWakeLock() {
-        if (wakeLock !== null && !wakeLock.released) {
+        if (wakeLock && !wakeLock.released) {
             wakeLock.release().then(() => { wakeLock = null; });
         }
     }
@@ -480,7 +486,10 @@
             const parentGroup = el.parentElement;
             el.remove();
             if (parentGroup && parentGroup.children.length === 0 && parentGroup.parentElement.className.includes('border-l-2')) {
-                parentGroup.parentElement.remove();
+                const dateGroup = parentGroup.parentElement;
+                if(dateGroup.querySelectorAll('[data-log-id]').length === 0) {
+                     dateGroup.remove();
+                }
             }
         });
 
@@ -760,6 +769,12 @@
         DOMElements.exerciseRowsContainer.addEventListener('click', (e) => {
             if (e.target.closest('.remove-row-btn')) {
                 e.target.closest('.flex.items-start').remove();
+            }
+        });
+        
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                releaseWakeLock();
             }
         });
     }
