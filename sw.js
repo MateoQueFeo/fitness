@@ -1,4 +1,3 @@
-
 const CACHE_NAME = 'gym-log-v5'; 
 const ASSETS = [
   './',
@@ -7,14 +6,7 @@ const ASSETS = [
   './app.js',
   './manifest.json',
   'https://cdn.tailwindcss.com',
-  'https://cdn.jsdelivr.net/npm/chart.js',
-  
-  'https://img.icons8.com/color/48/000000/barbell.png',
-  'https://img.icons8.com/color/72/000000/barbell.png',
-  'https://img.icons8.com/color/96/000000/barbell.png',
-  'https://img.icons8.com/color/144/000000/barbell.png',
-  'https://img.icons8.com/color/192/000000/barbell.png',
-  'https://img.icons8.com/color/512/000000/barbell.png'
+  'https://cdn.jsdelivr.net/npm/chart.js'
 ];
 
 const CDN_URLS = [
@@ -22,7 +14,7 @@ const CDN_URLS = [
     'https://cdn.jsdelivr.net/npm/chart.js'
 ];
 
-
+// 📥 Install Event - Pre-cache the App Shell
 self.addEventListener('install', (e) => {
   console.log('[Service Worker] Installing...');
   e.waitUntil(
@@ -33,7 +25,7 @@ self.addEventListener('install', (e) => {
   );
 });
 
-
+// 🔄 Activate Event - Clean up old caches
 self.addEventListener('activate', (e) => {
   console.log('[Service Worker] Activating...');
   e.waitUntil(
@@ -49,9 +41,8 @@ self.addEventListener('activate', (e) => {
   return self.clients.claim();
 });
 
-
+// 🌐 Fetch Event - Cache first, network fallback with CDN revalidation
 self.addEventListener('fetch', (e) => {
-    
     if (CDN_URLS.some(url => e.request.url.startsWith(url))) {
         e.respondWith(
             caches.open(CACHE_NAME).then(cache => {
@@ -60,13 +51,11 @@ self.addEventListener('fetch', (e) => {
                         cache.put(e.request, networkResponse.clone());
                         return networkResponse;
                     });
-                    
                     return cachedResponse || fetchPromise;
                 });
             })
         );
     } else {
-        
         e.respondWith(
             caches.match(e.request).then((response) => {
                 return response || fetch(e.request);
