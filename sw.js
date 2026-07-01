@@ -1,10 +1,10 @@
 // sw.js - Service Worker for Offline Gym Use
 
 // Increment the version number to trigger the update
-const CACHE_NAME = 'gym-log-v2'; 
+const CACHE_NAME = 'gym-log-v3'; 
 const ASSETS = [
   './',
-  './workout_tracker.html',
+  './index.html',
   './styles.css',
   './app.js',
   'https://cdn.tailwindcss.com',
