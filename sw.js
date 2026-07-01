@@ -1,7 +1,7 @@
 // sw.js - Service Worker for Offline Gym Use
 
 // Increment the version number to trigger the update
-const CACHE_NAME = 'gym-log-v4';
+const CACHE_NAME = 'gym-log-v5'; // Version updated
 const ASSETS = [
   './',
   './index.html',
@@ -19,6 +19,11 @@ const ASSETS = [
   'https://img.icons8.com/color/512/000000/barbell.png'
 ];
 
+const CDN_URLS = [
+    'https://cdn.tailwindcss.com',
+    'https://cdn.jsdelivr.net/npm/chart.js'
+];
+
 // The 'install' event is fired when the service worker is first installed.
 self.addEventListener('install', (e) => {
   console.log('[Service Worker] Installing...');
@@ -31,13 +36,11 @@ self.addEventListener('install', (e) => {
 });
 
 // The 'activate' event is fired when the service worker is activated.
-// This is the perfect place to clean up old caches.
 self.addEventListener('activate', (e) => {
   console.log('[Service Worker] Activating...');
   e.waitUntil(
     caches.keys().then((keyList) => {
       return Promise.all(keyList.map((key) => {
-        // If a cache key is not the current CACHE_NAME, delete it.
         if (key !== CACHE_NAME) {
           console.log('[Service Worker] Removing old cache:', key);
           return caches.delete(key);
@@ -45,18 +48,31 @@ self.addEventListener('activate', (e) => {
       }));
     })
   );
-  // This line ensures the new service worker takes control immediately.
   return self.clients.claim();
 });
 
 // The 'fetch' event intercepts network requests.
 self.addEventListener('fetch', (e) => {
-  console.log('[Service Worker] Fetching:', e.request.url);
-  e.respondWith(
-    // Try to find the request in the cache first.
-    caches.match(e.request).then((response) => {
-      // If it's in the cache, return it. Otherwise, fetch it from the network.
-      return response || fetch(e.request);
-    })
-  );
+    // IMPROVEMENT: Use Stale-While-Revalidate for CDN assets.
+    if (CDN_URLS.some(url => e.request.url.startsWith(url))) {
+        e.respondWith(
+            caches.open(CACHE_NAME).then(cache => {
+                return cache.match(e.request).then(cachedResponse => {
+                    const fetchPromise = fetch(e.request).then(networkResponse => {
+                        cache.put(e.request, networkResponse.clone());
+                        return networkResponse;
+                    });
+                    // Return cached response immediately, and update cache in background.
+                    return cachedResponse || fetchPromise;
+                });
+            })
+        );
+    } else {
+        // IMPROVEMENT: Use Cache-First for all other (local) assets.
+        e.respondWith(
+            caches.match(e.request).then((response) => {
+                return response || fetch(e.request);
+            })
+        );
+    }
 });

@@ -3,37 +3,22 @@
     // --- INDEXEDDB DATABASE HELPER ---
     let db;
     const DB_NAME = 'GymLogDB';
-    // DB_VERSION can be incremented for future, safe migrations
     const DB_VERSION = 2;
     const LOG_STORE_NAME = 'workoutLogs';
 
     function openDB() {
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-            // CORRECTED: This function is now non-destructive. It will only create the
-            // object store if it doesn't already exist, preventing data loss on upgrade.
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
-                console.log('Database upgrade needed...');
-                
-                // If the store does NOT exist, create it. This is a safe operation.
                 if (!db.objectStoreNames.contains(LOG_STORE_NAME)) {
-                    console.log('Creating new workoutLogs store...');
                     const store = db.createObjectStore(LOG_STORE_NAME, { keyPath: 'id' });
                     store.createIndex('date', 'date', { unique: false });
                     store.createIndex('exercise', 'exercise', { unique: false });
                 }
-                console.log('Database setup/upgrade complete.');
             };
-
-            request.onerror = (event) => {
-                console.error('Database error:', event.target.errorCode);
-                reject(event.target.errorCode);
-            };
-
+            request.onerror = (event) => reject(event.target.errorCode);
             request.onsuccess = (event) => {
-                console.log('Database opened successfully.');
                 db = event.target.result;
                 resolve();
             };
@@ -59,7 +44,7 @@
     let metronomeAudioCtx = null;
     let progressChart = null;
     let wakeLock = null;
-    let timerEndTime = null; // For accurate timer
+    let timerEndTime = null;
 
     const exerciseInfo = {
         'Side Lunge': { title: 'Side Lunge (Lateral Lunge)', body: `<p>A unilateral exercise targeting the inner/outer thighs, glutes, and quads.</p><strong>Key Points:</strong><ul><li>Keep your chest up and back straight.</li><li>Step out to one side, keeping the trailing leg straight.</li><li>Lower your hips down and back, as if sitting in a chair.</li></ul>`},
@@ -74,7 +59,6 @@
         'Romanian Deadlift': { title: 'Romanian Deadlift (RDL)', body: `<p>A hamstring-focused hinge movement that also works the glutes and lower back.</p><strong>Key Points:</strong><ul><li>Keep a slight bend in your knees but do not squat.</li><li>Hinge at your hips, keeping the weight close to your legs.</li><li>Maintain a flat back throughout the movement.</li></ul>`}
     };
 
-    // --- DOM ELEMENTS MAP ---
     const DOMElements = {
         restoreInput: document.getElementById('restoreInput'), loadButton: document.getElementById('loadButton'), saveButton: document.getElementById('saveButton'),
         navTabs: document.querySelectorAll('.nav-tab'), views: document.querySelectorAll('.view-container'),
@@ -89,7 +73,6 @@
         modalTitle: document.getElementById('modalTitle'), modalBody: document.getElementById('modalBody'), modalCloseBtn: document.getElementById('modalCloseBtn'),
     };
 
-    // --- MODAL CONTROL ---
     function openExerciseModal(exerciseName) {
         const info = exerciseInfo[exerciseName];
         DOMElements.modalTitle.textContent = info ? info.title : exerciseName;
@@ -109,7 +92,6 @@
         setTimeout(() => DOMElements.exerciseModal.classList.add('hidden'), 200);
     }
     
-    // --- DATA & PERSISTENCE ---
     const getISODate = () => new Date().toISOString().slice(0, 10);
 
     async function loadData() {
@@ -134,7 +116,9 @@
             { id: 8, name: "8. Pull-Up", warmups: ["Scapular Pull-ups (10 reps)", "Dead Hang (20s)"], exercises: [ { name: "Pull-Up", type: "warm-up", pct: 33, reps: "6" }, { name: "Pull-Up", type: "ramp", pct: 66, reps: "6" }, { name: "Pull-Up", type: "working", pct: 80, reps: "amrap" }, { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Doorway Lat Stretch (30s per side)", "Bicep Wall Stretch (30s per side)"] },
             { id: 9, name: "9. Lat Pulldown", warmups: ["Scapular Retractions (15 reps)", "Light Band Pulldowns (15 reps)"], exercises: [ { name: "Lat Pulldown", type: "warm-up", pct: 33, reps: "6" }, { name: "Lat Pulldown", type: "ramp", pct: 66, reps: "6" }, { name: "Lat Pulldown", type: "working", pct: 80, reps: "amrap" }, { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Doorway Lat Stretch (30s per side)", "Bicep Wall Stretch (30s per side)"] }
         ];
-        workoutRoutines = JSON.parse(localStorage.getItem('workoutRoutines')) || defaultRoutines;
+        // IMPROVEMENT: Correctly fall back to defaults if stored routines are empty.
+        const storedRoutines = JSON.parse(localStorage.getItem('workoutRoutines'));
+        workoutRoutines = (storedRoutines && storedRoutines.length > 0) ? storedRoutines : defaultRoutines;
     }
 
     function saveRoutines() {
@@ -152,7 +136,6 @@
         downloadAnchorNode.remove();
     }
     
-    // CORRECTED: Added robust error handling
     async function restoreBackup(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -160,36 +143,27 @@
         reader.onload = async function(e) {
             try {
                 const importedData = JSON.parse(e.target.result);
-
-                // NEW: Strict structure validation
-                if (!importedData || typeof importedData !== 'object') {
-                    throw new Error("Invalid file format: Data is not a JSON object.");
-                }
-                if (!Array.isArray(importedData.logs) || !Array.isArray(importedData.routines)) {
+                if (!importedData || typeof importedData !== 'object' || !Array.isArray(importedData.logs) || !Array.isArray(importedData.routines)) {
                     throw new Error("Invalid backup structure: Missing 'logs' or 'routines' arrays.");
                 }
 
-                let logsToImport = importedData.logs;
-                let routinesToImport = importedData.routines;
-
-                if (logsToImport.length > 0) {
+                if (importedData.logs.length > 0) {
                     const tx = db.transaction(LOG_STORE_NAME, 'readwrite');
                     const store = tx.objectStore(LOG_STORE_NAME);
-                    await Promise.all(logsToImport.map(log => new Promise((res, rej) => {
+                    await Promise.all(importedData.logs.map(log => new Promise((res, rej) => {
                         const req = store.put(log);
                         req.onsuccess = res;
                         req.onerror = rej;
                     })));
                 }
-                if (routinesToImport.length > 0) {
-                    workoutRoutines = routinesToImport;
+                if (importedData.routines.length > 0) {
+                    workoutRoutines = importedData.routines;
                     saveRoutines();
                 }
                 await loadData();
                 fullRender();
                 alert("Backup loaded successfully!");
             } catch (err) {
-                // NEW: More descriptive error messages
                 alert(`Error reading backup file: ${err.message || "Invalid format."}`);
                 console.error(err);
             } finally {
@@ -211,16 +185,12 @@
     
     function releaseWakeLock() {
         if (wakeLock !== null && !wakeLock.released) {
-            wakeLock.release().then(() => {
-                wakeLock = null;
-            });
+            wakeLock.release().then(() => { wakeLock = null; });
         }
     }
     
     function switchView(targetView) {
-        DOMElements.views.forEach(view => {
-            view.classList.toggle('hidden', view.id !== `view-${targetView}`);
-        });
+        DOMElements.views.forEach(view => view.classList.toggle('hidden', view.id !== `view-${targetView}`));
         DOMElements.navTabs.forEach(tab => {
             const isTarget = tab.dataset.view === targetView;
             tab.classList.toggle('border-yellow-500', isTarget);
@@ -228,32 +198,28 @@
             tab.classList.toggle('border-transparent', !isTarget);
             tab.classList.toggle('text-gray-500', !isTarget);
         });
-        if (targetView === 'history') renderHistory();
         if (targetView === 'track') renderTodaysLogs();
-        if (targetView === 'progress') {
-            populateExerciseDropdown();
-            updateChart();
+        if (targetView === 'history') renderHistory();
+        if (targetView === 'progress') { populateExerciseDropdown(); updateChart(); }
+        // IMPROVEMENT: Add first row only when needed, not on initial load.
+        if (targetView === 'routines') {
+            renderRoutines();
+            if (DOMElements.exerciseRowsContainer.children.length === 0) {
+                addExerciseRow();
+            }
         }
-        if (targetView === 'routines') renderRoutines();
     }
     
     function updateTimerDisplay() {
         DOMElements.timerDisplay.innerText = `${String(Math.floor(currentSecondsRemaining / 60)).padStart(2, '0')}:${String(currentSecondsRemaining % 60).padStart(2, '0')}`;
     }
     
-    // CORRECTED: Accurate timer logic
     function startTimer() {
         clearInterval(timerInstance);
         requestWakeLock();
-        
-        // Calculate the exact timestamp when the timer should end
         timerEndTime = Date.now() + (currentSecondsRemaining * 1000);
-        
         timerInstance = setInterval(() => {
-            const now = Date.now();
-            // Calculate remaining seconds based on the actual time difference
-            const remaining = Math.round((timerEndTime - now) / 1000);
-            
+            const remaining = Math.round((timerEndTime - Date.now()) / 1000);
             if (remaining <= 0) {
                 clearInterval(timerInstance);
                 timerInstance = null;
@@ -264,24 +230,19 @@
                 currentSecondsRemaining = remaining;
             }
             updateTimerDisplay();
-        }, 250); // Checking more frequently (250ms) makes the UI feel more responsive
+        }, 250);
     }
     
-    // CORRECTED: Accurate timer logic
     function addTime(seconds) {
+        // IMPROVEMENT: Simplified logic, only starts timer if not already running.
         if (timerInstance) {
-            // If running, push the target end time forward
             timerEndTime += (seconds * 1000);
             currentSecondsRemaining += seconds;
         } else {
             currentSecondsRemaining += seconds;
+            startTimer();
         }
         updateTimerDisplay();
-        if (!timerInstance) {
-            startTimer();
-        } else {
-            requestWakeLock();
-        }
     }
     
     function resetTimer() {
@@ -296,8 +257,7 @@
     function alertUser() {
         try {
             const audioCtx = new(window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioCtx.createOscillator(),
-                gainNode = audioCtx.createGain();
+            const oscillator = audioCtx.createOscillator(), gainNode = audioCtx.createGain();
             oscillator.type = 'sine';
             oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
             gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime);
@@ -305,22 +265,13 @@
             gainNode.connect(audioCtx.destination);
             oscillator.start();
             setTimeout(() => oscillator.stop(), 800);
-        } catch (e) {
-            console.warn("Audio play blocked", e);
-        }
+        } catch (e) { console.warn("Audio play blocked", e); }
     }
     
     function accurateInterval(fn, time) {
         let nextAt, timeout;
-        const wrapper = () => {
-            nextAt += time;
-            timeout = setTimeout(wrapper, nextAt - Date.now());
-            fn();
-        };
-        const start = () => {
-            nextAt = Date.now() + time;
-            timeout = setTimeout(wrapper, time);
-        };
+        const wrapper = () => { nextAt += time; timeout = setTimeout(wrapper, nextAt - Date.now()); fn(); };
+        const start = () => { nextAt = Date.now() + time; timeout = setTimeout(wrapper, time); };
         const stop = () => clearTimeout(timeout);
         return { start, stop };
     }
@@ -345,8 +296,7 @@
         try {
             if (!metronomeAudioCtx) metronomeAudioCtx = new(window.AudioContext || window.webkitAudioContext)();
             if (metronomeAudioCtx.state === 'suspended') metronomeAudioCtx.resume();
-            const oscillator = metronomeAudioCtx.createOscillator(),
-                gainNode = metronomeAudioCtx.createGain();
+            const oscillator = metronomeAudioCtx.createOscillator(), gainNode = metronomeAudioCtx.createGain();
             oscillator.type = 'square';
             oscillator.frequency.setValueAtTime(1000, metronomeAudioCtx.currentTime);
             gainNode.gain.setValueAtTime(1.0, metronomeAudioCtx.currentTime);
@@ -355,9 +305,7 @@
             gainNode.connect(metronomeAudioCtx.destination);
             oscillator.start();
             oscillator.stop(metronomeAudioCtx.currentTime + 0.05);
-        } catch (e) {
-            console.warn("Metronome click failed", e);
-        }
+        } catch (e) { console.warn("Metronome click failed", e); }
     }
     
     function getEstimated1RM(exerciseName) {
@@ -396,71 +344,58 @@
             request.onerror = reject;
         });
         const logIndex = workoutLogs.findIndex(log => log.id === id);
-        if (logIndex > -1) {
-            workoutLogs.splice(logIndex, 1);
-        }
-        const elementToRemoveToday = DOMElements.logList.querySelector(`[data-log-id="${id}"]`);
-        if (elementToRemoveToday) elementToRemoveToday.remove();
-        const elementToRemoveHistory = DOMElements.historyList.querySelector(`[data-log-id="${id}"]`);
-        if (elementToRemoveHistory) {
-            const parentGroup = elementToRemoveHistory.parentElement;
-            elementToRemoveHistory.remove();
-            if (parentGroup && parentGroup.children.length === 0) {
+        if (logIndex > -1) workoutLogs.splice(logIndex, 1);
+        
+        document.querySelectorAll(`[data-log-id="${id}"]`).forEach(el => {
+            const parentGroup = el.parentElement;
+            el.remove();
+            if (parentGroup && parentGroup.children.length === 0 && parentGroup.parentElement.className.includes('border-l-2')) {
                 parentGroup.parentElement.remove();
             }
-        }
+        });
+
         if (DOMElements.logList.children.length === 0) renderTodaysLogs();
         if (DOMElements.historyList.children.length === 0) renderHistory();
         populateExerciseDropdown();
         updateChart();
     }
     
-    function createLogItemDOM(log) {
+    function createLogItemDOM(log, isHistory = false) {
         const item = document.createElement('div');
-        item.className = "flex justify-between items-center bg-zinc-800 p-3 rounded-lg border border-zinc-700/60";
         item.setAttribute('data-log-id', log.id);
-        const exerciseDiv = document.createElement('div');
-        exerciseDiv.className = "font-semibold text-white";
-        exerciseDiv.textContent = log.exercise;
-        const controlsDiv = document.createElement('div');
-        controlsDiv.className = "flex items-center gap-4";
-        const statsSpan = document.createElement('span');
-        statsSpan.className = "text-yellow-500 font-bold";
-        statsSpan.textContent = `${log.weight} lbs × ${log.reps}`;
-        const deleteButton = document.createElement('button');
-        deleteButton.className = "text-red-400 hover:text-red-500 font-bold px-2 py-1 text-sm transition";
-        deleteButton.title = "Delete set";
-        deleteButton.innerHTML = '✕';
-        deleteButton.onclick = () => deleteLog(log.id);
-        controlsDiv.append(statsSpan, deleteButton);
-        item.append(exerciseDiv, controlsDiv);
+        const deleteBtnHTML = `<button data-action="delete-log" data-id="${log.id}" class="text-red-400 hover:text-red-500 font-bold px-1.5 text-xs transition">✕</button>`;
+
+        if (isHistory) {
+            item.className = "flex justify-between items-center bg-zinc-800 p-2.5 rounded-lg border border-zinc-700/50 text-sm mt-1.5";
+            item.innerHTML = `<span class="text-gray-300 font-medium">${log.exercise}</span><div class="flex items-center gap-3"><span class="text-yellow-500 font-semibold">${log.weight} lbs × ${log.reps}</span>${deleteBtnHTML}</div>`;
+        } else {
+            item.className = "flex justify-between items-center bg-zinc-800 p-3 rounded-lg border border-zinc-700/60";
+            item.innerHTML = `<div class="font-semibold text-white">${log.exercise}</div><div class="flex items-center gap-4"><span class="text-yellow-500 font-bold">${log.weight} lbs × ${log.reps}</span>${deleteBtnHTML.replace('text-xs', 'text-sm')}</div>`;
+        }
         return item;
     }
     
     function addLogToView(log) {
         const placeholder = DOMElements.logList.querySelector('p');
         if (placeholder) placeholder.remove();
-        const logItem = createLogItemDOM(log);
-        DOMElements.logList.prepend(logItem);
+        DOMElements.logList.prepend(createLogItemDOM(log));
     }
     
     function renderTodaysLogs() {
         const list = DOMElements.logList;
         list.innerHTML = '';
-        const today = getISODate();
-        const todaysLogs = workoutLogs.filter(log => log.date === today);
+        const todaysLogs = workoutLogs.filter(log => log.date === getISODate());
         if (todaysLogs.length === 0) {
             list.innerHTML = '<p class="text-zinc-500 text-sm text-center py-2">No sets logged yet today.</p>';
         } else {
-            todaysLogs.forEach(log => list.appendChild(createLogItemDOM(log)));
+            todaysLogs.forEach(log => list.appendChild(createLogItemDOM(log, false)));
         }
     }
     
     function renderHistory() {
         const list = DOMElements.historyList;
         list.innerHTML = '';
-        const today = getISODate();
-        const pastLogs = workoutLogs.filter(log => log.date !== today);
+        const pastLogs = workoutLogs.filter(log => log.date !== getISODate());
         if (pastLogs.length === 0) {
             list.innerHTML = '<p class="text-zinc-500 text-sm text-center py-4">No past history found.</p>';
             return;
@@ -470,31 +405,16 @@
             groups[log.date].push(log);
             return groups;
         }, {});
-        const sortedDates = Object.keys(groupedLogs).sort((a, b) => new Date(b) - new Date(a));
-        for (const date of sortedDates) {
-            const logs = groupedLogs[date];
+        Object.keys(groupedLogs).sort((a, b) => new Date(b) - new Date(a)).forEach(date => {
             const dateGroup = document.createElement('div');
             dateGroup.className = "mb-4 border-l-2 border-yellow-500 pl-3";
-            const dateHeader = document.createElement('h3');
-            dateHeader.className = "text-gray-400 font-bold text-sm mb-2";
-            dateHeader.textContent = new Date(date + 'T00:00:00').toLocaleDateString(undefined, {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
+            dateGroup.innerHTML = `<h3 class="text-gray-400 font-bold text-sm mb-2">${new Date(date + 'T00:00:00').toLocaleDateString(undefined, {weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'})}</h3>`;
             const setsContainer = document.createElement('div');
             setsContainer.className = "space-y-1";
-            logs.forEach(log => {
-                const setItem = document.createElement('div');
-                setItem.className = "flex justify-between items-center bg-zinc-800 p-2.5 rounded-lg border border-zinc-700/50 text-sm mt-1.5";
-                setItem.setAttribute('data-log-id', log.id);
-                setItem.innerHTML = `<span class="text-gray-300 font-medium">${log.exercise}</span><div class="flex items-center gap-3"><span class="text-yellow-500 font-semibold">${log.weight} lbs × ${log.reps}</span><button data-action="delete-log" data-id="${log.id}" class="text-red-400 hover:text-red-500 font-bold px-1.5 text-xs transition">✕</button></div>`;
-                setsContainer.appendChild(setItem);
-            });
-            dateGroup.append(dateHeader, setsContainer);
+            groupedLogs[date].forEach(log => setsContainer.appendChild(createLogItemDOM(log, true)));
+            dateGroup.appendChild(setsContainer);
             list.appendChild(dateGroup);
-        }
+        });
     }
     
     function populateRoutineDropdown() {
@@ -541,7 +461,8 @@
                     const computedWeight = Math.round((estimated1RM * (ex.pct / 100)) / 5) * 5;
                     defaultWeight = computedWeight;
                 }
-                setsHtml += `<div id="step-${index}" class="flex items-center gap-3 py-3 border-b border-zinc-700/50 last:border-0 check-anim transition-all"><div class="flex-1 min-w-0"><div class="flex gap-2 items-center"><input type="number" id="wt-${index}" value="${defaultWeight}" placeholder="lbs" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition"><span class="text-zinc-600 text-sm font-bold">×</span><input type="number" id="rp-${index}" value="${defaultReps}" placeholder="reps" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition"></div></div><div class="flex gap-1.5 items-stretch h-10 flex-shrink-0 self-end"><button data-action="skip" data-index="${index}" class="w-10 text-zinc-500 hover:text-red-400 bg-zinc-950 rounded border border-zinc-800 transition flex items-center justify-center" title="Skip Set"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg></button><button id="btn-complete-${index}" data-action="complete" data-index="${index}" data-exercise-name="${ex.name.replace(/"/g, '&quot;')}" class="w-12 bg-zinc-950 border border-zinc-600 rounded flex items-center justify-center text-transparent hover:border-yellow-500 hover:text-yellow-500/30 transition check-anim" title="Complete Set"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></button></div></div>`;
+                // IMPROVEMENT: Added aria-label for accessibility
+                setsHtml += `<div id="step-${index}" class="flex items-center gap-3 py-3 border-b border-zinc-700/50 last:border-0 check-anim transition-all"><div class="flex-1 min-w-0"><div class="flex gap-2 items-center"><input type="number" id="wt-${index}" value="${defaultWeight}" placeholder="lbs" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition"><span class="text-zinc-600 text-sm font-bold">×</span><input type="number" id="rp-${index}" value="${defaultReps}" placeholder="reps" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition"></div></div><div class="flex gap-1.5 items-stretch h-10 flex-shrink-0 self-end"><button data-action="skip" data-index="${index}" class="w-10 text-zinc-500 hover:text-red-400 bg-zinc-950 rounded border border-zinc-800 transition flex items-center justify-center" title="Skip Set" aria-label="Skip Set"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg></button><button id="btn-complete-${index}" data-action="complete" data-index="${index}" data-exercise-name="${ex.name.replace(/"/g, '&quot;')}" class="w-12 bg-zinc-950 border border-zinc-600 rounded flex items-center justify-center text-transparent hover:border-yellow-500 hover:text-yellow-500/30 transition check-anim" title="Complete Set" aria-label="Complete Set"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></button></div></div>`;
             });
             container.insertAdjacentHTML('beforeend', `<div class="bg-zinc-800 rounded-xl border border-zinc-700 overflow-hidden shadow-sm"><div class="bg-zinc-700/30 px-4 py-2 border-b border-zinc-700 flex justify-between items-center"><button class="font-bold text-gray-200 exercise-info-btn" data-action="show-info" data-exercise-name="${group.name.replace(/"/g, '&quot;')}">${group.name}</button>${estimated1RM ? `<span class="text-xs font-bold text-yellow-500 bg-zinc-900 px-2 py-1 rounded-md">e1RM: ${Math.round(estimated1RM)} lbs</span>` : ''}</div><div class="px-3">${setsHtml}</div></div>`);
         });
@@ -557,8 +478,7 @@
     
     function addExerciseRow() {
         const template = document.getElementById('exerciseRowTemplate');
-        const clone = template.content.cloneNode(true);
-        DOMElements.exerciseRowsContainer.appendChild(clone);
+        DOMElements.exerciseRowsContainer.appendChild(template.content.cloneNode(true));
     }
     
     function saveRoutine() {
@@ -572,15 +492,12 @@
             const exType = row.querySelector('.ex-type').value;
             const exPct = row.querySelector('.ex-pct').value.trim();
             const exReps = row.querySelector('.ex-reps').value.trim();
-            if (!exName || !exPct || !exReps) {
-                return alert("Please fill out Name, %1RM, and Reps for all exercises.");
-            }
+            if (!exName || !exPct || !exReps) return alert("Please fill out Name, %1RM, and Reps for all exercises.");
             exercises.push({ name: exName, type: exType, pct: parseInt(exPct), reps: exReps });
         }
         const warmups = DOMElements.warmupInput.value.split('\n').filter(Boolean);
         const cooldowns = DOMElements.cooldownInput.value.split('\n').filter(Boolean);
-        const routine = { id: Date.now(), name, warmups, exercises, cooldowns };
-        workoutRoutines.push(routine);
+        workoutRoutines.push({ id: Date.now(), name, warmups, exercises, cooldowns });
         saveRoutines();
         DOMElements.routineName.value = '';
         DOMElements.warmupInput.value = '';
@@ -592,25 +509,15 @@
         alert("Routine saved!");
     }
     
-    // CORRECTED: More efficient DOM manipulation
     function deleteRoutine(id) {
         if (!confirm("Delete this routine?")) return;
-        
         workoutRoutines = workoutRoutines.filter(r => r.id !== id);
         saveRoutines();
-        
-        // NEW: Targeted DOM removal instead of calling renderRoutines()
         const deleteBtn = DOMElements.routineList.querySelector(`button[data-id="${id}"]`);
-        if (deleteBtn) {
-            // Remove the parent container of the routine
-            deleteBtn.closest('.bg-zinc-800').remove();
-        }
-        
-        // Handle empty state gracefully
+        if (deleteBtn) deleteBtn.closest('.bg-zinc-800').remove();
         if (workoutRoutines.length === 0) {
             DOMElements.routineList.innerHTML = '<p class="text-zinc-500 text-sm">No saved routines.</p>';
         }
-    
         populateRoutineDropdown();
     }
     
@@ -624,8 +531,7 @@
         workoutRoutines.forEach(routine => {
             const item = document.createElement('div');
             item.className = "bg-zinc-800 p-3 rounded-lg border border-zinc-700";
-            const exList = routine.exercises.map(ex => `<span class="inline-block bg-zinc-700 text-gray-300 text-xs px-2 py-1 rounded mt-2 mr-1 border border-zinc-600">${ex.name} (${ex.type})</span>`).join('');
-            item.innerHTML = `<div class="flex justify-between items-start"><div class="font-bold text-yellow-500">${routine.name}</div><button data-action="delete-routine" data-id="${routine.id}" class="text-red-400 hover:text-red-500 font-bold px-2 text-sm transition">✕</button></div><div class="mt-1">${exList}</div>`;
+            item.innerHTML = `<div class="flex justify-between items-start"><div class="font-bold text-yellow-500">${routine.name}</div><button data-action="delete-routine" data-id="${routine.id}" class="text-red-400 hover:text-red-500 font-bold px-2 text-sm transition">✕</button></div><div class="mt-1">${routine.exercises.map(ex => `<span class="inline-block bg-zinc-700 text-gray-300 text-xs px-2 py-1 rounded mt-2 mr-1 border border-zinc-600">${ex.name} (${ex.type})</span>`).join('')}</div>`;
             list.appendChild(item);
         });
     }
@@ -641,29 +547,22 @@
             opt.textContent = ex.charAt(0).toUpperCase() + ex.slice(1);
             select.appendChild(opt);
         });
-        if (uniqueExercises.includes(currentSelection)) {
-            select.value = currentSelection;
-        }
+        if (uniqueExercises.includes(currentSelection)) select.value = currentSelection;
     }
     
     function updateChart() {
-        const selectedExercise = DOMElements.exerciseSelect.value;
         if (progressChart) progressChart.destroy();
+        const selectedExercise = DOMElements.exerciseSelect.value;
         if (!selectedExercise) return;
         const filteredLogs = workoutLogs.filter(log => log.exercise.toLowerCase().trim() === selectedExercise);
-        const maxWeightPerDate = {};
-        const max1RmPerDate = {};
+        const maxWeightPerDate = {}, max1RmPerDate = {};
         filteredLogs.forEach(log => {
             const weight = parseFloat(log.weight);
             const reps = parseInt(log.reps);
             if (isNaN(weight) || isNaN(reps) || weight <= 0 || reps <= 0) return;
             const estimated1RM = Math.round(weight * (1 + (reps / 30)));
-            if (!maxWeightPerDate[log.date] || weight > maxWeightPerDate[log.date]) {
-                maxWeightPerDate[log.date] = weight;
-            }
-            if (!max1RmPerDate[log.date] || estimated1RM > max1RmPerDate[log.date]) {
-                max1RmPerDate[log.date] = estimated1RM;
-            }
+            if (!maxWeightPerDate[log.date] || weight > maxWeightPerDate[log.date]) maxWeightPerDate[log.date] = weight;
+            if (!max1RmPerDate[log.date] || estimated1RM > max1RmPerDate[log.date]) max1RmPerDate[log.date] = estimated1RM;
         });
         const sortedDates = Object.keys(maxWeightPerDate).sort((a, b) => new Date(a) - new Date(b));
         const weightData = sortedDates.map(date => maxWeightPerDate[date]);
@@ -676,20 +575,12 @@
         });
     }
     
-    // CORRECTED: Removed automatic metronome toggle
     function completeStep(index, exerciseName) {
-        const weightInput = document.getElementById(`wt-${index}`);
-        const repsInput = document.getElementById(`rp-${index}`);
-        const weight = weightInput.value.trim();
-        const reps = repsInput.value.trim();
+        const weight = document.getElementById(`wt-${index}`).value.trim();
+        const reps = document.getElementById(`rp-${index}`).value.trim();
         if (!weight || !reps) return alert('Please input actual weight and reps.');
-        const log = { id: Date.now(), date: getISODate(), exercise: exerciseName, weight, reps };
-        addLog(log);
-        if (DOMElements.autoTimerCheck.checked) {
-            resetTimer();
-            startTimer();
-            // REMOVED: if (metronomeInterval) toggleMetronome();
-        }
+        addLog({ id: Date.now(), date: getISODate(), exercise: exerciseName, weight, reps });
+        if (DOMElements.autoTimerCheck.checked) { resetTimer(); startTimer(); }
         const stepDiv = document.getElementById(`step-${index}`);
         const btn = document.getElementById(`btn-complete-${index}`);
         stepDiv.classList.add('opacity-30', 'pointer-events-none');
@@ -715,25 +606,23 @@
         DOMElements.saveRoutineBtn.addEventListener('click', saveRoutine);
         DOMElements.modalCloseBtn.addEventListener('click', closeExerciseModal);
         DOMElements.modalOverlay.addEventListener('click', closeExerciseModal);
-        DOMElements.routineChecklist.addEventListener('click', (e) => {
+        
+        document.body.addEventListener('click', (e) => {
             const button = e.target.closest('button');
             if (!button) return;
-            const { action, index, exerciseName } = button.dataset;
+
+            const { action, id, index, exerciseName } = button.dataset;
+            if (action === 'delete-log') deleteLog(parseInt(id, 10));
+            if (action === 'delete-routine') deleteRoutine(parseInt(id, 10));
             if (action === 'show-info') openExerciseModal(exerciseName);
             if (action === 'complete') completeStep(index, exerciseName);
             if (action === 'skip') skipStep(index);
         });
+
         DOMElements.exerciseRowsContainer.addEventListener('click', (e) => {
-            const button = e.target.closest('.remove-row-btn');
-            if (button) button.parentElement.remove();
-        });
-        DOMElements.routineList.addEventListener('click', (e) => {
-            const button = e.target.closest('button[data-action="delete-routine"]');
-            if (button) deleteRoutine(parseInt(button.dataset.id, 10));
-        });
-        DOMElements.historyList.addEventListener('click', e => {
-            const button = e.target.closest('button[data-action="delete-log"]');
-            if (button) deleteLog(parseInt(button.dataset.id, 10));
+            if (e.target.closest('.remove-row-btn')) {
+                e.target.closest('.flex.items-start').remove();
+            }
         });
     }
 
@@ -743,12 +632,11 @@
             await openDB();
             await loadData();
             setupEventListeners();
-            switchView('track');
+            switchView('track'); // Start on the 'track' view
             populateRoutineDropdown();
             updateTimerDisplay();
             renderTodaysLogs();
             renderRoutines();
-            addExerciseRow();
         } catch (error) {
             console.error('Initialization failed:', error);
             alert('There was a problem loading the database. Please try refreshing the page.');

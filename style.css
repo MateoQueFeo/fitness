@@ -1,5 +1,6 @@
 /* (Existing styles remain the same) */
 .no-scrollbar::-webkit-scrollbar { display: none; }
+/* IMPROVEMENT: Standard property placed after vendor-prefixed properties */
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .check-anim { transition: all 0.2s ease-in-out; }
 
