@@ -46,115 +46,75 @@
     let wakeLock = null;
     let timerEndTime = null;
 
-    // --- [UPDATED] exerciseInfo with structured data ---
     const exerciseInfo = {
         'Side Lunge': {
             title: 'Side Lunge (Lateral Lunge)',
             body: {
                 description: 'A unilateral exercise targeting the inner/outer thighs, glutes, and quads.',
-                points: [
-                    'Keep your chest up and back straight.',
-                    'Step out to one side, keeping the trailing leg straight.',
-                    'Lower your hips down and back, as if sitting in a chair.'
-                ]
+                points: ['Keep your chest up and back straight.', 'Step out to one side, keeping the trailing leg straight.', 'Lower your hips down and back, as if sitting in a chair.']
             }
         },
         '30-degree Incline Press': {
             title: '30-Degree Incline Press',
             body: {
                 description: 'This press variation emphasizes the upper (clavicular) head of the pectoralis major.',
-                points: [
-                    'Set the bench to a low incline (around 30 degrees).',
-                    'Keep your shoulder blades retracted on the bench.',
-                    'Lower the weight to your upper chest, then press back up.'
-                ]
+                points: ['Set the bench to a low incline (around 30 degrees).', 'Keep your shoulder blades retracted on the bench.', 'Lower the weight to your upper chest, then press back up.']
             }
         },
         'Bent-Over Row': {
             title: 'Bent-Over Row',
             body: {
                 description: 'A compound exercise for building a strong back, targeting the lats, rhomboids, and rear delts.',
-                points: [
-                    'Hinge at your hips, keeping your back straight.',
-                    'Pull the weight towards your lower chest/upper abdomen.',
-                    'Squeeze your shoulder blades together at the top.'
-                ]
+                points: ['Hinge at your hips, keeping your back straight.', 'Pull the weight towards your lower chest/upper abdomen.', 'Squeeze your shoulder blades together at the top.']
             }
         },
         'Walking Lunge': {
             title: 'Walking Lunge',
             body: {
                 description: 'A dynamic lunge variation that improves balance, coordination, and single-leg strength.',
-                points: [
-                    'Step forward, lowering your hips until both knees are bent at a 90-degree angle.',
-                    'Push off the back foot to bring it forward and step into the next lunge.',
-                    'Keep your torso upright and core engaged.'
-                ]
+                points: ['Step forward, lowering your hips until both knees are bent at a 90-degree angle.', 'Push off the back foot to bring it forward and step into the next lunge.', 'Keep your torso upright and core engaged.']
             }
         },
         'Back Extension': {
             title: 'Back Extension',
             body: {
                 description: 'An exercise that targets the lower back (erector spinae) as well as the glutes and hamstrings.',
-                points: [
-                    'Hinge at the hips, keeping your back straight.',
-                    'Raise your torso until your body forms a straight line.',
-                    'Avoid hyperextending your back at the top.'
-                ]
+                points: ['Hinge at the hips, keeping your back straight.', 'Raise your torso until your body forms a straight line.', 'Avoid hyperextending your back at the top.']
             }
         },
         'Pull-Up': {
             title: 'Pull-Up',
             body: {
                 description: 'A challenging bodyweight exercise that builds upper body pulling strength, primarily targeting the lats and biceps.',
-                points: [
-                    'Start from a dead hang with arms fully extended.',
-                    'Pull your chest towards the bar.',
-                    'Lower yourself in a controlled manner.'
-                ]
+                points: ['Start from a dead hang with arms fully extended.', 'Pull your chest towards the bar.', 'Lower yourself in a controlled manner.']
             }
         },
         'Lat Pulldown': {
             title: 'Lat Pulldown',
             body: {
                 description: 'A machine-based alternative to pull-ups, targeting the latissimus dorsi muscles of the back.',
-                points: [
-                    'Keep your chest up and shoulders down.',
-                    'Pull the bar down to your upper chest.',
-                    'Squeeze your shoulder blades together.'
-                ]
+                points: ['Keep your chest up and shoulders down.', 'Pull the bar down to your upper chest.', 'Squeeze your shoulder blades together.']
             }
         },
         'Curtsy Lunge': {
             title: 'Curtsy Lunge',
             body: {
                 description: 'A lunge variation that targets the gluteus medius and inner thighs more than a traditional lunge.',
-                points: [
-                    'Step one leg behind you and to the opposite side, as if doing a curtsy.',
-                    'Keep your front knee aligned with your front ankle.',
-                    'Maintain an upright torso.'
-                ]
+                points: ['Step one leg behind you and to the opposite side, as if doing a curtsy.', 'Keep your front knee aligned with your front ankle.', 'Maintain an upright torso.']
             }
         },
         'Arnold Press': {
             title: 'Arnold Press',
             body: {
                 description: 'A dumbbell shoulder press variation that incorporates rotation to target all three heads of the deltoid.',
-                points: [
-                    'Start with palms facing you, then rotate to palms-forward as you press overhead.',
-                    'Perform the movement in a smooth, controlled arc.'
-                ]
+                points: ['Start with palms facing you, then rotate to palms-forward as you press overhead.', 'Perform the movement in a smooth, controlled arc.']
             }
         },
         'Romanian Deadlift': {
             title: 'Romanian Deadlift (RDL)',
             body: {
                 description: 'A hamstring-focused hinge movement that also works the glutes and lower back.',
-                points: [
-                    'Keep a slight bend in your knees but do not squat.',
-                    'Hinge at your hips, keeping the weight close to your legs.',
-                    'Maintain a flat back throughout the movement.'
-                ]
+                points: ['Keep a slight bend in your knees but do not squat.', 'Hinge at your hips, keeping the weight close to your legs.', 'Maintain a flat back throughout the movement.']
             }
         }
     };
@@ -173,32 +133,46 @@
         modalTitle: document.getElementById('modalTitle'), modalBody: document.getElementById('modalBody'), modalCloseBtn: document.getElementById('modalCloseBtn'),
     };
 
-    // --- [REFACTORED] openExerciseModal to be secure against XSS ---
+    // --- TOAST NOTIFICATION SYSTEM ---
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = `toast-entry pointer-events-auto flex items-center justify-between p-3.5 rounded-xl shadow-lg border text-sm font-semibold transition-all duration-300`;
+        
+        if (type === 'error') {
+            toast.className += ' bg-red-950/90 border-red-800 text-red-200';
+        } else if (type === 'success') {
+            toast.className += ' bg-emerald-950/90 border-emerald-800 text-emerald-200';
+        } else {
+            toast.className += ' bg-zinc-900/95 border-zinc-700 text-yellow-500';
+        }
+
+        toast.textContent = message;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.replace('toast-entry', 'toast-exit');
+            toast.addEventListener('animationend', () => toast.remove());
+        }, 3000);
+    }
+
     function openExerciseModal(exerciseName) {
         const info = exerciseInfo[exerciseName];
         const modalBody = DOMElements.modalBody;
-
-        // 1. Clear any previous content safely
         modalBody.innerHTML = '';
-
-        // 2. Set the title
         DOMElements.modalTitle.textContent = info ? info.title : exerciseName;
-
-        // 3. Build the body content programmatically
         if (info && info.body) {
-            // Create and append the description paragraph
             if (info.body.description) {
                 const p = document.createElement('p');
                 p.textContent = info.body.description;
                 modalBody.appendChild(p);
             }
-
-            // Create and append the list of key points
             if (info.body.points && info.body.points.length > 0) {
                 const strong = document.createElement('strong');
                 strong.textContent = 'Key Points:';
                 modalBody.appendChild(strong);
-
                 const ul = document.createElement('ul');
                 info.body.points.forEach(pointText => {
                     const li = document.createElement('li');
@@ -208,13 +182,10 @@
                 modalBody.appendChild(ul);
             }
         } else {
-            // Fallback message if no info is found
             const p = document.createElement('p');
             p.textContent = 'No information is available for this exercise yet.';
             modalBody.appendChild(p);
         }
-
-        // 4. Show the modal
         DOMElements.exerciseModal.classList.remove('hidden');
         setTimeout(() => {
             DOMElements.modalOverlay.classList.replace('opacity-0', 'opacity-100');
@@ -273,39 +244,63 @@
         downloadAnchorNode.remove();
     }
     
+    // --- [NEW] ROBUST RESTORE BACKUP FUNCTION ---
     async function restoreBackup(event) {
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = async function(e) {
+            let importedData;
             try {
-                const importedData = JSON.parse(e.target.result);
+                importedData = JSON.parse(e.target.result);
                 if (!importedData || typeof importedData !== 'object' || !Array.isArray(importedData.logs) || !Array.isArray(importedData.routines)) {
-                    throw new Error("Invalid backup structure: Missing 'logs' or 'routines' arrays.");
+                    throw new Error("Invalid backup structure. It must contain 'logs' and 'routines' arrays.");
                 }
-
-                if (importedData.logs.length > 0) {
-                    const tx = db.transaction(LOG_STORE_NAME, 'readwrite');
-                    const store = tx.objectStore(LOG_STORE_NAME);
-                    await Promise.all(importedData.logs.map(log => new Promise((res, rej) => {
+                for (const log of importedData.logs) {
+                    if (typeof log.id === 'undefined' || typeof log.date === 'undefined' || typeof log.exercise === 'undefined') {
+                        throw new Error(`Corrupted log data found. Entry with ID ${log.id || '(unknown)'} is missing required fields.`);
+                    }
+                }
+            } catch (err) {
+                console.error('Backup validation failed:', err);
+                showToast(err.message || 'The selected file is not a valid backup.', 'error');
+                event.target.value = '';
+                return;
+            }
+            if (!confirm("This will replace all existing data with the backup. Are you sure?")) {
+                event.target.value = '';
+                return;
+            }
+            try {
+                const tx = db.transaction(LOG_STORE_NAME, 'readwrite');
+                const store = tx.objectStore(LOG_STORE_NAME);
+                await new Promise((resolve, reject) => {
+                    const req = store.clear();
+                    req.onsuccess = resolve;
+                    req.onerror = () => reject(new Error("Failed to clear existing logs."));
+                });
+                for (const log of importedData.logs) {
+                    await new Promise((resolve, reject) => {
                         const req = store.put(log);
-                        req.onsuccess = res;
-                        req.onerror = rej;
-                    })));
+                        req.onerror = () => reject(new Error(`Failed to add log ID: ${log.id}`));
+                        req.onsuccess = resolve;
+                    });
                 }
-                if (importedData.routines.length > 0) {
-                    workoutRoutines = importedData.routines;
-                    saveRoutines();
-                }
+                workoutRoutines = importedData.routines;
+                saveRoutines();
                 await loadData();
                 fullRender();
-                alert("Backup loaded successfully!");
+                showToast("Backup restored successfully!", "success");
             } catch (err) {
-                alert(`Error reading backup file: ${err.message || "Invalid format."}`);
-                console.error(err);
+                console.error('Database restore transaction failed:', err);
+                showToast('Database error. Restore failed and no data was changed.', 'error');
             } finally {
                 event.target.value = '';
             }
+        };
+        reader.onerror = () => {
+            showToast('Failed to read the selected file.', 'error');
+            event.target.value = '';
         };
         reader.readAsText(file);
     }
@@ -617,16 +612,22 @@
     
     function saveRoutine() {
         const name = DOMElements.routineName.value.trim();
-        if (!name) return alert("Please provide a template name.");
+        if (!name) {
+            return showToast("Please provide a template name.", "error");
+        }
         const exerciseRows = DOMElements.exerciseRowsContainer.children;
-        if (exerciseRows.length === 0) return alert("Please add at least one exercise step.");
+        if (exerciseRows.length === 0) {
+            return showToast("Please add at least one exercise step.", "error");
+        }
         const exercises = [];
         for (const row of exerciseRows) {
             const exName = row.querySelector('.ex-name').value.trim();
             const exType = row.querySelector('.ex-type').value;
             const exPct = row.querySelector('.ex-pct').value.trim();
             const exReps = row.querySelector('.ex-reps').value.trim();
-            if (!exName || !exPct || !exReps) return alert("Please fill out Name, %1RM, and Reps for all exercises.");
+            if (!exName || !exPct || !exReps) {
+                return showToast("Please fill out Name, %1RM, and Reps for all exercises.", "error");
+            }
             exercises.push({ name: exName, type: exType, pct: parseInt(exPct), reps: exReps });
         }
         const warmups = DOMElements.warmupInput.value.split('\n').filter(Boolean);
@@ -640,7 +641,7 @@
         addExerciseRow();
         renderRoutines();
         populateRoutineDropdown();
-        alert("Routine saved!");
+        showToast("Routine saved!", "success");
     }
     
     function deleteRoutine(id) {
@@ -712,7 +713,9 @@
     function completeStep(index, exerciseName) {
         const weight = document.getElementById(`wt-${index}`).value.trim();
         const reps = document.getElementById(`rp-${index}`).value.trim();
-        if (!weight || !reps) return alert('Please input actual weight and reps.');
+        if (!weight || !reps) {
+            return showToast('Please input actual weight and reps.', 'error');
+        }
         addLog({ id: Date.now(), date: getISODate(), exercise: exerciseName, weight, reps });
         if (DOMElements.autoTimerCheck.checked) { resetTimer(); startTimer(); }
         const stepDiv = document.getElementById(`step-${index}`);
@@ -766,14 +769,14 @@
             await openDB();
             await loadData();
             setupEventListeners();
-            switchView('track'); // Start on the 'track' view
+            switchView('track');
             populateRoutineDropdown();
             updateTimerDisplay();
             renderTodaysLogs();
             renderRoutines();
         } catch (error) {
             console.error('Initialization failed:', error);
-            alert('There was a problem loading the database. Please try refreshing the page.');
+            showToast('There was a problem loading the database. Please try refreshing.', 'error');
         }
     }
 
