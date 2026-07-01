@@ -46,17 +46,117 @@
     let wakeLock = null;
     let timerEndTime = null;
 
+    // --- [UPDATED] exerciseInfo with structured data ---
     const exerciseInfo = {
-        'Side Lunge': { title: 'Side Lunge (Lateral Lunge)', body: `<p>A unilateral exercise targeting the inner/outer thighs, glutes, and quads.</p><strong>Key Points:</strong><ul><li>Keep your chest up and back straight.</li><li>Step out to one side, keeping the trailing leg straight.</li><li>Lower your hips down and back, as if sitting in a chair.</li></ul>`},
-        '30-degree Incline Press': { title: '30-Degree Incline Press', body: `<p>This press variation emphasizes the upper (clavicular) head of the pectoralis major.</p><strong>Key Points:</strong><ul><li>Set the bench to a low incline (around 30 degrees).</li><li>Keep your shoulder blades retracted on the bench.</li><li>Lower the weight to your upper chest, then press back up.</li></ul>`},
-        'Bent-Over Row': { title: 'Bent-Over Row', body: `<p>A compound exercise for building a strong back, targeting the lats, rhomboids, and rear delts.</p><strong>Key Points:</strong><ul><li>Hinge at your hips, keeping your back straight.</li><li>Pull the weight towards your lower chest/upper abdomen.</li><li>Squeeze your shoulder blades together at the top.</li></ul>`},
-        'Walking Lunge': { title: 'Walking Lunge', body: `<p>A dynamic lunge variation that improves balance, coordination, and single-leg strength.</p><strong>Key Points:</strong><ul><li>Step forward, lowering your hips until both knees are bent at a 90-degree angle.</li><li>Push off the back foot to bring it forward and step into the next lunge.</li><li>Keep your torso upright and core engaged.</li></ul>`},
-        'Back Extension': { title: 'Back Extension', body: `<p>An exercise that targets the lower back (erector spinae) as well as the glutes and hamstrings.</p><strong>Key Points:</strong><ul><li>Hinge at the hips, keeping your back straight.</li><li>Raise your torso until your body forms a straight line.</li><li>Avoid hyperextending your back at the top.</li></ul>`},
-        'Pull-Up': { title: 'Pull-Up', body: `<p>A challenging bodyweight exercise that builds upper body pulling strength, primarily targeting the lats and biceps.</p><strong>Key Points:</strong><ul><li>Start from a dead hang with arms fully extended.</li><li>Pull your chest towards the bar.</li><li>Lower yourself in a controlled manner.</li></ul>`},
-        'Lat Pulldown': { title: 'Lat Pulldown', body: `<p>A machine-based alternative to pull-ups, targeting the latissimus dorsi muscles of the back.</p><strong>Key Points:</strong><ul><li>Keep your chest up and shoulders down.</li><li>Pull the bar down to your upper chest.</li><li>Squeeze your shoulder blades together.</li></ul>`},
-        'Curtsy Lunge': { title: 'Curtsy Lunge', body: `<p>A lunge variation that targets the gluteus medius and inner thighs more than a traditional lunge.</p><strong>Key Points:</strong><ul><li>Step one leg behind you and to the opposite side, as if doing a curtsy.</li><li>Keep your front knee aligned with your front ankle.</li><li>Maintain an upright torso.</li></ul>`},
-        'Arnold Press': { title: 'Arnold Press', body: `<p>A dumbbell shoulder press variation that incorporates rotation to target all three heads of the deltoid.</p><strong>Key Points:</strong><ul><li>Start with palms facing you, then rotate to palms-forward as you press overhead.</li><li>Perform the movement in a smooth, controlled arc.</li></ul>`},
-        'Romanian Deadlift': { title: 'Romanian Deadlift (RDL)', body: `<p>A hamstring-focused hinge movement that also works the glutes and lower back.</p><strong>Key Points:</strong><ul><li>Keep a slight bend in your knees but do not squat.</li><li>Hinge at your hips, keeping the weight close to your legs.</li><li>Maintain a flat back throughout the movement.</li></ul>`}
+        'Side Lunge': {
+            title: 'Side Lunge (Lateral Lunge)',
+            body: {
+                description: 'A unilateral exercise targeting the inner/outer thighs, glutes, and quads.',
+                points: [
+                    'Keep your chest up and back straight.',
+                    'Step out to one side, keeping the trailing leg straight.',
+                    'Lower your hips down and back, as if sitting in a chair.'
+                ]
+            }
+        },
+        '30-degree Incline Press': {
+            title: '30-Degree Incline Press',
+            body: {
+                description: 'This press variation emphasizes the upper (clavicular) head of the pectoralis major.',
+                points: [
+                    'Set the bench to a low incline (around 30 degrees).',
+                    'Keep your shoulder blades retracted on the bench.',
+                    'Lower the weight to your upper chest, then press back up.'
+                ]
+            }
+        },
+        'Bent-Over Row': {
+            title: 'Bent-Over Row',
+            body: {
+                description: 'A compound exercise for building a strong back, targeting the lats, rhomboids, and rear delts.',
+                points: [
+                    'Hinge at your hips, keeping your back straight.',
+                    'Pull the weight towards your lower chest/upper abdomen.',
+                    'Squeeze your shoulder blades together at the top.'
+                ]
+            }
+        },
+        'Walking Lunge': {
+            title: 'Walking Lunge',
+            body: {
+                description: 'A dynamic lunge variation that improves balance, coordination, and single-leg strength.',
+                points: [
+                    'Step forward, lowering your hips until both knees are bent at a 90-degree angle.',
+                    'Push off the back foot to bring it forward and step into the next lunge.',
+                    'Keep your torso upright and core engaged.'
+                ]
+            }
+        },
+        'Back Extension': {
+            title: 'Back Extension',
+            body: {
+                description: 'An exercise that targets the lower back (erector spinae) as well as the glutes and hamstrings.',
+                points: [
+                    'Hinge at the hips, keeping your back straight.',
+                    'Raise your torso until your body forms a straight line.',
+                    'Avoid hyperextending your back at the top.'
+                ]
+            }
+        },
+        'Pull-Up': {
+            title: 'Pull-Up',
+            body: {
+                description: 'A challenging bodyweight exercise that builds upper body pulling strength, primarily targeting the lats and biceps.',
+                points: [
+                    'Start from a dead hang with arms fully extended.',
+                    'Pull your chest towards the bar.',
+                    'Lower yourself in a controlled manner.'
+                ]
+            }
+        },
+        'Lat Pulldown': {
+            title: 'Lat Pulldown',
+            body: {
+                description: 'A machine-based alternative to pull-ups, targeting the latissimus dorsi muscles of the back.',
+                points: [
+                    'Keep your chest up and shoulders down.',
+                    'Pull the bar down to your upper chest.',
+                    'Squeeze your shoulder blades together.'
+                ]
+            }
+        },
+        'Curtsy Lunge': {
+            title: 'Curtsy Lunge',
+            body: {
+                description: 'A lunge variation that targets the gluteus medius and inner thighs more than a traditional lunge.',
+                points: [
+                    'Step one leg behind you and to the opposite side, as if doing a curtsy.',
+                    'Keep your front knee aligned with your front ankle.',
+                    'Maintain an upright torso.'
+                ]
+            }
+        },
+        'Arnold Press': {
+            title: 'Arnold Press',
+            body: {
+                description: 'A dumbbell shoulder press variation that incorporates rotation to target all three heads of the deltoid.',
+                points: [
+                    'Start with palms facing you, then rotate to palms-forward as you press overhead.',
+                    'Perform the movement in a smooth, controlled arc.'
+                ]
+            }
+        },
+        'Romanian Deadlift': {
+            title: 'Romanian Deadlift (RDL)',
+            body: {
+                description: 'A hamstring-focused hinge movement that also works the glutes and lower back.',
+                points: [
+                    'Keep a slight bend in your knees but do not squat.',
+                    'Hinge at your hips, keeping the weight close to your legs.',
+                    'Maintain a flat back throughout the movement.'
+                ]
+            }
+        }
     };
 
     const DOMElements = {
@@ -73,10 +173,48 @@
         modalTitle: document.getElementById('modalTitle'), modalBody: document.getElementById('modalBody'), modalCloseBtn: document.getElementById('modalCloseBtn'),
     };
 
+    // --- [REFACTORED] openExerciseModal to be secure against XSS ---
     function openExerciseModal(exerciseName) {
         const info = exerciseInfo[exerciseName];
+        const modalBody = DOMElements.modalBody;
+
+        // 1. Clear any previous content safely
+        modalBody.innerHTML = '';
+
+        // 2. Set the title
         DOMElements.modalTitle.textContent = info ? info.title : exerciseName;
-        DOMElements.modalBody.innerHTML = info ? info.body : '<p>No information is available for this exercise yet.</p>';
+
+        // 3. Build the body content programmatically
+        if (info && info.body) {
+            // Create and append the description paragraph
+            if (info.body.description) {
+                const p = document.createElement('p');
+                p.textContent = info.body.description;
+                modalBody.appendChild(p);
+            }
+
+            // Create and append the list of key points
+            if (info.body.points && info.body.points.length > 0) {
+                const strong = document.createElement('strong');
+                strong.textContent = 'Key Points:';
+                modalBody.appendChild(strong);
+
+                const ul = document.createElement('ul');
+                info.body.points.forEach(pointText => {
+                    const li = document.createElement('li');
+                    li.textContent = pointText;
+                    ul.appendChild(li);
+                });
+                modalBody.appendChild(ul);
+            }
+        } else {
+            // Fallback message if no info is found
+            const p = document.createElement('p');
+            p.textContent = 'No information is available for this exercise yet.';
+            modalBody.appendChild(p);
+        }
+
+        // 4. Show the modal
         DOMElements.exerciseModal.classList.remove('hidden');
         setTimeout(() => {
             DOMElements.modalOverlay.classList.replace('opacity-0', 'opacity-100');
@@ -116,7 +254,6 @@
             { id: 8, name: "8. Pull-Up", warmups: ["Scapular Pull-ups (10 reps)", "Dead Hang (20s)"], exercises: [ { name: "Pull-Up", type: "warm-up", pct: 33, reps: "6" }, { name: "Pull-Up", type: "ramp", pct: 66, reps: "6" }, { name: "Pull-Up", type: "working", pct: 80, reps: "amrap" }, { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Doorway Lat Stretch (30s per side)", "Bicep Wall Stretch (30s per side)"] },
             { id: 9, name: "9. Lat Pulldown", warmups: ["Scapular Retractions (15 reps)", "Light Band Pulldowns (15 reps)"], exercises: [ { name: "Lat Pulldown", type: "warm-up", pct: 33, reps: "6" }, { name: "Lat Pulldown", type: "ramp", pct: 66, reps: "6" }, { name: "Lat Pulldown", type: "working", pct: 80, reps: "amrap" }, { name: "Straight-Arm Pulldown", type: "isolation", pct: 75, reps: "amrap" }, { name: "Incline Curl", type: "isolation", pct: 75, reps: "amrap" } ], cooldowns: ["Doorway Lat Stretch (30s per side)", "Bicep Wall Stretch (30s per side)"] }
         ];
-        // IMPROVEMENT: Correctly fall back to defaults if stored routines are empty.
         const storedRoutines = JSON.parse(localStorage.getItem('workoutRoutines'));
         workoutRoutines = (storedRoutines && storedRoutines.length > 0) ? storedRoutines : defaultRoutines;
     }
@@ -201,7 +338,6 @@
         if (targetView === 'track') renderTodaysLogs();
         if (targetView === 'history') renderHistory();
         if (targetView === 'progress') { populateExerciseDropdown(); updateChart(); }
-        // IMPROVEMENT: Add first row only when needed, not on initial load.
         if (targetView === 'routines') {
             renderRoutines();
             if (DOMElements.exerciseRowsContainer.children.length === 0) {
@@ -234,7 +370,6 @@
     }
     
     function addTime(seconds) {
-        // IMPROVEMENT: Simplified logic, only starts timer if not already running.
         if (timerInstance) {
             timerEndTime += (seconds * 1000);
             currentSecondsRemaining += seconds;
@@ -461,7 +596,6 @@
                     const computedWeight = Math.round((estimated1RM * (ex.pct / 100)) / 5) * 5;
                     defaultWeight = computedWeight;
                 }
-                // IMPROVEMENT: Added aria-label for accessibility
                 setsHtml += `<div id="step-${index}" class="flex items-center gap-3 py-3 border-b border-zinc-700/50 last:border-0 check-anim transition-all"><div class="flex-1 min-w-0"><div class="flex gap-2 items-center"><input type="number" id="wt-${index}" value="${defaultWeight}" placeholder="lbs" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition"><span class="text-zinc-600 text-sm font-bold">×</span><input type="number" id="rp-${index}" value="${defaultReps}" placeholder="reps" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-sm text-center focus:outline-none focus:border-yellow-500 transition"></div></div><div class="flex gap-1.5 items-stretch h-10 flex-shrink-0 self-end"><button data-action="skip" data-index="${index}" class="w-10 text-zinc-500 hover:text-red-400 bg-zinc-950 rounded border border-zinc-800 transition flex items-center justify-center" title="Skip Set" aria-label="Skip Set"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg></button><button id="btn-complete-${index}" data-action="complete" data-index="${index}" data-exercise-name="${ex.name.replace(/"/g, '&quot;')}" class="w-12 bg-zinc-950 border border-zinc-600 rounded flex items-center justify-center text-transparent hover:border-yellow-500 hover:text-yellow-500/30 transition check-anim" title="Complete Set" aria-label="Complete Set"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></button></div></div>`;
             });
             container.insertAdjacentHTML('beforeend', `<div class="bg-zinc-800 rounded-xl border border-zinc-700 overflow-hidden shadow-sm"><div class="bg-zinc-700/30 px-4 py-2 border-b border-zinc-700 flex justify-between items-center"><button class="font-bold text-gray-200 exercise-info-btn" data-action="show-info" data-exercise-name="${group.name.replace(/"/g, '&quot;')}">${group.name}</button>${estimated1RM ? `<span class="text-xs font-bold text-yellow-500 bg-zinc-900 px-2 py-1 rounded-md">e1RM: ${Math.round(estimated1RM)} lbs</span>` : ''}</div><div class="px-3">${setsHtml}</div></div>`);
