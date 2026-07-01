@@ -688,6 +688,7 @@
     function updateChart() {
         if (progressChart) progressChart.destroy();
         const selectedExercise = DOMElements.exerciseSelect.value;
+        // CORRECTED: Added a guard clause to prevent crash on empty selection
         if (!selectedExercise) return;
         const filteredLogs = workoutLogs.filter(log => log.exercise.toLowerCase().trim() === selectedExercise);
         const maxWeightPerDate = {}, max1RmPerDate = {};
