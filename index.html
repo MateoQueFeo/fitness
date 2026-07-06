@@ -7,7 +7,7 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="LiftTracker">
+    <meta name="apple-mobile-web-app-title" content="WorkoutTracker">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-512.png">
@@ -101,7 +101,6 @@
         
         ::placeholder { color: #6b7280; opacity: 0.8; }
 
-        /* ✅ ADDED: Elegant, non-blocking CSS Toast Notification Container */
         #toast {
             visibility: hidden;
             min-width: 250px;
@@ -135,7 +134,7 @@
 <body>
     
     <div class="header-container">
-        <h1>LiftTracker</h1>
+        <h1>WorkoutTracker</h1>
     </div>
     
     <div class="card timer-card">
@@ -196,11 +195,9 @@
         </div>
     </div>
 
-    <!-- ✅ ADDED: Toast element inject -->
     <div id="toast"></div>
 
     <script>
-        // ✅ ADDED: Cached DOM Element Selectors to eliminate redundant searches
         const timerDisplayEl = document.getElementById('timerDisplay');
         const formTitleEl = document.getElementById('formTitle');
         const exerciseInputEl = document.getElementById('exercise');
@@ -221,7 +218,6 @@
             "Romanian Deadlift", "Front Squat", "Lat Pulldown", "Tricep Extension"
         ];
 
-        // ✅ ADDED: Clean notification dispatcher (no UI-freezing popups!)
         function showToast(message, type = 'info') { 
             toastEl.textContent = message;
             toastEl.className = 'show';
@@ -277,7 +273,7 @@
             const secs = (seconds % 60).toString().padStart(2, '0');
             const timeString = `${mins}:${secs}`;
             timerDisplayEl.innerText = timeString;
-            document.title = (isTimerRunning && seconds > 0) ? `(${timeString}) Resting...` : 'LiftTracker';
+            document.title = (isTimerRunning && seconds > 0) ? `(${timeString}) Resting...` : 'WorkoutTracker';
         }
 
         function playBeep() {
@@ -298,6 +294,7 @@
         let chartInstance = null;
         let editingIndex = null; 
 
+        // ✅ UPDATED: Sorting is now performed only once on initial load.
         window.onload = function() {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('./sw.js')
@@ -305,11 +302,12 @@
                     .catch(err => console.error('Service Worker registration failed:', err));
             }
             
-            // ✅ ADDED: Secure data retrieval logic
             try {
                 const savedData = localStorage.getItem('workoutData');
                 if (savedData) {
                     workouts = JSON.parse(savedData);
+                    // OPTIMIZATION: Sort the data only once after loading it from storage.
+                    workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
                 }
             } catch (e) {
                 console.error("Local Storage parsing failed:", e);
@@ -348,6 +346,7 @@
                 showToast("Set updated!", "success");
             } else {
                 const date = new Date().toISOString().slice(0, 10);
+                // unshift() correctly adds the new item to the start of the already-sorted array.
                 workouts.unshift({ date, exercise, weight, reps, estimated1RM });
                 showToast("Set logged!", "success");
             }
@@ -361,10 +360,8 @@
             exerciseInputEl.focus();
         }
 
+        // ✅ UPDATED: The expensive sort operation has been removed from this function.
         function saveAndRender() {
-            workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            // ✅ ADDED: Secure local storage saving logic
             try {
                 localStorage.setItem('workoutData', JSON.stringify(workouts));
             } catch (e) {
@@ -586,6 +583,7 @@
             return result;
         }
 
+        // ✅ UPDATED: Sorting is now performed only once after a bulk import.
         function importFromCSV(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -624,7 +622,9 @@
 
                 if (importedWorkouts.length > 0) {
                     workouts = [...workouts, ...importedWorkouts];
-                    saveAndRender();
+                    // OPTIMIZATION: Sort the data once after adding all imported sets.
+                    workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    saveAndRender(); // Now call the leaner saveAndRender.
                     showToast(`Successfully imported ${importedWorkouts.length} sets!`, 'success');
                 } else {
                     showToast("No valid workout data found in the CSV.", "error");
