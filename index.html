@@ -77,8 +77,21 @@
         .edit-btn { background: #f59e0b; color: white; }
         .del-btn { background: #ef4444; color: white; }
 
-        /* Compact Timer Styles */
-        .timer-card { padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+        /* Sticky Compact Timer Styles */
+        .timer-card { 
+            position: -webkit-sticky; /* Support for older Safari */
+            position: sticky; 
+            top: 10px; /* Sits 10px from the very top of the viewport */
+            z-index: 100; /* Stays on top of charts and dropdowns */
+            padding: 0.85rem 1.25rem; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            gap: 1rem; 
+            flex-wrap: wrap; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* Slightly heavier shadow to separate from content below */
+            border: 1.5px solid var(--border-color);
+        }
         .timer-display { font-size: 2.25rem; font-weight: 800; margin: 0; color: var(--text-color); font-variant-numeric: tabular-nums; line-height: 1; }
         .timer-controls { display: flex; gap: 0.5rem; flex: 1; min-width: 220px; justify-content: flex-end; }
         .timer-btn { flex: 1; margin-top: 0; padding: 0.7rem 0.5rem; border-radius: 8px; font-size: 0.9rem; }
@@ -105,7 +118,7 @@
         <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
     </div>
     
-    <!-- Compact Timer Card -->
+    <!-- Sticky Compact Timer Card -->
     <div class="card timer-card">
         <div class="timer-display" id="timerDisplay">01:00</div>
         <div class="timer-controls">
@@ -238,6 +251,7 @@
             }
         }
 
+        // Uses standard Web Audio API to play a beep sound
         function playBeep() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
