@@ -25,6 +25,8 @@
             --th-bg: #f3f4f6;
             --chart-grid: rgba(0, 0, 0, 0.1);
             --chart-text: #6b7280;
+            --gold-accent: #d97706;
+            --pulse-color: #2563eb;
         }
 
         body.dark-mode {
@@ -38,6 +40,8 @@
             --th-bg: #334155;
             --chart-grid: rgba(255, 255, 255, 0.1);
             --chart-text: #9ca3af;
+            --gold-accent: #fbbf24;
+            --pulse-color: #60a5fa;
         }
 
         body { 
@@ -79,26 +83,38 @@
 
         /* Sticky Compact Timer Styles */
         .timer-card { 
-            position: -webkit-sticky; /* Support for older Safari */
+            position: -webkit-sticky; 
             position: sticky; 
-            top: 10px; /* Sits 10px from the very top of the viewport */
-            z-index: 100; /* Stays on top of charts and dropdowns */
+            top: 10px; 
+            z-index: 100; 
             padding: 0.85rem 1.25rem; 
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
             gap: 1rem; 
             flex-wrap: wrap; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* Slightly heavier shadow to separate from content below */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); 
             border: 1.5px solid var(--border-color);
         }
         .timer-display { font-size: 2.25rem; font-weight: 800; margin: 0; color: var(--text-color); font-variant-numeric: tabular-nums; line-height: 1; }
-        .timer-controls { display: flex; gap: 0.5rem; flex: 1; min-width: 220px; justify-content: flex-end; }
+        
+        /* Subtle animation when timer is running */
+        .timer-display.active {
+            animation: timerPulse 2s infinite;
+        }
+        @keyframes timerPulse {
+            0% { color: var(--text-color); }
+            50% { color: var(--pulse-color); }
+            100% { color: var(--text-color); }
+        }
+
+        .timer-controls { display: flex; gap: 0.5rem; flex: 1; min-width: 150px; justify-content: flex-end; }
         .timer-btn { flex: 1; margin-top: 0; padding: 0.7rem 0.5rem; border-radius: 8px; font-size: 0.9rem; }
         .add-min-btn { background: #10b981; }
         .add-min-btn:hover { background: #059669; }
         .stop-btn { background: #6b7280; }
         
+        .pr-gold { color: var(--gold-accent); font-weight: bold; }
         .session-group { margin-top: 1rem; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; background: var(--card-bg); }
         .session-header { background: var(--th-bg); padding: 0.75rem 1rem; margin: 0; font-size: 1rem; font-weight: 700; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem; color: var(--text-color); }
         
@@ -120,9 +136,9 @@
     
     <!-- Sticky Compact Timer Card -->
     <div class="card timer-card">
+        <!-- Display starts at 'Ready' or default time -->
         <div class="timer-display" id="timerDisplay">01:00</div>
         <div class="timer-controls">
-            <button class="timer-btn" onclick="startTimer()">Start</button>
             <button class="timer-btn add-min-btn" onclick="addMinute()">+1 Min</button>
             <button class="timer-btn stop-btn" onclick="stopTimer()">Reset</button>
         </div>
@@ -144,9 +160,15 @@
             <input type="number" id="reps" placeholder="Reps" required>
         </div>
         <div class="btn-group">
+            <!-- Logging a set triggers the workout processing and starts the timer -->
             <button id="submitBtn" onclick="processSet()">Log Set</button>
             <button id="cancelEditBtn" class="cancel-btn" onclick="cancelEdit()">Cancel</button>
         </div>
+    </div>
+
+    <div class="card">
+        <h2>🏆 Personal Bests (PRs)</h2>
+        <div id="prContainer"></div>
     </div>
 
     <div class="card">
@@ -204,10 +226,13 @@
         let isTimerRunning = false;
 
         function startTimer() {
-            if (isTimerRunning) return; 
-            if (timeRemaining <= 0) timeRemaining = 60;
-            
+            // If already running, reset the clock to 60s and keep ticking
+            clearInterval(timerInterval);
+            timeRemaining = 60;
             isTimerRunning = true;
+            
+            const displayEl = document.getElementById('timerDisplay');
+            displayEl.classList.add('active');
             updateTimerUI(timeRemaining);
 
             timerInterval = setInterval(() => {
@@ -217,6 +242,7 @@
                 if (timeRemaining <= 0) {
                     clearInterval(timerInterval);
                     isTimerRunning = false;
+                    displayEl.classList.remove('active');
                     playBeep();
                     
                     timeRemaining = 60;
@@ -233,6 +259,7 @@
         function stopTimer() {
             clearInterval(timerInterval);
             isTimerRunning = false;
+            document.getElementById('timerDisplay').classList.remove('active');
             timeRemaining = 60; 
             updateTimerUI(timeRemaining);
         }
@@ -251,7 +278,6 @@
             }
         }
 
-        // Uses standard Web Audio API to play a beep sound
         function playBeep() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -283,6 +309,7 @@
                 workouts = JSON.parse(savedData);
             }
             renderHistory();
+            renderPRs();
             updateExerciseDropdowns();
         };
 
@@ -321,6 +348,9 @@
 
             saveAndRender();
 
+            // Auto-start the rest timer immediately after saving
+            startTimer();
+
             document.getElementById('weight').value = '';
             document.getElementById('reps').value = '';
             document.getElementById('exercise').value = '';
@@ -330,6 +360,7 @@
         function saveAndRender() {
             localStorage.setItem('workoutData', JSON.stringify(workouts));
             renderHistory();
+            renderPRs();
             updateExerciseDropdowns();
             updateChart();
         }
@@ -361,7 +392,7 @@
         }
 
         function deleteSet(index) {
-            if (confirm(`Are you sure you want to delete this set of ${workouts[index].exercise}?`)) {
+            if (confirm("Are you sure you want to delete this set?")) {
                 workouts.splice(index, 1);
                 if (editingIndex === index) cancelEdit();
                 saveAndRender();
@@ -425,6 +456,49 @@
                 sessionDiv.appendChild(table);
                 container.appendChild(sessionDiv);
             });
+        }
+
+        function renderPRs() {
+            const container = document.getElementById('prContainer');
+            container.innerHTML = '';
+
+            if (workouts.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); margin: 0;">Log a workout to establish your personal records.</p>';
+                return;
+            }
+
+            const prs = {};
+            workouts.forEach(w => {
+                if (!prs[w.exercise] || w.estimated1RM > prs[w.exercise].estimated1RM) {
+                    prs[w.exercise] = w;
+                }
+            });
+
+            const sortedPRExercises = Object.keys(prs).sort();
+
+            const table = document.createElement('table');
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Exercise</th>
+                        <th>Best Set</th>
+                        <th>Best 1RM</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${sortedPRExercises.map(exName => {
+                        const pr = prs[exName];
+                        return `
+                            <tr>
+                                <td><strong>${pr.exercise}</strong></td>
+                                <td>${pr.weight} × ${pr.reps}</td>
+                                <td class="pr-gold">★ ${pr.estimated1RM}</td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            `;
+            container.appendChild(table);
         }
 
         function updateExerciseDropdowns() {
