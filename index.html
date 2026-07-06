@@ -16,6 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     
     <style>
+        /* CSS styles are unchanged and correct */
         :root {
             --bg-color: #000000;
             --card-bg: #121212;
@@ -165,74 +166,76 @@
 </head>
 <body>
     
-    <div class="header-container">
+    <header class="header-container">
         <h1>WorkoutTracker</h1>
-    </div>
+    </header>
     
-    <div class="card timer-card">
-        <div class="timer-display" id="timerDisplay">01:00</div>
-        <div class="timer-controls">
-            <button class="timer-btn add-min-btn" onclick="addMinute()">+1 Min</button>
-            <button class="timer-btn stop-btn" onclick="stopTimer()">Reset</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <h2 id="formTitle">Log a Set</h2>
-        
-        <div class="form-group">
-            <label for="exercise">Exercise</label>
-            <input type="text" id="exercise" list="exerciseOptions" placeholder="Start typing..." autocomplete="off" required>
-            <datalist id="exerciseOptions"></datalist>
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="weight">Weight</label>
-                <input type="number" id="weight" placeholder="Weight" required>
-            </div>
-            <div class="form-group">
-                <label for="reps">Reps</label>
-                <input type="number" id="reps" placeholder="Reps" required>
+    <main>
+        <div class="card timer-card">
+            <div class="timer-display" id="timerDisplay" aria-live="polite">01:00</div>
+            <div class="timer-controls">
+                <button class="timer-btn add-min-btn" onclick="addMinute()">+1 Min</button>
+                <button class="timer-btn stop-btn" onclick="stopTimer()">Reset</button>
             </div>
         </div>
-        
-        <div class="btn-group">
-            <button id="submitBtn" onclick="processSet()">Log Set</button>
-            <button id="cancelEditBtn" class="cancel-btn" onclick="cancelEdit()">Cancel</button>
+
+        <div class="card">
+            <h2 id="formTitle">Log a Set</h2>
+            
+            <div class="form-group">
+                <label for="exercise">Exercise</label>
+                <input type="text" id="exercise" list="exerciseOptions" placeholder="Start typing..." autocomplete="off" required>
+                <datalist id="exerciseOptions"></datalist>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="weight">Weight</label>
+                    <input type="number" id="weight" placeholder="Weight" required>
+                </div>
+                <div class="form-group">
+                    <label for="reps">Reps</label>
+                    <input type="number" id="reps" placeholder="Reps" required>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button id="submitBtn" onclick="processSet()">Log Set</button>
+                <button id="cancelEditBtn" class="cancel-btn" onclick="cancelEdit()">Cancel</button>
+            </div>
         </div>
-    </div>
 
-    <div class="card">
-        <h2>🏆 Personal Bests (PRs)</h2>
-        <div id="prContainer"></div>
-    </div>
-
-    <div class="card">
-        <h2>📈 Progress Chart (1RM)</h2>
-        <div class="form-group">
-            <label for="chartExerciseSelect">Select Exercise to Chart</label>
-            <select id="chartExerciseSelect" onchange="updateChart()">
-                <option value="">-- Select an Exercise --</option>
-            </select>
+        <div class="card">
+            <h2>🏆 Personal Bests (PRs)</h2>
+            <div id="prContainer"></div>
         </div>
-        <canvas id="progressChart"></canvas>
-    </div>
 
-    <div class="card">
-        <h2>History</h2>
-        <div id="historyContainer"></div>
-        
-        <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importFromCSV(event)">
-        
-        <div class="footer-actions">
-            <button onclick="document.getElementById('csvFileInput').click()">📂 Import</button>
-            <button onclick="exportToCSV()">💾 Export</button>
-            <button class="danger-btn" onclick="clearAllData()">🗑️ Clear</button>
+        <div class="card">
+            <h2>📈 Progress Chart (1RM)</h2>
+            <div class="form-group">
+                <label for="chartExerciseSelect">Select Exercise to Chart</label>
+                <select id="chartExerciseSelect" onchange="updateChart()">
+                    <option value="">-- Select an Exercise --</option>
+                </select>
+            </div>
+            <canvas id="progressChart"></canvas>
         </div>
-    </div>
 
-    <div id="toast"></div>
+        <div class="card">
+            <h2>History</h2>
+            <div id="historyContainer"></div>
+            
+            <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importFromCSV(event)">
+            
+            <div class="footer-actions">
+                <button onclick="document.getElementById('csvFileInput').click()">📂 Import</button>
+                <button onclick="exportToCSV()">💾 Export</button>
+                <button class="danger-btn" onclick="clearAllData()">🗑️ Clear</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" role="alert" aria-live="assertive"></div>
 
     <script>
         const timerDisplayEl = document.getElementById('timerDisplay');
@@ -246,7 +249,6 @@
         const prContainerEl = document.getElementById('prContainer');
         const chartExerciseSelectEl = document.getElementById('chartExerciseSelect');
         const historyContainerEl = document.getElementById('historyContainer');
-        const csvFileInputEl = document.getElementById('csvFileInput');
         const toastEl = document.getElementById('toast');
         
         const defaultExercises = [
@@ -262,19 +264,23 @@
         let chartInstance = null;
         let editingIndex = null;
         let audioCtx;
+        let audioInitialized = false;
 
         function initAudio() {
+            if (audioInitialized) return;
             try {
-                if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                audioInitialized = true;
+                console.log("Audio Context initialized.");
             } catch (e) {
-                console.log("Audio Context not supported.");
+                console.error("Audio Context not supported or failed to initialize.", e);
             }
         }
+        
+        // Add event listeners to initialize audio on user interaction
+        ['click', 'touchstart'].forEach(evt => {
+            document.body.addEventListener(evt, initAudio, { once: true });
+        });
 
         function showToast(message, type = 'info') { 
             toastEl.textContent = message;
@@ -283,13 +289,13 @@
             if (type === 'error') toastEl.classList.add('error');
             
             setTimeout(() => { 
-                toastEl.className = toastEl.className.replace('show', '').replace('success', '').replace('error', ''); 
+                toastEl.className = toastEl.className.replace(/show|success|error/g, '').trim(); 
             }, 3000);
         }
 
         function startTimer() {
             if (isTimerRunning) return;
-            initAudio();
+            initAudio(); // Ensure audio is ready
             timeRemaining = 60;
             isTimerRunning = true;
             timerDisplayEl.classList.add('active');
@@ -310,7 +316,7 @@
         }
 
         function addMinute() {
-            initAudio();
+            initAudio(); // Ensure audio is ready
             timeRemaining += 60;
             updateTimerUI(timeRemaining);
         }
@@ -332,8 +338,8 @@
         }
 
         function playBeep() {
+            if (!audioCtx || audioCtx.state === 'suspended') return;
             try {
-                if (!audioCtx) return;
                 const osc = audioCtx.createOscillator();
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(880, audioCtx.currentTime);
@@ -341,7 +347,7 @@
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.5);
             } catch (e) { 
-                console.log("Audio playback failed.", e); 
+                console.error("Audio playback failed.", e); 
             }
         }
 
@@ -376,12 +382,7 @@
 
         function normalizeExerciseName(str) {
             if (!str) return '';
-            return str
-                .trim()
-                .toLowerCase()
-                .split(/\s+/)
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' ');
+            return str.trim().toLowerCase().split(/\s+/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
         }
 
         function processSet() {
@@ -389,8 +390,8 @@
             const weight = parseFloat(weightInputEl.value);
             const reps = parseInt(repsInputEl.value);
 
-            if (!exercise || isNaN(weight) || isNaN(reps)) {
-                showToast("Please complete the form details.", "error");
+            if (!exercise || isNaN(weight) || isNaN(reps) || weight < 0 || reps < 0) {
+                showToast("Please enter valid exercise details.", "error");
                 return;
             }
 
@@ -398,17 +399,15 @@
 
             if (editingIndex !== null) {
                 workouts[editingIndex] = { ...workouts[editingIndex], exercise, weight, reps, estimated1RM };
-                editingIndex = null;
-                formTitleEl.innerText = 'Log a Set';
-                submitBtnEl.innerText = 'Log Set';
-                cancelEditBtnEl.style.display = 'none';
+                showToast("Set updated successfully!", "success");
+                cancelEdit(); // Reset form after update
             } else {
                 const date = new Date().toISOString().slice(0, 10);
                 workouts.unshift({ date, exercise, weight, reps, estimated1RM });
+                startTimer();
             }
 
             saveAndRender();
-            startTimer();
             
             weightInputEl.value = '';
             repsInputEl.value = '';
@@ -420,8 +419,8 @@
             try {
                 localStorage.setItem('workoutData', JSON.stringify(workouts));
             } catch (e) {
-                console.error("Local Storage storage limits exceeded or blocked:", e);
-                showToast("Error writing to memory. Storage limit may be full.", "error");
+                console.error("Local Storage write failed:", e);
+                showToast("Error saving data. Storage may be full.", "error");
             }
             
             renderHistory();
@@ -462,8 +461,9 @@
         }
         
         function formatDateForDisplay(dateString) {
-            const [year, month, day] = dateString.split('-');
-            return `${month}/${day}/${year}`;
+            if (!dateString) return '';
+            const date = new Date(dateString + 'T00:00:00'); // Avoid time zone issues
+            return date.toLocaleDateString(undefined, { month: '2-digit', day: '2-digit', year: 'numeric' });
         }
 
         function renderHistory() {
@@ -472,12 +472,13 @@
                 return;
             }
             const grouped = workouts.reduce((acc, workout, index) => {
-                if (!acc[workout.date]) acc[workout.date] = [];
-                acc[workout.date].push({ ...workout, originalIndex: index });
+                const date = workout.date;
+                if (!acc[date]) acc[date] = [];
+                acc[date].push({ ...workout, originalIndex: index });
                 return acc;
             }, {});
             
-            historyContainerEl.innerHTML = Object.keys(grouped).map(date => `
+            historyContainerEl.innerHTML = Object.keys(grouped).sort().reverse().map(date => `
                 <div class="session-group">
                     <h3 class="session-header">📅 ${formatDateForDisplay(date)}</h3>
                     <table>
@@ -551,8 +552,13 @@
         function updateChart() {
             const selectedExercise = chartExerciseSelectEl.value;
             const canvas = document.getElementById('progressChart');
+            
+            if (chartInstance) {
+                chartInstance.destroy(); // Always destroy old instance
+                chartInstance = null;
+            }
+
             if (!selectedExercise) {
-                if (chartInstance) chartInstance.destroy();
                 canvas.style.display = 'none';
                 return;
             }
@@ -565,22 +571,19 @@
                     return acc;
                 }, {});
 
-            const sortedDates = Object.keys(dailyMax).sort();
+            const sortedDates = Object.keys(dailyMax).sort((a, b) => new Date(a) - new Date(b));
             const chartData = sortedDates.map(date => dailyMax[date]);
             renderChartCanvas(sortedDates, chartData, selectedExercise);
         }
         
         function renderChartCanvas(labels, data, exerciseName) {
             const ctx = document.getElementById('progressChart').getContext('2d');
-            if (chartInstance) chartInstance.destroy();
-            
             const rootStyle = getComputedStyle(document.documentElement);
             const goldColor = rootStyle.getPropertyValue('--gold-primary').trim();
             const gridColor = rootStyle.getPropertyValue('--chart-grid').trim();
             const textColor = rootStyle.getPropertyValue('--text-secondary').trim();
             
             const formattedLabels = labels.map(dateStr => dateStr.substring(5));
-
             Chart.defaults.color = textColor;
 
             chartInstance = new Chart(ctx, {
@@ -604,17 +607,19 @@
 
         function exportToCSV() {
             if (workouts.length === 0) {
-                showToast("No logged data available to export.", "error");
+                showToast("No data to export.", "error");
                 return;
             }
-            let csvContent = "data:text/csv;charset=utf-8,Date,Exercise,Weight,Reps,Estimated 1RM\n";
+            let csvContent = "Date,Exercise,Weight,Reps,Estimated 1RM\n";
             const sortedForExport = [...workouts].sort((a,b) => new Date(a.date) - new Date(b.date));
             sortedForExport.forEach(w => {
                 const safeExercise = `"${w.exercise.replace(/"/g, '""')}"`;
                 csvContent += `${w.date},${safeExercise},${w.weight},${w.reps},${w.estimated1RM}\n`;
             });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            link.setAttribute("href", encodeURI(csvContent));
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
             link.setAttribute("download", `workout_history_${new Date().toISOString().slice(0,10)}.csv`);
             document.body.appendChild(link);
             link.click();
@@ -637,36 +642,15 @@
             return result;
         }
 
-        function parseDateRobustly(dateString) {
+        // IMPROVEMENT: Simplified and more robust date parsing for YYYY-MM-DD format
+        function parseDateFromCSV(dateString) {
             if (!dateString) return null;
             const cleanStr = dateString.replace(/"/g, '').trim();
-            if (/^\d{4}-\d{2}-\d{2}$/.test(cleanStr)) return cleanStr;
-            const parts = cleanStr.split(/[-/.]/);
-            if (parts.length !== 3) return null;
-            
-            let year = parseInt(parts[2], 10);
-            let val1 = parseInt(parts[0], 10);
-            let val2 = parseInt(parts[1], 10);
-            
-            if (year < 100) year += (year > 50 ? 1900 : 2000);
-            
-            let month, day;
-            if (val1 > 12) {
-                day = val1;
-                month = val2;
-            } else if (val2 > 12) {
-                month = val1;
-                day = val2;
-            } else {
-                month = val1;
-                day = val2;
+            // Validates that the date is in YYYY-MM-DD format, which the app uses internally.
+            if (/^\d{4}-\d{2}-\d{2}$/.test(cleanStr)) {
+                return cleanStr;
             }
-            
-            const mm = month.toString().padStart(2, '0');
-            const dd = day.toString().padStart(2, '0');
-            const yyyy = year.toString();
-            
-            return `${yyyy}-${mm}-${dd}`;
+            return null; // Return null for any other format to ensure data consistency
         }
 
         function importFromCSV(event) {
@@ -686,7 +670,7 @@
                         const row = parseCSVLine(lines[i]);
                         if (row.length < 4) continue;
                         
-                        const date = parseDateRobustly(row[0]);
+                        const date = parseDateFromCSV(row[0]);
                         const exercise = row[1].replace(/"/g, "");
                         const weight = parseFloat(row[2]);
                         const reps = parseInt(row[3]);
@@ -696,7 +680,7 @@
                             importedWorkouts.push({ date, exercise, weight, reps, estimated1RM });
                         }
                     } catch (err) {
-                        console.error(`Skipping invalid CSV line ${i+1}: ${lines[i]}`);
+                        console.error(`Skipping invalid CSV line ${i+1}: ${lines[i]}`, err);
                     }
                 }
 
@@ -710,17 +694,18 @@
                 }
             };
             reader.readAsText(file);
-            event.target.value = '';
+            event.target.value = ''; // Reset file input
         }
 
         function clearAllData() {
-            if (confirm("Are you sure you want to delete ALL your workout data? This cannot be undone.")) {
-                workouts = [];
-                editingIndex = null;
-                cancelEdit();
-                saveAndRender();
-                if (chartInstance) chartInstance.destroy();
-                showToast("All data successfully cleared.", "info");
+            if (confirm("DELETE ALL workout data? This cannot be undone.")) {
+                if (confirm("Are you absolutely sure? All history will be permanently erased.")) {
+                    workouts = [];
+                    localStorage.removeItem('workoutData');
+                    cancelEdit(); // Reset form state
+                    saveAndRender();
+                    showToast("All data has been cleared.", "info");
+                }
             }
         }
     </script>
