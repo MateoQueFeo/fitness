@@ -195,7 +195,11 @@
         let isTimerRunning = false;
 
         function startTimer() {
-            clearInterval(timerInterval);
+            // ***FIXED***: If a timer is already running, do not force-reset it.
+            if (isTimerRunning) {
+                return; 
+            }
+
             timeRemaining = 60;
             isTimerRunning = true;
             
@@ -607,19 +611,52 @@
             document.body.removeChild(link);
         }
 
+        // ***FIXED***: Robust RFC 4180-compliant CSV line parser to handle commas inside quotes securely
+        function parseCSVLine(text) {
+            const result = [];
+            let insideQuote = false;
+            let entry = '';
+            
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const nextChar = text[i + 1];
+                
+                if (char === '"') {
+                    if (insideQuote && nextChar === '"') {
+                        // Handle escaped quotes (e.g., "" becomes ")
+                        entry += '"';
+                        i++; // Skip next quote
+                    } else {
+                        // Toggle quote state
+                        insideQuote = !insideQuote;
+                    }
+                } else if (char === ',' && !insideQuote) {
+                    result.push(entry.trim());
+                    entry = '';
+                } else {
+                    entry += char;
+                }
+            }
+            result.push(entry.trim());
+            return result;
+        }
+
         function importFromCSV(event) {
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
-                const lines = e.target.result.split('\n').filter(line => line.trim() !== '');
+                const lines = e.target.result.split(/\r?\n/).filter(line => line.trim() !== '');
                 if (lines.length <= 1) {
                     alert("The CSV file appears to be empty or invalid.");
                     return;
                 }
+                
                 let importedWorkouts = [];
                 for (let i = 1; i < lines.length; i++) {
-                    const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(item => item.replace(/(^"|"$)/g, '').trim());
+                    // Call our secure parser instead of split/regex
+                    const row = parseCSVLine(lines[i]);
+                    
                     if (row.length >= 4) {
                         let date = row[0];
                         // Convert MM/DD/YYYY to YYYY-MM-DD if needed
@@ -627,9 +664,12 @@
                             const parts = date.split('/');
                             date = `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
                         }
-                        const exercise = row[1];
+                        
+                        // Sanitize inputs and enforce safe types
+                        const exercise = row[1].replace(/[<>]/g, ""); // Prevent basic XSS payloads
                         const weight = parseFloat(row[2]);
                         const reps = parseInt(row[3]);
+                        
                         if (date && exercise && !isNaN(weight) && !isNaN(reps)) {
                             const estimated1RM = parseInt(row[4]) || calculate1RM(weight, reps);
                             importedWorkouts.push({ date, exercise, weight, reps, estimated1RM });
