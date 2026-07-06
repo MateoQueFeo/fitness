@@ -1,16 +1,28 @@
 {
-  "short_name": "LiftTracker",
-  "name": "Progressive Workout Tracker",
+  "short_name": "WorkoutTracker",
+  "name": "Workout Tracker PWA",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2554/2554031.png",
+      "src": "icons/icon-192.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ],
-  "start_url": "index.html",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "start_url": "/index.html",
+  "background_color": "#ffffff",
   "display": "standalone",
-  "orientation": "portrait"
+  "theme_color": "#000000"
 }
