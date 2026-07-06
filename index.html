@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Workout Tracker</title>
     
-    <!-- ✅ Android Status Bar Color -->
     <meta name="theme-color" content="#000000">
     
-    <!-- iOS App Settings -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WorkoutTracker">
@@ -21,7 +19,6 @@
     
     <style>
         :root {
-            /* Black & Gold Theme Variables */
             --bg-color: #000000;
             --card-bg: #111111;
             --text-color: #f3f4f6;
@@ -32,10 +29,9 @@
             --th-bg: #1a1a1a;
             --chart-grid: rgba(255, 255, 255, 0.08);
             
-            /* The Gold Accent */
             --gold-primary: #D4AF37; 
             --gold-hover: #b5952f;
-            --gold-text: #000000; /* Text inside gold buttons */
+            --gold-text: #000000;
             --danger-color: #dc2626;
             --success-color: #16a34a;
         }
@@ -48,7 +44,7 @@
             background: var(--bg-color); 
             color: var(--text-color); 
             -webkit-tap-highlight-color: transparent; 
-            overscroll-behavior-y: none; /* ✅ Prevents Android Pull-to-Refresh */
+            overscroll-behavior-y: none;
         }
         
         .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; margin-top: 0.5rem; }
@@ -259,7 +255,6 @@
             }, 3000);
         }
 
-        // --- TIMER LOGIC ---
         let timerInterval;
         let timeRemaining = 60;
         let isTimerRunning = false;
@@ -320,7 +315,6 @@
             }
         }
 
-        // --- TRACKER LOGIC ---
         let workouts = [];
         let chartInstance = null;
         let editingIndex = null; 
@@ -572,7 +566,6 @@
             });
         }
 
-        // --- IMPORT/EXPORT LOGIC ---
         function exportToCSV() {
             if (workouts.length === 0) {
                 showToast("No logged data available to export.", "error");
