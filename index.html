@@ -5,9 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Workout Tracker</title>
     
+    <!-- ✅ Android Status Bar Color -->
+    <meta name="theme-color" content="#000000">
+    
+    <!-- iOS App Settings -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WorkoutTracker">
+    
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-512.png">
@@ -43,6 +48,7 @@
             background: var(--bg-color); 
             color: var(--text-color); 
             -webkit-tap-highlight-color: transparent; 
+            overscroll-behavior-y: none; /* ✅ Prevents Android Pull-to-Refresh */
         }
         
         .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; margin-top: 0.5rem; }
