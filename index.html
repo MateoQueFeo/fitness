@@ -10,9 +10,10 @@
     <meta name="apple-mobile-web-app-title" content="LiftTracker">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2554/2554031.png">
+    <link rel="apple-touch-icon" href="icons/icon-512.png">
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Offline-ready local ChartJS script -->
+    <script src="chart.js"></script>
     <style>
         :root {
             /* Black & Gold Theme Variables */
@@ -269,6 +270,13 @@
         let editingIndex = null; 
 
         window.onload = function() {
+            // ***FIXED***: Register Service Worker for Offline PWA Capabilities
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(() => console.log('Service Worker Registered Successfully'))
+                    .catch(err => console.error('Service Worker Registration Failed:', err));
+            }
+
             const savedData = localStorage.getItem('workoutData');
             if (savedData) {
                 workouts = JSON.parse(savedData);
@@ -350,6 +358,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        // Handles cancellation of edits gracefully
         function cancelEdit() {
             editingIndex = null;
             document.getElementById('weight').value = '';
@@ -397,8 +406,6 @@
                 }
                 grouped[workout.date].push({ ...workout, originalIndex: index });
             });
-            
-            // dateOrder is already sorted from saveAndRender, so no need to re-sort here
 
             dateOrder.forEach(date => {
                 const sessionDiv = document.createElement('div');
@@ -654,7 +661,6 @@
                 
                 let importedWorkouts = [];
                 for (let i = 1; i < lines.length; i++) {
-                    // Call our secure parser instead of split/regex
                     const row = parseCSVLine(lines[i]);
                     
                     if (row.length >= 4) {
