@@ -306,7 +306,8 @@
                 document.getElementById('submitBtn').innerText = 'Log Set';
                 document.getElementById('cancelEditBtn').style.display = 'none';
             } else {
-                const date = new Date().toLocaleDateString();
+                // ***FIXED***: Use ISO 8601 format (YYYY-MM-DD) for reliable sorting
+                const date = new Date().toISOString().slice(0, 10);
                 workouts.unshift({ date, exercise, weight, reps, estimated1RM });
             }
 
@@ -320,7 +321,10 @@
         }
 
         function saveAndRender() {
+            // Sort workouts by date before saving to ensure consistency
+            workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
             localStorage.setItem('workoutData', JSON.stringify(workouts));
+            
             renderHistory();
             renderPRs();
             updateExerciseDropdowns();
@@ -335,7 +339,7 @@
             document.getElementById('weight').value = workout.weight;
             document.getElementById('reps').value = workout.reps;
             
-            document.getElementById('formTitle').innerText = `Edit Set (${workout.date})`;
+            document.getElementById('formTitle').innerText = `Edit Set (${formatDateForDisplay(workout.date)})`;
             document.getElementById('submitBtn').innerText = 'Update Set';
             document.getElementById('cancelEditBtn').style.display = 'block';
             
@@ -360,6 +364,12 @@
                 saveAndRender();
             }
         }
+        
+        function formatDateForDisplay(dateString) {
+            // Converts 'YYYY-MM-DD' to 'MM/DD/YYYY' for display
+            const [year, month, day] = dateString.split('-');
+            return `${month}/${day}/${year}`;
+        }
 
         function renderHistory() {
             const container = document.getElementById('historyContainer');
@@ -376,10 +386,15 @@
             workouts.forEach((workout, index) => {
                 if (!grouped[workout.date]) {
                     grouped[workout.date] = [];
-                    dateOrder.push(workout.date);
+                    // Use a stable sort order by not re-adding dates
+                    if (!dateOrder.includes(workout.date)) {
+                        dateOrder.push(workout.date);
+                    }
                 }
                 grouped[workout.date].push({ ...workout, originalIndex: index });
             });
+            
+            // dateOrder is already sorted from saveAndRender, so no need to re-sort here
 
             dateOrder.forEach(date => {
                 const sessionDiv = document.createElement('div');
@@ -387,7 +402,8 @@
 
                 const header = document.createElement('h3');
                 header.className = 'session-header';
-                header.innerHTML = `📅 ${date}`;
+                // ***FIXED***: Format date for display
+                header.innerHTML = `📅 ${formatDateForDisplay(date)}`;
 
                 const table = document.createElement('table');
                 table.innerHTML = `
@@ -512,7 +528,8 @@
                 }
             });
 
-            const sortedDates = Object.keys(dailyMax).sort((a, b) => new Date(a) - new Date(b));
+            // ***FIXED***: With YYYY-MM-DD format, a simple string sort is chronologically correct.
+            const sortedDates = Object.keys(dailyMax).sort();
             const chartData = sortedDates.map(date => dailyMax[date]);
 
             renderChartCanvas(sortedDates, chartData, selectedExercise);
@@ -527,13 +544,19 @@
             const goldColor = rootStyle.getPropertyValue('--gold-primary').trim();
             const gridColor = rootStyle.getPropertyValue('--chart-grid').trim();
             const textColor = rootStyle.getPropertyValue('--text-muted').trim();
+            
+            // ***FIXED***: Format YYYY-MM-DD to MM/DD for chart labels
+            const formattedLabels = labels.map(dateStr => {
+                const [, month, day] = dateStr.split('-');
+                return `${month}/${day}`;
+            });
 
             Chart.defaults.color = textColor;
 
             chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: formattedLabels,
                     datasets: [{
                         label: `Est. 1RM for ${exerciseName}`,
                         data: data,
@@ -568,7 +591,9 @@
                 return;
             }
             let csvContent = "data:text/csv;charset=utf-8,Date,Exercise,Weight,Reps,Estimated 1RM\n";
-            workouts.forEach(w => {
+            // Sort chronologically for export
+            const sortedForExport = [...workouts].sort((a,b) => new Date(a.date) - new Date(b.date));
+            sortedForExport.forEach(w => {
                 const safeDate = `"${w.date}"`;
                 const safeExercise = `"${w.exercise.replace(/"/g, '""')}"`;
                 csvContent += `${safeDate},${safeExercise},${w.weight},${w.reps},${w.estimated1RM}\n`;
@@ -596,7 +621,12 @@
                 for (let i = 1; i < lines.length; i++) {
                     const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(item => item.replace(/(^"|"$)/g, '').trim());
                     if (row.length >= 4) {
-                        const date = row[0];
+                        let date = row[0];
+                        // Convert MM/DD/YYYY to YYYY-MM-DD if needed
+                        if (date.includes('/')) {
+                            const parts = date.split('/');
+                            date = `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+                        }
                         const exercise = row[1];
                         const weight = parseFloat(row[2]);
                         const reps = parseInt(row[3]);
@@ -608,7 +638,6 @@
                 }
                 if (importedWorkouts.length > 0) {
                     workouts = [...workouts, ...importedWorkouts];
-                    workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
                     saveAndRender();
                     alert(`Successfully imported ${importedWorkouts.length} sets!`);
                 } else {
