@@ -12,8 +12,9 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-512.png">
 
-    <!-- Offline-ready local ChartJS script -->
-    <script src="chart.js"></script>
+    <!-- ✅ OPTION A CDN: Smart auto-updates for minor versions of Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    
     <style>
         :root {
             /* Black & Gold Theme Variables */
@@ -32,6 +33,7 @@
             --gold-hover: #b5952f;
             --gold-text: #000000; /* Text inside gold buttons */
             --danger-color: #dc2626;
+            --success-color: #16a34a;
         }
 
         body { 
@@ -74,30 +76,12 @@
         .edit-btn:hover { background: rgba(212, 175, 55, 0.1); }
         .del-btn { border-color: var(--danger-color); color: var(--danger-color); }
         .del-btn:hover { background: rgba(220, 38, 38, 0.1); }
-
-        /* Sticky Compact Timer Styles */
-        .timer-card { 
-            position: -webkit-sticky; 
-            position: sticky; 
-            top: 10px; 
-            z-index: 100; 
-            padding: 0.85rem 1.25rem; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            gap: 1rem; 
-            flex-wrap: wrap; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); 
-            border: 1px solid var(--gold-primary);
-        }
+        
+        .timer-card { position: -webkit-sticky; position: sticky; top: 10px; z-index: 100; padding: 0.85rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); border: 1px solid var(--gold-primary); }
         .timer-display { font-size: 2.25rem; font-weight: 800; margin: 0; color: var(--text-color); font-variant-numeric: tabular-nums; line-height: 1; }
         
         .timer-display.active { animation: timerPulse 2s infinite; }
-        @keyframes timerPulse {
-            0% { color: var(--text-color); }
-            50% { color: var(--gold-primary); }
-            100% { color: var(--text-color); }
-        }
+        @keyframes timerPulse { 0% { color: var(--text-color); } 50% { color: var(--gold-primary); } 100% { color: var(--text-color); } }
 
         .timer-controls { display: flex; gap: 0.5rem; flex: 1; min-width: 150px; justify-content: flex-end; }
         .timer-btn { flex: 1; margin-top: 0; padding: 0.7rem 0.5rem; border-radius: 8px; font-size: 0.9rem; }
@@ -116,6 +100,36 @@
         canvas { max-width: 100%; margin-top: 1rem; }
         
         ::placeholder { color: #6b7280; opacity: 0.8; }
+
+        /* ✅ ADDED: Elegant, non-blocking CSS Toast Notification Container */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 30px;
+            font-size: 1rem;
+            transition: visibility 0.5s, opacity 0.5s linear;
+            opacity: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        #toast.error {
+            background-color: var(--danger-color);
+        }
+        #toast.success {
+            background-color: var(--success-color);
+        }
     </style>
 </head>
 <body>
@@ -124,7 +138,6 @@
         <h1>LiftTracker</h1>
     </div>
     
-    <!-- Sticky Compact Timer Card -->
     <div class="card timer-card">
         <div class="timer-display" id="timerDisplay">01:00</div>
         <div class="timer-controls">
@@ -183,12 +196,42 @@
         </div>
     </div>
 
+    <!-- ✅ ADDED: Toast element inject -->
+    <div id="toast"></div>
+
     <script>
+        // ✅ ADDED: Cached DOM Element Selectors to eliminate redundant searches
+        const timerDisplayEl = document.getElementById('timerDisplay');
+        const formTitleEl = document.getElementById('formTitle');
+        const exerciseInputEl = document.getElementById('exercise');
+        const weightInputEl = document.getElementById('weight');
+        const repsInputEl = document.getElementById('reps');
+        const exerciseOptionsEl = document.getElementById('exerciseOptions');
+        const submitBtnEl = document.getElementById('submitBtn');
+        const cancelEditBtnEl = document.getElementById('cancelEditBtn');
+        const prContainerEl = document.getElementById('prContainer');
+        const chartExerciseSelectEl = document.getElementById('chartExerciseSelect');
+        const historyContainerEl = document.getElementById('historyContainer');
+        const csvFileInputEl = document.getElementById('csvFileInput');
+        const toastEl = document.getElementById('toast');
+        
         const defaultExercises = [
             "Bench Press", "Squat", "Deadlift", "Overhead Press", 
             "Barbell Row", "Pull Up", "Dumbbell Curl", "Leg Press", 
             "Romanian Deadlift", "Front Squat", "Lat Pulldown", "Tricep Extension"
         ];
+
+        // ✅ ADDED: Clean notification dispatcher (no UI-freezing popups!)
+        function showToast(message, type = 'info') { 
+            toastEl.textContent = message;
+            toastEl.className = 'show';
+            if (type === 'success') toastEl.classList.add('success');
+            if (type === 'error') toastEl.classList.add('error');
+            
+            setTimeout(() => { 
+                toastEl.className = toastEl.className.replace('show', '').replace('success', '').replace('error', ''); 
+            }, 3000);
+        }
 
         // --- TIMER LOGIC ---
         let timerInterval;
@@ -196,28 +239,20 @@
         let isTimerRunning = false;
 
         function startTimer() {
-            // ***FIXED***: If a timer is already running, do not force-reset it.
-            if (isTimerRunning) {
-                return; 
-            }
-
+            if (isTimerRunning) return;
             timeRemaining = 60;
             isTimerRunning = true;
-            
-            const displayEl = document.getElementById('timerDisplay');
-            displayEl.classList.add('active');
+            timerDisplayEl.classList.add('active');
             updateTimerUI(timeRemaining);
 
             timerInterval = setInterval(() => {
                 timeRemaining--;
                 updateTimerUI(timeRemaining);
-
                 if (timeRemaining <= 0) {
                     clearInterval(timerInterval);
                     isTimerRunning = false;
-                    displayEl.classList.remove('active');
+                    timerDisplayEl.classList.remove('active');
                     playBeep();
-                    
                     timeRemaining = 60;
                     updateTimerUI(timeRemaining);
                 }
@@ -232,7 +267,7 @@
         function stopTimer() {
             clearInterval(timerInterval);
             isTimerRunning = false;
-            document.getElementById('timerDisplay').classList.remove('active');
+            timerDisplayEl.classList.remove('active');
             timeRemaining = 60; 
             updateTimerUI(timeRemaining);
         }
@@ -241,14 +276,8 @@
             const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
             const secs = (seconds % 60).toString().padStart(2, '0');
             const timeString = `${mins}:${secs}`;
-            
-            document.getElementById('timerDisplay').innerText = timeString;
-            
-            if (isTimerRunning && seconds > 0) {
-                document.title = `(${timeString}) Resting...`;
-            } else {
-                document.title = `LiftTracker`;
-            }
+            timerDisplayEl.innerText = timeString;
+            document.title = (isTimerRunning && seconds > 0) ? `(${timeString}) Resting...` : 'LiftTracker';
         }
 
         function playBeep() {
@@ -260,8 +289,8 @@
                 osc.connect(ctx.destination);
                 osc.start();
                 osc.stop(ctx.currentTime + 0.5);
-            } catch (e) { console.log("Audio API not supported."); }
-            setTimeout(() => alert("Rest time is up!"), 100);
+            } catch (e) { console.log("Audio Context not supported or allowed by user gesture."); }
+            showToast("Rest time is up!", "success");
         }
 
         // --- TRACKER LOGIC ---
@@ -270,22 +299,26 @@
         let editingIndex = null; 
 
         window.onload = function() {
-            // ***FIXED***: Register Service Worker for Offline PWA Capabilities
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(() => console.log('Service Worker Registered Successfully'))
-                    .catch(err => console.error('Service Worker Registration Failed:', err));
+                    .then(() => console.log('Service Worker Registered'))
+                    .catch(err => console.error('Service Worker registration failed:', err));
             }
-
-            const savedData = localStorage.getItem('workoutData');
-            if (savedData) {
-                workouts = JSON.parse(savedData);
+            
+            // ✅ ADDED: Secure data retrieval logic
+            try {
+                const savedData = localStorage.getItem('workoutData');
+                if (savedData) {
+                    workouts = JSON.parse(savedData);
+                }
+            } catch (e) {
+                console.error("Local Storage parsing failed:", e);
+                showToast("Could not load your history. File may be corrupt.", "error");
             }
+            
             renderHistory();
             renderPRs();
             updateExerciseDropdowns();
-            
-            // Draw chart initially if empty data
             updateChart();
         };
 
@@ -295,47 +328,49 @@
         }
 
         function processSet() {
-            const exerciseInput = document.getElementById('exercise').value.trim();
-            const exercise = exerciseInput.replace(/\b\w/g, l => l.toUpperCase());
-            const weight = parseFloat(document.getElementById('weight').value);
-            const reps = parseInt(document.getElementById('reps').value);
+            const exercise = exerciseInputEl.value.trim().replace(/\b\w/g, l => l.toUpperCase());
+            const weight = parseFloat(weightInputEl.value);
+            const reps = parseInt(repsInputEl.value);
 
             if (!exercise || isNaN(weight) || isNaN(reps)) {
-                alert("Please fill out all fields with valid numbers.");
+                showToast("Please complete the form details.", "error");
                 return;
             }
 
             const estimated1RM = calculate1RM(weight, reps);
 
             if (editingIndex !== null) {
-                workouts[editingIndex].exercise = exercise;
-                workouts[editingIndex].weight = weight;
-                workouts[editingIndex].reps = reps;
-                workouts[editingIndex].estimated1RM = estimated1RM;
-                
+                workouts[editingIndex] = { ...workouts[editingIndex], exercise, weight, reps, estimated1RM };
                 editingIndex = null;
-                document.getElementById('formTitle').innerText = 'Log a Set';
-                document.getElementById('submitBtn').innerText = 'Log Set';
-                document.getElementById('cancelEditBtn').style.display = 'none';
+                formTitleEl.innerText = 'Log a Set';
+                submitBtnEl.innerText = 'Log Set';
+                cancelEditBtnEl.style.display = 'none';
+                showToast("Set updated!", "success");
             } else {
-                // ***FIXED***: Use ISO 8601 format (YYYY-MM-DD) for reliable sorting
                 const date = new Date().toISOString().slice(0, 10);
                 workouts.unshift({ date, exercise, weight, reps, estimated1RM });
+                showToast("Set logged!", "success");
             }
 
             saveAndRender();
             startTimer();
-
-            document.getElementById('weight').value = '';
-            document.getElementById('reps').value = '';
-            document.getElementById('exercise').value = '';
-            document.getElementById('exercise').focus();
+            
+            weightInputEl.value = '';
+            repsInputEl.value = '';
+            exerciseInputEl.value = '';
+            exerciseInputEl.focus();
         }
 
         function saveAndRender() {
-            // Sort workouts by date before saving to ensure consistency
             workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
-            localStorage.setItem('workoutData', JSON.stringify(workouts));
+            
+            // ✅ ADDED: Secure local storage saving logic
+            try {
+                localStorage.setItem('workoutData', JSON.stringify(workouts));
+            } catch (e) {
+                console.error("Local Storage storage limits exceeded or blocked:", e);
+                showToast("Error writing to memory. Storage limit may be full.", "error");
+            }
             
             renderHistory();
             renderPRs();
@@ -346,28 +381,23 @@
         function editSet(index) {
             editingIndex = index;
             const workout = workouts[index];
-            
-            document.getElementById('exercise').value = workout.exercise;
-            document.getElementById('weight').value = workout.weight;
-            document.getElementById('reps').value = workout.reps;
-            
-            document.getElementById('formTitle').innerText = `Edit Set (${formatDateForDisplay(workout.date)})`;
-            document.getElementById('submitBtn').innerText = 'Update Set';
-            document.getElementById('cancelEditBtn').style.display = 'block';
-            
+            exerciseInputEl.value = workout.exercise;
+            weightInputEl.value = workout.weight;
+            repsInputEl.value = workout.reps;
+            formTitleEl.innerText = `Edit Set (${formatDateForDisplay(workout.date)})`;
+            submitBtnEl.innerText = 'Update Set';
+            cancelEditBtnEl.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Handles cancellation of edits gracefully
         function cancelEdit() {
             editingIndex = null;
-            document.getElementById('weight').value = '';
-            document.getElementById('reps').value = '';
-            document.getElementById('exercise').value = '';
-            
-            document.getElementById('formTitle').innerText = 'Log a Set';
-            document.getElementById('submitBtn').innerText = 'Log Set';
-            document.getElementById('cancelEditBtn').style.display = 'none';
+            weightInputEl.value = '';
+            repsInputEl.value = '';
+            exerciseInputEl.value = '';
+            formTitleEl.innerText = 'Log a Set';
+            submitBtnEl.innerText = 'Log Set';
+            cancelEditBtnEl.style.display = 'none';
         }
 
         function deleteSet(index) {
@@ -375,192 +405,129 @@
                 workouts.splice(index, 1);
                 if (editingIndex === index) cancelEdit();
                 saveAndRender();
+                showToast("Set deleted.", "info");
             }
         }
         
         function formatDateForDisplay(dateString) {
-            // Converts 'YYYY-MM-DD' to 'MM/DD/YYYY' for display
             const [year, month, day] = dateString.split('-');
             return `${month}/${day}/${year}`;
         }
 
         function renderHistory() {
-            const container = document.getElementById('historyContainer');
-            container.innerHTML = ''; 
-
             if (workouts.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-muted);">No workouts logged yet.</p>';
+                historyContainerEl.innerHTML = '<p style="color: var(--text-muted);">No workouts logged yet.</p>';
                 return;
             }
-
-            const grouped = {};
-            const dateOrder = [];
-
-            workouts.forEach((workout, index) => {
-                if (!grouped[workout.date]) {
-                    grouped[workout.date] = [];
-                    // Use a stable sort order by not re-adding dates
-                    if (!dateOrder.includes(workout.date)) {
-                        dateOrder.push(workout.date);
-                    }
-                }
-                grouped[workout.date].push({ ...workout, originalIndex: index });
-            });
-
-            dateOrder.forEach(date => {
-                const sessionDiv = document.createElement('div');
-                sessionDiv.className = 'session-group';
-
-                const header = document.createElement('h3');
-                header.className = 'session-header';
-                // ***FIXED***: Format date for display
-                header.innerHTML = `📅 ${formatDateForDisplay(date)}`;
-
-                const table = document.createElement('table');
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th>Exercise</th>
-                            <th>W × R</th>
-                            <th>1RM</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${grouped[date].map(item => `
-                            <tr>
-                                <td>${item.exercise}</td>
-                                <td>${item.weight} × ${item.reps}</td>
-                                <td><strong style="color: var(--text-color);">${item.estimated1RM}</strong></td>
-                                <td style="white-space: nowrap;">
-                                    <button class="action-btn edit-btn" onclick="editSet(${item.originalIndex})">Edit</button>
-                                    <button class="action-btn del-btn" onclick="deleteSet(${item.originalIndex})">Del</button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-
-                sessionDiv.appendChild(header);
-                sessionDiv.appendChild(table);
-                container.appendChild(sessionDiv);
-            });
+            const grouped = workouts.reduce((acc, workout, index) => {
+                if (!acc[workout.date]) acc[workout.date] = [];
+                acc[workout.date].push({ ...workout, originalIndex: index });
+                return acc;
+            }, {});
+            
+            historyContainerEl.innerHTML = Object.keys(grouped).map(date => `
+                <div class="session-group">
+                    <h3 class="session-header">📅 ${formatDateForDisplay(date)}</h3>
+                    <table>
+                        <thead>
+                            <tr><th>Exercise</th><th>W × R</th><th>1RM</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody>
+                            ${grouped[date].map(item => `
+                                <tr>
+                                    <td>${item.exercise}</td>
+                                    <td>${item.weight} × ${item.reps}</td>
+                                    <td><strong>${item.estimated1RM}</strong></td>
+                                    <td style="white-space: nowrap;">
+                                        <button class="action-btn edit-btn" onclick="editSet(${item.originalIndex})">Edit</button>
+                                        <button class="action-btn del-btn" onclick="deleteSet(${item.originalIndex})">Del</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `).join('');
         }
 
         function renderPRs() {
-            const container = document.getElementById('prContainer');
-            container.innerHTML = '';
-
             if (workouts.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-muted); margin: 0;">Log a workout to establish your personal records.</p>';
+                prContainerEl.innerHTML = '<p style="color: var(--text-muted); margin: 0;">Log a workout to see personal records.</p>';
                 return;
             }
-
-            const prs = {};
-            workouts.forEach(w => {
-                if (!prs[w.exercise] || w.estimated1RM > prs[w.exercise].estimated1RM) {
-                    prs[w.exercise] = w;
+            const prs = workouts.reduce((acc, w) => {
+                if (!acc[w.exercise] || w.estimated1RM > acc[w.exercise].estimated1RM) {
+                    acc[w.exercise] = w;
                 }
-            });
-
+                return acc;
+            }, {});
             const sortedPRExercises = Object.keys(prs).sort();
-
-            const table = document.createElement('table');
-            table.innerHTML = `
-                <thead>
-                    <tr>
-                        <th>Exercise</th>
-                        <th>Best Set</th>
-                        <th>Best 1RM</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${sortedPRExercises.map(exName => {
-                        const pr = prs[exName];
-                        return `
+            prContainerEl.innerHTML = `
+                <table>
+                    <thead><tr><th>Exercise</th><th>Best Set</th><th>Best 1RM</th></tr></thead>
+                    <tbody>
+                        ${sortedPRExercises.map(exName => `
                             <tr>
-                                <td><strong>${pr.exercise}</strong></td>
-                                <td>${pr.weight} × ${pr.reps}</td>
-                                <td class="pr-gold">★ ${pr.estimated1RM}</td>
+                                <td><strong>${prs[exName].exercise}</strong></td>
+                                <td>${prs[exName].weight} × ${prs[exName].reps}</td>
+                                <td class="pr-gold">★ ${prs[exName].estimated1RM}</td>
                             </tr>
-                        `;
-                    }).join('')}
-                </tbody>
+                        `).join('')}
+                    </tbody>
+                </table>
             `;
-            container.appendChild(table);
         }
 
         function updateExerciseDropdowns() {
             const historyExercises = workouts.map(w => w.exercise);
             const combinedExercises = [...new Set([...defaultExercises, ...historyExercises])].sort();
+            exerciseOptionsEl.innerHTML = combinedExercises.map(ex => `<option value="${ex}"></option>`).join('');
 
-            const datalist = document.getElementById('exerciseOptions');
-            datalist.innerHTML = '';
-            combinedExercises.forEach(ex => {
-                const option = document.createElement('option');
-                option.value = ex;
-                datalist.appendChild(option);
-            });
-
-            const chartSelect = document.getElementById('chartExerciseSelect');
-            const currentChartValue = chartSelect.value;
-            
+            const currentChartValue = chartExerciseSelectEl.value;
             const uniqueLoggedExercises = [...new Set(workouts.map(w => w.exercise))].sort();
             
-            chartSelect.innerHTML = '<option value="">-- Select an Exercise --</option>';
-            uniqueLoggedExercises.forEach(ex => {
-                const option = document.createElement('option');
-                option.value = ex;
-                option.textContent = ex;
-                chartSelect.appendChild(option);
-            });
+            chartExerciseSelectEl.innerHTML = '<option value="">-- Select an Exercise --</option>' + 
+                uniqueLoggedExercises.map(ex => `<option value="${ex}">${ex}</option>`).join('');
 
             if (uniqueLoggedExercises.includes(currentChartValue)) {
-                chartSelect.value = currentChartValue;
+                chartExerciseSelectEl.value = currentChartValue;
             } else if (uniqueLoggedExercises.length > 0 && !currentChartValue) {
-                 chartSelect.value = uniqueLoggedExercises[0];
-                 updateChart();
+                 chartExerciseSelectEl.value = uniqueLoggedExercises[0];
             }
         }
 
         function updateChart() {
-            const selectedExercise = document.getElementById('chartExerciseSelect').value;
+            const selectedExercise = chartExerciseSelectEl.value;
+            const canvas = document.getElementById('progressChart');
             if (!selectedExercise) {
                 if (chartInstance) chartInstance.destroy();
+                canvas.style.display = 'none';
                 return;
             }
+            canvas.style.display = 'block';
 
-            const filteredWorkouts = workouts.filter(w => w.exercise === selectedExercise);
+            const dailyMax = workouts
+                .filter(w => w.exercise === selectedExercise)
+                .reduce((acc, w) => {
+                    if (!acc[w.date] || w.estimated1RM > acc[w.date]) acc[w.date] = w.estimated1RM;
+                    return acc;
+                }, {});
 
-            const dailyMax = {};
-            filteredWorkouts.forEach(w => {
-                if (!dailyMax[w.date] || w.estimated1RM > dailyMax[w.date]) {
-                    dailyMax[w.date] = w.estimated1RM;
-                }
-            });
-
-            // ***FIXED***: With YYYY-MM-DD format, a simple string sort is chronologically correct.
             const sortedDates = Object.keys(dailyMax).sort();
             const chartData = sortedDates.map(date => dailyMax[date]);
-
             renderChartCanvas(sortedDates, chartData, selectedExercise);
         }
-
+        
         function renderChartCanvas(labels, data, exerciseName) {
             const ctx = document.getElementById('progressChart').getContext('2d');
             if (chartInstance) chartInstance.destroy();
-
-            // Pull colors from CSS variables
+            
             const rootStyle = getComputedStyle(document.documentElement);
             const goldColor = rootStyle.getPropertyValue('--gold-primary').trim();
             const gridColor = rootStyle.getPropertyValue('--chart-grid').trim();
             const textColor = rootStyle.getPropertyValue('--text-muted').trim();
             
-            // ***FIXED***: Format YYYY-MM-DD to MM/DD for chart labels
-            const formattedLabels = labels.map(dateStr => {
-                const [, month, day] = dateStr.split('-');
-                return `${month}/${day}`;
-            });
+            const formattedLabels = labels.map(dateStr => dateStr.substring(5)); // Format: 'YYYY-MM-DD' -> 'MM-DD'
 
             Chart.defaults.color = textColor;
 
@@ -572,77 +539,48 @@
                         label: `Est. 1RM for ${exerciseName}`,
                         data: data,
                         borderColor: goldColor,
-                        backgroundColor: 'rgba(212, 175, 55, 0.15)', // Light gold transparency
+                        backgroundColor: 'rgba(212, 175, 55, 0.15)',
                         borderWidth: 2,
                         pointBackgroundColor: goldColor,
                         fill: true,
                         tension: 0.1
                     }]
                 },
-                options: { 
-                    responsive: true, 
-                    scales: { 
-                        y: { 
-                            beginAtZero: false, 
-                            title: { display: true, text: 'Weight' },
-                            grid: { color: gridColor }
-                        },
-                        x: {
-                            grid: { color: gridColor }
-                        }
-                    } 
-                }
+                options: { responsive: true, scales: { y: { beginAtZero: false, title: { display: true, text: 'Weight' }, grid: { color: gridColor } }, x: { grid: { color: gridColor } } } }
             });
         }
 
         // --- IMPORT/EXPORT LOGIC ---
         function exportToCSV() {
             if (workouts.length === 0) {
-                alert("There is no data to export.");
+                showToast("No logged data available to export.", "error");
                 return;
             }
             let csvContent = "data:text/csv;charset=utf-8,Date,Exercise,Weight,Reps,Estimated 1RM\n";
-            // Sort chronologically for export
             const sortedForExport = [...workouts].sort((a,b) => new Date(a.date) - new Date(b.date));
             sortedForExport.forEach(w => {
-                const safeDate = `"${w.date}"`;
                 const safeExercise = `"${w.exercise.replace(/"/g, '""')}"`;
-                csvContent += `${safeDate},${safeExercise},${w.weight},${w.reps},${w.estimated1RM}\n`;
+                csvContent += `${w.date},${safeExercise},${w.weight},${w.reps},${w.estimated1RM}\n`;
             });
-            const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
+            link.setAttribute("href", encodeURI(csvContent));
             link.setAttribute("download", `workout_history_${new Date().toISOString().slice(0,10)}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            showToast("Backup CSV file exported!", "success");
         }
 
-        // ***FIXED***: Robust RFC 4180-compliant CSV line parser to handle commas inside quotes securely
         function parseCSVLine(text) {
             const result = [];
             let insideQuote = false;
             let entry = '';
-            
             for (let i = 0; i < text.length; i++) {
                 const char = text[i];
-                const nextChar = text[i + 1];
-                
-                if (char === '"') {
-                    if (insideQuote && nextChar === '"') {
-                        // Handle escaped quotes (e.g., "" becomes ")
-                        entry += '"';
-                        i++; // Skip next quote
-                    } else {
-                        // Toggle quote state
-                        insideQuote = !insideQuote;
-                    }
-                } else if (char === ',' && !insideQuote) {
-                    result.push(entry.trim());
-                    entry = '';
-                } else {
-                    entry += char;
-                }
+                if (char === '"' && text[i+1] === '"') { entry += '"'; i++; } 
+                else if (char === '"') { insideQuote = !insideQuote; } 
+                else if (char === ',' && !insideQuote) { result.push(entry.trim()); entry = ''; } 
+                else { entry += char; }
             }
             result.push(entry.trim());
             return result;
@@ -655,24 +593,23 @@
             reader.onload = function(e) {
                 const lines = e.target.result.split(/\r?\n/).filter(line => line.trim() !== '');
                 if (lines.length <= 1) {
-                    alert("The CSV file appears to be empty or invalid.");
+                    showToast("CSV file is empty or invalid.", "error");
                     return;
                 }
                 
                 let importedWorkouts = [];
                 for (let i = 1; i < lines.length; i++) {
-                    const row = parseCSVLine(lines[i]);
-                    
-                    if (row.length >= 4) {
-                        let date = row[0];
-                        // Convert MM/DD/YYYY to YYYY-MM-DD if needed
+                    try {
+                        const row = parseCSVLine(lines[i]);
+                        if (row.length < 4) continue;
+                        
+                        let date = row[0].replace(/"/g, '');
                         if (date.includes('/')) {
                             const parts = date.split('/');
                             date = `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
                         }
                         
-                        // Sanitize inputs and enforce safe types
-                        const exercise = row[1].replace(/[<>]/g, ""); // Prevent basic XSS payloads
+                        const exercise = row[1].replace(/"/g, "");
                         const weight = parseFloat(row[2]);
                         const reps = parseInt(row[3]);
                         
@@ -680,14 +617,17 @@
                             const estimated1RM = parseInt(row[4]) || calculate1RM(weight, reps);
                             importedWorkouts.push({ date, exercise, weight, reps, estimated1RM });
                         }
+                    } catch (err) {
+                        console.error(`Skipping invalid CSV line ${i+1}: ${lines[i]}`);
                     }
                 }
+
                 if (importedWorkouts.length > 0) {
                     workouts = [...workouts, ...importedWorkouts];
                     saveAndRender();
-                    alert(`Successfully imported ${importedWorkouts.length} sets!`);
+                    showToast(`Successfully imported ${importedWorkouts.length} sets!`, 'success');
                 } else {
-                    alert("Could not find valid workout data in this CSV.");
+                    showToast("No valid workout data found in the CSV.", "error");
                 }
             };
             reader.readAsText(file);
@@ -697,8 +637,11 @@
         function clearAllData() {
             if (confirm("Are you sure you want to delete ALL your workout data? This cannot be undone.")) {
                 workouts = [];
+                editingIndex = null;
+                cancelEdit();
                 saveAndRender();
                 if (chartInstance) chartInstance.destroy();
+                showToast("All data successfully cleared.", "info");
             }
         }
     </script>
