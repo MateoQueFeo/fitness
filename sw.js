@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lifttracker-v2';
+const CACHE_NAME = 'lifttracker-v3'; // Incremented cache version
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -35,14 +35,21 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Stale-while-revalidate strategy
   event.respondWith(
     caches.open(CACHE_NAME).then((cache) => {
-      return fetch(event.request).then((networkResponse) => {
-        console.log('[Service Worker] Caching new resource:', event.request.url);
-        cache.put(event.request, networkResponse.clone());
-        return networkResponse;
-      }).catch(() => {
-        return cache.match(event.request);
+      return cache.match(event.request).then((cachedResponse) => {
+        const fetchPromise = fetch(event.request).then((networkResponse) => {
+          // If the fetch is successful, update the cache with the new response
+          console.log('[Service Worker] Caching new resource:', event.request.url);
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        });
+
+        // Return the cached response immediately if available,
+        // otherwise wait for the network response.
+        // The network request runs in the background to update the cache.
+        return cachedResponse || fetchPromise;
       });
     })
   );
