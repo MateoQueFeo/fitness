@@ -1,11 +1,18 @@
 const DB_NAME = 'WorkoutTrackerDB';
 const STORE_NAME = 'workoutsStore';
+let db;
 
 function initDB() {
     return new Promise((resolve, reject) => {
+        if (db) {
+            return resolve(db);
+        }
         const request = indexedDB.open(DB_NAME, 2);
         request.onerror = (event) => reject('IndexedDB error: ' + event.target.error);
-        request.onsuccess = (event) => resolve(event.target.result);
+        request.onsuccess = (event) => {
+            db = event.target.result;
+            resolve(db);
+        };
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
             if (!db.objectStoreNames.contains(STORE_NAME)) {
@@ -14,11 +21,12 @@ function initDB() {
         };
     });
 }
-async function addWorkout(workout) { const db = await initDB(); return new Promise((resolve, reject) => { const tx = db.transaction(STORE_NAME, 'readwrite'); const store = tx.objectStore(STORE_NAME); const request = store.add(workout); request.onsuccess = (event) => resolve(event.target.result); tx.oncomplete = () => db.close(); tx.onerror = () => reject(tx.error); }); }
-async function updateWorkout(workout) { const db = await initDB(); return new Promise((resolve, reject) => { const tx = db.transaction(STORE_NAME, 'readwrite'); const store = tx.objectStore(STORE_NAME); store.put(workout); tx.oncomplete = () => { db.close(); resolve(); }; tx.onerror = () => reject(tx.error); }); }
-async function deleteWorkout(id) { const db = await initDB(); return new Promise((resolve, reject) => { const tx = db.transaction(STORE_NAME, 'readwrite'); const store = tx.objectStore(STORE_NAME); store.delete(id); tx.oncomplete = () => { db.close(); resolve(); }; tx.onerror = () => reject(tx.error); }); }
-async function getAllWorkouts() { const db = await initDB(); return new Promise((resolve, reject) => { const tx = db.transaction(STORE_NAME, 'readonly'); const store = tx.objectStore(STORE_NAME); const request = store.getAll(); request.onsuccess = () => resolve(request.result || []); tx.oncomplete = () => db.close(); request.onerror = () => reject(request.error); }); }
-async function clearWorkouts() { const db = await initDB(); return new Promise((resolve, reject) => { const tx = db.transaction(STORE_NAME, 'readwrite'); const store = tx.objectStore(STORE_NAME); store.clear(); tx.oncomplete = () => { db.close(); resolve(); }; tx.onerror = () => reject(tx.error); }); }
+function getStore(mode) { const tx = db.transaction(STORE_NAME, mode); return tx.objectStore(STORE_NAME); }
+function addWorkout(workout) { return new Promise((resolve, reject) => { const store = getStore('readwrite'); const request = store.add(workout); request.onsuccess = (event) => resolve(event.target.result); request.onerror = (event) => reject(event.target.error); }); }
+function updateWorkout(workout) { return new Promise((resolve, reject) => { const store = getStore('readwrite'); const request = store.put(workout); request.onsuccess = () => resolve(); request.onerror = (event) => reject(event.target.error); }); }
+function deleteWorkout(id) { return new Promise((resolve, reject) => { const store = getStore('readwrite'); const request = store.delete(id); request.onsuccess = () => resolve(); request.onerror = (event) => reject(event.target.error); }); }
+function getAllWorkouts() { return new Promise((resolve, reject) => { const store = getStore('readonly'); const request = store.getAll(); request.onsuccess = () => resolve(request.result || []); request.onerror = (event) => reject(event.target.error); }); }
+function clearWorkouts() { return new Promise((resolve, reject) => { const store = getStore('readwrite'); const request = store.clear(); request.onsuccess = () => resolve(); request.onerror = (event) => reject(event.target.error); }); }
 
 const timerDisplayEl = document.getElementById('timerDisplay');
 const formTitleEl = document.getElementById('formTitle');
@@ -40,7 +48,6 @@ let editingWorkoutId = null;
 let timerInterval, timeRemaining = 60, isTimerRunning = false, audioCtx, audioInitialized = false;
 
 function initAudio() { if (!audioInitialized) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); audioInitialized = true; } catch (e) { console.error("Audio Context failed.", e); } } }
-['click', 'touchstart'].forEach(evt => { document.body.addEventListener(evt, initAudio, { once: true }); });
 function showToast(message, type = 'info') { toastEl.textContent = message; toastEl.className = 'show'; if (type === 'success') toastEl.classList.add('success'); if (type === 'error') toastEl.classList.add('error'); setTimeout(() => { toastEl.className = toastEl.className.replace(/show|success|error/g, '').trim(); }, 3000); }
 function startTimer() { if (isTimerRunning) return; initAudio(); timeRemaining = 60; isTimerRunning = true; timerDisplayEl.classList.add('active'); updateTimerUI(timeRemaining); timerInterval = setInterval(() => { timeRemaining--; updateTimerUI(timeRemaining); if (timeRemaining <= 0) { clearInterval(timerInterval); isTimerRunning = false; timerDisplayEl.classList.remove('active'); playBeep(); timeRemaining = 60; updateTimerUI(timeRemaining); } }, 1000); }
 function addMinute() { initAudio(); timeRemaining += 60; updateTimerUI(timeRemaining); }
@@ -51,19 +58,44 @@ function calculate1RM(weight, reps) { if (reps === 1) return weight; return Math
 function normalizeExerciseName(str) { if (!str) return ''; return str.trim().toLowerCase().split(/\s+/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '); }
 function formatDateForDisplay(dateString) { if (!dateString) return ''; const date = new Date(dateString); return date.toLocaleDateString(undefined, { timeZone: 'UTC', month: '2-digit', day: '2-digit', year: 'numeric' });}
 
-window.onload = async function() {
+async function main() {
     if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
     try {
+        await initDB();
         workouts = await getAllWorkouts();
         workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
     } catch (e) {
         showToast("Could not load history.", "error");
     }
+    setupEventListeners();
     renderHistory();
     renderPRs();
     updateExerciseDropdowns();
     updateChart();
 };
+
+function setupEventListeners() {
+    ['click', 'touchstart'].forEach(evt => document.body.addEventListener(evt, initAudio, { once: true }));
+    document.getElementById('addMinBtn').addEventListener('click', addMinute);
+    document.getElementById('resetTimerBtn').addEventListener('click', stopTimer);
+    submitBtnEl.addEventListener('click', processSet);
+    cancelEditBtnEl.addEventListener('click', cancelEdit);
+    chartExerciseSelectEl.addEventListener('change', updateChart);
+    document.getElementById('importBtn').addEventListener('click', () => document.getElementById('csvFileInput').click());
+    document.getElementById('exportBtn').addEventListener('click', exportToCSV);
+    document.getElementById('clearDataBtn').addEventListener('click', clearAllData);
+    document.getElementById('csvFileInput').addEventListener('change', importFromCSV);
+    historyContainerEl.addEventListener('click', (event) => {
+        const target = event.target;
+        if (target.classList.contains('edit-btn')) {
+            const id = parseInt(target.dataset.id);
+            editSet(id);
+        } else if (target.classList.contains('del-btn')) {
+            const id = parseInt(target.dataset.id);
+            deleteSet(id);
+        }
+    });
+}
 
 function createWorkoutRow(workout) {
     const row = document.createElement('tr');
@@ -73,8 +105,8 @@ function createWorkoutRow(workout) {
         <td>${workout.weight} × ${workout.reps}</td>
         <td><strong>${workout.estimated1RM}</strong></td>
         <td style="white-space: nowrap;">
-            <button class="action-btn edit-btn" onclick="editSet(${workout.id})">Edit</button>
-            <button class="action-btn del-btn" onclick="deleteSet(${workout.id})">Del</button>
+            <button class="action-btn edit-btn" data-id="${workout.id}">Edit</button>
+            <button class="action-btn del-btn" data-id="${workout.id}">Del</button>
         </td>
     `;
     return row;
@@ -116,13 +148,10 @@ async function processSet() {
     const exercise = normalizeExerciseName(exerciseInputEl.value);
     const weight = parseFloat(weightInputEl.value);
     const reps = parseInt(repsInputEl.value);
-
     if (!exercise || isNaN(weight) || isNaN(reps) || weight < 0 || reps < 0) {
         showToast("Please enter valid exercise details.", "error"); return;
     }
-
     const estimated1RM = calculate1RM(weight, reps);
-
     try {
         if (editingWorkoutId !== null) {
             const workoutIndex = workouts.findIndex(w => w.id === editingWorkoutId);
@@ -228,14 +257,11 @@ function updateExerciseDropdowns() {
     const historyExercises = workouts.map(w => w.exercise);
     const combinedExercises = [...new Set([...defaultExercises, ...historyExercises])].sort();
     const currentDatalistValues = Array.from(exerciseOptionsEl.options).map(opt => opt.value);
-
     if (JSON.stringify(combinedExercises) !== JSON.stringify(currentDatalistValues)) {
         exerciseOptionsEl.innerHTML = combinedExercises.map(ex => `<option value="${ex}"></option>`).join('');
     }
-
     const uniqueLoggedExercises = [...new Set(workouts.map(w => w.exercise))].sort();
     const currentSelectValues = Array.from(chartExerciseSelectEl.options).map(opt => opt.value).filter(val => val !== '');
-
     if (JSON.stringify(uniqueLoggedExercises) !== JSON.stringify(currentSelectValues)) {
         const currentChartValue = chartExerciseSelectEl.value;
         chartExerciseSelectEl.innerHTML = '<option value="">-- Select an Exercise --</option>' + uniqueLoggedExercises.map(ex => `<option value="${ex}">${ex}</option>`).join('');
@@ -253,43 +279,17 @@ function renderChartCanvas(labels, data, exerciseName) { const ctx = document.ge
 function exportToCSV() { if (workouts.length === 0) { showToast("No data to export.", "error"); return; } let csvContent = "Date,Exercise,Weight,Reps,Estimated 1RM\n"; const sortedForExport = [...workouts].sort((a,b) => new Date(a.date) - new Date(b.date)); sortedForExport.forEach(w => { const safeExercise = `"${w.exercise.replace(/"/g, '""')}"`; csvContent += `${w.date},${safeExercise},${w.weight},${w.reps},${w.estimated1RM}\n`; }); const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", `workout_history_${new Date().toISOString().slice(0,10)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); showToast("Backup CSV file exported!", "success"); }
 
 function parseCSV(csvText) {
-    const rows = [];
-    let currentRow = [];
-    let currentCell = '';
-    let insideQuote = false;
+    const rows = []; let currentRow = []; let currentCell = ''; let insideQuote = false;
     for (let i = 0; i < csvText.length; i++) {
-        const char = csvText[i];
-        const nextChar = csvText[i + 1];
-        if (insideQuote) {
-            if (char === '"' && nextChar === '"') {
-                currentCell += '"';
-                i++;
-            } else if (char === '"') {
-                insideQuote = false;
-            } else {
-                currentCell += char;
-            }
+        const char = csvText[i]; const nextChar = csvText[i + 1];
+        if (insideQuote) { if (char === '"' && nextChar === '"') { currentCell += '"'; i++; } else if (char === '"') { insideQuote = false; } else { currentCell += char; }
         } else {
-            if (char === '"') {
-                insideQuote = true;
-            } else if (char === ',') {
-                currentRow.push(currentCell.trim());
-                currentCell = '';
-            } else if (char === '\n' || (char === '\r' && nextChar === '\n')) {
-                if (char === '\r') i++;
-                currentRow.push(currentCell.trim());
-                rows.push(currentRow);
-                currentRow = [];
-                currentCell = '';
-            } else {
-                currentCell += char;
-            }
+            if (char === '"') { insideQuote = true; } else if (char === ',') { currentRow.push(currentCell.trim()); currentCell = '';
+            } else if (char === '\n' || (char === '\r' && nextChar === '\n')) { if (char === '\r') i++; currentRow.push(currentCell.trim()); rows.push(currentRow); currentRow = []; currentCell = '';
+            } else { currentCell += char; }
         }
     }
-    if (currentCell !== '' || currentRow.length > 0) {
-        currentRow.push(currentCell.trim());
-        rows.push(currentRow);
-    }
+    if (currentCell !== '' || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); }
     return rows;
 }
 function parseDateFromCSV(dateString) { if (!dateString) return null; const cleanStr = dateString.replace(/"/g, '').trim(); if (/^\d{4}-\d{2}-\d{2}$/.test(cleanStr)) { return cleanStr; } return null; }
@@ -306,31 +306,16 @@ async function importFromCSV(event) {
         const promises = [];
         for (let i = 1; i < rows.length; i++) {
             try {
-                const row = rows[i];
-                if (row.length < 4 || !row[0]) continue;
-                const date = parseDateFromCSV(row[0]);
-                const exercise = row[1];
-                const weight = parseFloat(row[2]);
-                const reps = parseInt(row[3]);
-                if (date && exercise && !isNaN(weight) && !isNaN(reps)) {
-                    const estimated1RM = parseInt(row[4]) || calculate1RM(weight, reps);
-                    promises.push(addWorkout({ date, exercise, weight, reps, estimated1RM }));
-                    importedCount++;
-                }
+                const row = rows[i]; if (row.length < 4 || !row[0]) continue; const date = parseDateFromCSV(row[0]); const exercise = row[1]; const weight = parseFloat(row[2]); const reps = parseInt(row[3]);
+                if (date && exercise && !isNaN(weight) && !isNaN(reps)) { const estimated1RM = parseInt(row[4]) || calculate1RM(weight, reps); promises.push(addWorkout({ date, exercise, weight, reps, estimated1RM })); importedCount++; }
             } catch (err) { console.error(`Skipping invalid CSV row ${i+1}`, err); }
         }
         if (promises.length > 0) {
             await Promise.all(promises);
-            workouts = await getAllWorkouts();
-            workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
-            renderHistory();
-            renderPRs();
-            updateExerciseDropdowns();
-            updateChart();
+            workouts = await getAllWorkouts(); workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
+            renderHistory(); renderPRs(); updateExerciseDropdowns(); updateChart();
             showToast(`Successfully imported ${importedCount} sets!`, 'success');
-        } else {
-            showToast("No valid workout data found in the CSV.", "error");
-        }
+        } else { showToast("No valid workout data found in the CSV.", "error"); }
     };
     reader.readAsText(file);
     event.target.value = '';
@@ -341,14 +326,12 @@ async function clearAllData() {
         try {
             await clearWorkouts();
             workouts = [];
-            cancelEdit();
-            renderHistory();
-            renderPRs();
-            updateExerciseDropdowns();
-            updateChart();
+            cancelEdit(); renderHistory(); renderPRs(); updateExerciseDropdowns(); updateChart();
             showToast("All data has been cleared.", "info");
         } catch (e) {
             showToast("Error clearing data.", "error");
         }
     }
 }
+
+window.onload = main;

@@ -14,7 +14,7 @@
     <link rel="apple-touch-icon" href="icons/icon-512.png">
 
     <link rel="stylesheet" href="./styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="./chart.js"></script>
 </head>
 <body>
     
@@ -26,8 +26,8 @@
         <div class="card timer-card">
             <div class="timer-display" id="timerDisplay" aria-live="polite">01:00</div>
             <div class="timer-controls">
-                <button class="timer-btn add-min-btn" onclick="addMinute()">+1 Min</button>
-                <button class="timer-btn stop-btn" onclick="stopTimer()">Reset</button>
+                <button class="timer-btn add-min-btn" id="addMinBtn">+1 Min</button>
+                <button class="timer-btn stop-btn" id="resetTimerBtn">Reset</button>
             </div>
         </div>
 
@@ -52,8 +52,8 @@
             </div>
             
             <div class="btn-group">
-                <button id="submitBtn" onclick="processSet()">Log Set</button>
-                <button id="cancelEditBtn" class="cancel-btn" onclick="cancelEdit()">Cancel</button>
+                <button id="submitBtn">Log Set</button>
+                <button id="cancelEditBtn" class="cancel-btn">Cancel</button>
             </div>
         </div>
 
@@ -66,7 +66,7 @@
             <h2>📈 Progress Chart (1RM)</h2>
             <div class="form-group">
                 <label for="chartExerciseSelect">Select Exercise to Chart</label>
-                <select id="chartExerciseSelect" onchange="updateChart()">
+                <select id="chartExerciseSelect">
                     <option value="">-- Select an Exercise --</option>
                 </select>
             </div>
@@ -77,12 +77,12 @@
             <h2>History</h2>
             <div id="historyContainer"></div>
             
-            <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importFromCSV(event)">
+            <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
             
             <div class="footer-actions">
-                <button onclick="document.getElementById('csvFileInput').click()">📂 Import</button>
-                <button onclick="exportToCSV()">💾 Export</button>
-                <button class="danger-btn" onclick="clearAllData()">🗑️ Clear</button>
+                <button id="importBtn">📂 Import</button>
+                <button id="exportBtn">💾 Export</button>
+                <button class="danger-btn" id="clearDataBtn">🗑️ Clear</button>
             </div>
         </div>
     </main>
