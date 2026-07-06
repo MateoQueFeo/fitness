@@ -12,7 +12,6 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-512.png">
 
-    <!-- ✅ OPTION A CDN: Smart auto-updates for minor versions of Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     
     <style>
@@ -51,8 +50,31 @@
 
         .card { background: var(--card-bg); padding: 1.25rem; border-radius: 12px; margin-bottom: 1rem; border: 1px solid var(--border-color); }
         h2 { margin-top: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-color); }
-        .form-group { margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.35rem; }
         
+        /* ✅ UPDATED: Tighter vertical spacing */
+        .form-group { 
+            margin-bottom: 0.75rem; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 0.25rem; 
+        }
+        
+        /* ✅ ADDED: Smaller labels to save space */
+        label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* ✅ ADDED: New rules for the side-by-side layout */
+        .form-row { 
+            display: flex; 
+            gap: 0.75rem; 
+        }
+        .form-row .form-group {
+            flex: 1; /* Makes both inputs take up exactly half the row */
+            margin-bottom: 0.75rem;
+        }
+
         input, select { background: var(--input-bg); color: var(--text-color); padding: 0.85rem; border: 1px solid var(--input-border); border-radius: 8px; font-size: 1rem; -webkit-appearance: none; transition: border-color 0.2s; }
         input:focus, select:focus { outline: none; border-color: var(--gold-primary); }
         
@@ -145,21 +167,28 @@
         </div>
     </div>
 
+    <!-- ✅ UPDATED: Form layout is now more compact -->
     <div class="card">
         <h2 id="formTitle">Log a Set</h2>
+        
         <div class="form-group">
             <label for="exercise">Exercise</label>
             <input type="text" id="exercise" list="exerciseOptions" placeholder="Start typing..." autocomplete="off" required>
             <datalist id="exerciseOptions"></datalist>
         </div>
-        <div class="form-group">
-            <label for="weight">Weight</label>
-            <input type="number" id="weight" placeholder="Weight" required>
+        
+        <!-- Wrapper for side-by-side inputs -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="weight">Weight</label>
+                <input type="number" id="weight" placeholder="Weight" required>
+            </div>
+            <div class="form-group">
+                <label for="reps">Reps</label>
+                <input type="number" id="reps" placeholder="Reps" required>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="reps">Reps</label>
-            <input type="number" id="reps" placeholder="Reps" required>
-        </div>
+        
         <div class="btn-group">
             <button id="submitBtn" onclick="processSet()">Log Set</button>
             <button id="cancelEditBtn" class="cancel-btn" onclick="cancelEdit()">Cancel</button>
@@ -294,7 +323,6 @@
         let chartInstance = null;
         let editingIndex = null; 
 
-        // ✅ UPDATED: Sorting is now performed only once on initial load.
         window.onload = function() {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('./sw.js')
@@ -306,7 +334,6 @@
                 const savedData = localStorage.getItem('workoutData');
                 if (savedData) {
                     workouts = JSON.parse(savedData);
-                    // OPTIMIZATION: Sort the data only once after loading it from storage.
                     workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
                 }
             } catch (e) {
@@ -346,7 +373,6 @@
                 showToast("Set updated!", "success");
             } else {
                 const date = new Date().toISOString().slice(0, 10);
-                // unshift() correctly adds the new item to the start of the already-sorted array.
                 workouts.unshift({ date, exercise, weight, reps, estimated1RM });
                 showToast("Set logged!", "success");
             }
@@ -360,7 +386,6 @@
             exerciseInputEl.focus();
         }
 
-        // ✅ UPDATED: The expensive sort operation has been removed from this function.
         function saveAndRender() {
             try {
                 localStorage.setItem('workoutData', JSON.stringify(workouts));
@@ -524,7 +549,7 @@
             const gridColor = rootStyle.getPropertyValue('--chart-grid').trim();
             const textColor = rootStyle.getPropertyValue('--text-muted').trim();
             
-            const formattedLabels = labels.map(dateStr => dateStr.substring(5)); // Format: 'YYYY-MM-DD' -> 'MM-DD'
+            const formattedLabels = labels.map(dateStr => dateStr.substring(5));
 
             Chart.defaults.color = textColor;
 
@@ -583,7 +608,6 @@
             return result;
         }
 
-        // ✅ UPDATED: Sorting is now performed only once after a bulk import.
         function importFromCSV(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -622,9 +646,8 @@
 
                 if (importedWorkouts.length > 0) {
                     workouts = [...workouts, ...importedWorkouts];
-                    // OPTIMIZATION: Sort the data once after adding all imported sets.
                     workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
-                    saveAndRender(); // Now call the leaner saveAndRender.
+                    saveAndRender();
                     showToast(`Successfully imported ${importedWorkouts.length} sets!`, 'success');
                 } else {
                     showToast("No valid workout data found in the CSV.", "error");
