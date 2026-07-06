@@ -300,7 +300,6 @@
             document.title = (isTimerRunning && seconds > 0) ? `(${timeString}) Resting...` : 'WorkoutTracker';
         }
 
-        // ✅ UPDATED: The toast notification has been removed to avoid redundancy.
         function playBeep() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -367,11 +366,9 @@
                 formTitleEl.innerText = 'Log a Set';
                 submitBtnEl.innerText = 'Log Set';
                 cancelEditBtnEl.style.display = 'none';
-                showToast("Set updated!", "success");
             } else {
                 const date = new Date().toISOString().slice(0, 10);
                 workouts.unshift({ date, exercise, weight, reps, estimated1RM });
-                showToast("Set logged!", "success");
             }
 
             saveAndRender();
