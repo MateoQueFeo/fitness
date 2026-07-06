@@ -51,7 +51,7 @@
             -webkit-tap-highlight-color: transparent; 
         }
         
-        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; margin-top: 0.5rem; }
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; margin-top: 0.5rem; }
         .theme-toggle-btn { background: transparent; color: var(--text-color); border: 1px solid var(--border-color); font-size: 1.2rem; padding: 0.5rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
 
         .card { background: var(--card-bg); padding: 1.25rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); margin-bottom: 1rem; border: 1px solid var(--border-color); }
@@ -77,9 +77,11 @@
         .edit-btn { background: #f59e0b; color: white; }
         .del-btn { background: #ef4444; color: white; }
 
-        .timer-display { font-size: 3.5rem; font-weight: 800; text-align: center; margin: 0.5rem 0; color: var(--text-color); font-variant-numeric: tabular-nums; }
-        .timer-controls { display: flex; gap: 0.5rem; justify-content: center; }
-        .timer-btn { flex: 1; margin-top: 0; padding: 0.75rem; border-radius: 8px; }
+        /* Compact Timer Styles */
+        .timer-card { padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+        .timer-display { font-size: 2.25rem; font-weight: 800; margin: 0; color: var(--text-color); font-variant-numeric: tabular-nums; line-height: 1; }
+        .timer-controls { display: flex; gap: 0.5rem; flex: 1; min-width: 220px; justify-content: flex-end; }
+        .timer-btn { flex: 1; margin-top: 0; padding: 0.7rem 0.5rem; border-radius: 8px; font-size: 0.9rem; }
         .add-min-btn { background: #10b981; }
         .add-min-btn:hover { background: #059669; }
         .stop-btn { background: #6b7280; }
@@ -103,8 +105,8 @@
         <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
     </div>
     
-    <div class="card">
-        <h2>⏱️ Rest Timer</h2>
+    <!-- Compact Timer Card -->
+    <div class="card timer-card">
         <div class="timer-display" id="timerDisplay">01:00</div>
         <div class="timer-controls">
             <button class="timer-btn" onclick="startTimer()">Start</button>
@@ -185,12 +187,11 @@
 
         // --- TIMER LOGIC ---
         let timerInterval;
-        let timeRemaining = 60; // Defaults to 60 seconds
+        let timeRemaining = 60;
         let isTimerRunning = false;
 
         function startTimer() {
-            if (isTimerRunning) return; // Prevent multiple clicks from speeding up the timer
-            
+            if (isTimerRunning) return; 
             if (timeRemaining <= 0) timeRemaining = 60;
             
             isTimerRunning = true;
@@ -205,7 +206,6 @@
                     isTimerRunning = false;
                     playBeep();
                     
-                    // Reset to default 60s for the next set
                     timeRemaining = 60;
                     updateTimerUI(timeRemaining);
                 }
@@ -220,7 +220,7 @@
         function stopTimer() {
             clearInterval(timerInterval);
             isTimerRunning = false;
-            timeRemaining = 60; // Reset back to default
+            timeRemaining = 60; 
             updateTimerUI(timeRemaining);
         }
 
@@ -231,7 +231,6 @@
             
             document.getElementById('timerDisplay').innerText = timeString;
             
-            // Only update the browser tab title if the timer is actively counting down
             if (isTimerRunning && seconds > 0) {
                 document.title = `(${timeString}) Resting...`;
             } else {
