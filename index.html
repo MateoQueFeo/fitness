@@ -51,7 +51,6 @@
         .card { background: var(--card-bg); padding: 1.25rem; border-radius: 12px; margin-bottom: 1rem; border: 1px solid var(--border-color); }
         h2 { margin-top: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-color); }
         
-        /* ✅ UPDATED: Tighter vertical spacing */
         .form-group { 
             margin-bottom: 0.75rem; 
             display: flex; 
@@ -59,19 +58,17 @@
             gap: 0.25rem; 
         }
         
-        /* ✅ ADDED: Smaller labels to save space */
         label {
             font-size: 0.85rem;
             color: var(--text-muted);
         }
 
-        /* ✅ ADDED: New rules for the side-by-side layout */
         .form-row { 
             display: flex; 
             gap: 0.75rem; 
         }
         .form-row .form-group {
-            flex: 1; /* Makes both inputs take up exactly half the row */
+            flex: 1;
             margin-bottom: 0.75rem;
         }
 
@@ -167,7 +164,6 @@
         </div>
     </div>
 
-    <!-- ✅ UPDATED: Form layout is now more compact -->
     <div class="card">
         <h2 id="formTitle">Log a Set</h2>
         
@@ -177,7 +173,6 @@
             <datalist id="exerciseOptions"></datalist>
         </div>
         
-        <!-- Wrapper for side-by-side inputs -->
         <div class="form-row">
             <div class="form-group">
                 <label for="weight">Weight</label>
@@ -305,6 +300,7 @@
             document.title = (isTimerRunning && seconds > 0) ? `(${timeString}) Resting...` : 'WorkoutTracker';
         }
 
+        // ✅ UPDATED: The toast notification has been removed to avoid redundancy.
         function playBeep() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -314,8 +310,9 @@
                 osc.connect(ctx.destination);
                 osc.start();
                 osc.stop(ctx.currentTime + 0.5);
-            } catch (e) { console.log("Audio Context not supported or allowed by user gesture."); }
-            showToast("Rest time is up!", "success");
+            } catch (e) { 
+                console.log("Audio Context not supported or allowed by user gesture."); 
+            }
         }
 
         // --- TRACKER LOGIC ---
