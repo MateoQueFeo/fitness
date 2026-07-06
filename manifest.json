@@ -1,6 +1,7 @@
 {
   "name": "WorkoutTracker",
   "short_name": "Workout",
+  "description": "A simple and effective app to track your workout sets, progress, and personal records.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#000000",
