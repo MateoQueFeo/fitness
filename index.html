@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Workout Tracker</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LiftTracker">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2554/2554031.png">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --text-color: #111827;
+            --text-muted: #4b5563;
+            --card-bg: white;
+            --border-color: #e5e7eb;
+            --input-bg: white;
+            --input-border: #d1d5db;
+            --th-bg: #f3f4f6;
+            --chart-grid: rgba(0, 0, 0, 0.1);
+            --chart-text: #6b7280;
+        }
+
+        body.dark-mode {
+            --bg-color: #0f172a;
+            --text-color: #f9fafb;
+            --text-muted: #9ca3af;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --input-bg: #334155;
+            --input-border: #475569;
+            --th-bg: #334155;
+            --chart-grid: rgba(255, 255, 255, 0.1);
+            --chart-text: #9ca3af;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            max-width: 500px; 
+            margin: 0 auto; 
+            padding: 1rem 1rem 3rem 1rem; 
+            background: var(--bg-color); 
+            color: var(--text-color); 
+            transition: background-color 0.3s, color 0.3s;
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; margin-top: 0.5rem; }
+        .theme-toggle-btn { background: transparent; color: var(--text-color); border: 1px solid var(--border-color); font-size: 1.2rem; padding: 0.5rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+
+        .card { background: var(--card-bg); padding: 1.25rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); margin-bottom: 1rem; border: 1px solid var(--border-color); }
+        h1 { font-size: 1.75rem; font-weight: 800; }
+        h2 { margin-top: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-color); }
+        .form-group { margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.35rem; }
+        
+        input, select { background: var(--input-bg); color: var(--text-color); padding: 0.85rem; border: 1px solid var(--input-border); border-radius: 8px; font-size: 1rem; -webkit-appearance: none; }
+        button { background: #2563eb; color: white; border: none; cursor: pointer; font-weight: bold; margin-top: 0.5rem; padding: 0.85rem; border-radius: 8px; font-size: 1rem; transition: transform 0.1s; }
+        button:active { transform: scale(0.98); } 
+        
+        .btn-group { display: flex; gap: 0.5rem; }
+        .btn-group button { flex: 1; }
+        .cancel-btn { background: #6b7280; display: none; }
+        
+        .footer-actions { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+        .footer-actions button { flex: 1; margin-top: 0; min-width: 100px; padding: 0.75rem; font-size: 0.875rem; }
+        .import-btn { background: #6366f1; }
+        .export-btn { background: #10b981; }
+        .danger-btn { background: #dc2626; }
+        
+        .action-btn { padding: 0.5rem 0.75rem; font-size: 0.875rem; margin-top: 0; border-radius: 6px; cursor: pointer; display: inline-block; margin-right: 0.25rem; border: none; }
+        .edit-btn { background: #f59e0b; color: white; }
+        .del-btn { background: #ef4444; color: white; }
+
+        .timer-display { font-size: 3.5rem; font-weight: 800; text-align: center; margin: 0.5rem 0; color: var(--text-color); font-variant-numeric: tabular-nums; }
+        .timer-controls { display: flex; gap: 0.5rem; justify-content: center; }
+        .timer-btn { flex: 1; margin-top: 0; padding: 0.75rem; border-radius: 8px; }
+        .add-min-btn { background: #10b981; }
+        .add-min-btn:hover { background: #059669; }
+        .stop-btn { background: #6b7280; }
+        
+        .session-group { margin-top: 1rem; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; background: var(--card-bg); }
+        .session-header { background: var(--th-bg); padding: 0.75rem 1rem; margin: 0; font-size: 1rem; font-weight: 700; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem; color: var(--text-color); }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th, td { text-align: left; padding: 0.85rem 0.75rem; border-bottom: 1px solid var(--border-color); }
+        tr:last-child td { border-bottom: none; }
+        th { background: var(--th-bg); color: var(--text-muted); font-weight: 600; }
+        canvas { max-width: 100%; margin-top: 1rem; }
+        
+        ::placeholder { color: var(--text-muted); opacity: 0.6; }
+    </style>
+</head>
+<body>
+    
+    <div class="header-container">
+        <h1 style="margin: 0;">LiftTracker</h1>
+        <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
+    </div>
+    
+    <div class="card">
+        <h2>⏱️ Rest Timer</h2>
+        <div class="timer-display" id="timerDisplay">01:00</div>
+        <div class="timer-controls">
+            <button class="timer-btn" onclick="startTimer()">Start</button>
+            <button class="timer-btn add-min-btn" onclick="addMinute()">+1 Min</button>
+            <button class="timer-btn stop-btn" onclick="stopTimer()">Reset</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 id="formTitle">Log a Set</h2>
+        <div class="form-group">
+            <label for="exercise">Exercise</label>
+            <input type="text" id="exercise" list="exerciseOptions" placeholder="Start typing..." autocomplete="off" required>
+            <datalist id="exerciseOptions"></datalist>
+        </div>
+        <div class="form-group">
+            <label for="weight">Weight</label>
+            <input type="number" id="weight" placeholder="Weight" required>
+        </div>
+        <div class="form-group">
+            <label for="reps">Reps</label>
+            <input type="number" id="reps" placeholder="Reps" required>
+        </div>
+        <div class="btn-group">
+            <button id="submitBtn" onclick="processSet()">Log Set</button>
+            <button id="cancelEditBtn" class="cancel-btn" onclick="cancelEdit()">Cancel</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📈 Progress Chart (1RM)</h2>
+        <div class="form-group">
+            <label for="chartExerciseSelect">Select Exercise to Chart</label>
+            <select id="chartExerciseSelect" onchange="updateChart()">
+                <option value="">-- Select an Exercise --</option>
+            </select>
+        </div>
+        <canvas id="progressChart"></canvas>
+    </div>
+
+    <div class="card">
+        <h2>History</h2>
+        <div id="historyContainer"></div>
+        
+        <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importFromCSV(event)">
+        
+        <div class="footer-actions">
+            <button class="import-btn" onclick="document.getElementById('csvFileInput').click()">📂 Import</button>
+            <button class="export-btn" onclick="exportToCSV()">💾 Export</button>
+            <button class="danger-btn" onclick="clearAllData()">🗑️ Clear</button>
+        </div>
+    </div>
+
+    <script>
+        const defaultExercises = [
+            "Bench Press", "Squat", "Deadlift", "Overhead Press", 
+            "Barbell Row", "Pull Up", "Dumbbell Curl", "Leg Press", 
+            "Romanian Deadlift", "Front Squat", "Lat Pulldown", "Tricep Extension"
+        ];
+
+        // --- THEME LOGIC ---
+        function applyTheme(isDark) {
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeToggleBtn').innerText = '☀️';
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.getElementById('themeToggleBtn').innerText = '🌙';
+            }
+            updateChart(); 
+        }
+
+        function toggleTheme() {
+            const isDark = !document.body.classList.contains('dark-mode');
+            localStorage.setItem('workoutTrackerTheme', isDark ? 'dark' : 'light');
+            applyTheme(isDark);
+        }
+
+        // --- TIMER LOGIC ---
+        let timerInterval;
+        let timeRemaining = 60; // Defaults to 60 seconds
+        let isTimerRunning = false;
+
+        function startTimer() {
+            if (isTimerRunning) return; // Prevent multiple clicks from speeding up the timer
+            
+            if (timeRemaining <= 0) timeRemaining = 60;
+            
+            isTimerRunning = true;
+            updateTimerUI(timeRemaining);
+
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerUI(timeRemaining);
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    isTimerRunning = false;
+                    playBeep();
+                    
+                    // Reset to default 60s for the next set
+                    timeRemaining = 60;
+                    updateTimerUI(timeRemaining);
+                }
+            }, 1000);
+        }
+
+        function addMinute() {
+            timeRemaining += 60;
+            updateTimerUI(timeRemaining);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timeRemaining = 60; // Reset back to default
+            updateTimerUI(timeRemaining);
+        }
+
+        function updateTimerUI(seconds) {
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            const timeString = `${mins}:${secs}`;
+            
+            document.getElementById('timerDisplay').innerText = timeString;
+            
+            // Only update the browser tab title if the timer is actively counting down
+            if (isTimerRunning && seconds > 0) {
+                document.title = `(${timeString}) Resting...`;
+            } else {
+                document.title = `LiftTracker`;
+            }
+        }
+
+        function playBeep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                osc.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.5);
+            } catch (e) { console.log("Audio API not supported."); }
+            setTimeout(() => alert("Rest time is up!"), 100);
+        }
+
+        // --- TRACKER LOGIC ---
+        let workouts = [];
+        let chartInstance = null;
+        let editingIndex = null; 
+
+        window.onload = function() {
+            const savedTheme = localStorage.getItem('workoutTrackerTheme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                applyTheme(true);
+            } else {
+                applyTheme(false);
+            }
+
+            const savedData = localStorage.getItem('workoutData');
+            if (savedData) {
+                workouts = JSON.parse(savedData);
+            }
+            renderHistory();
+            updateExerciseDropdowns();
+        };
+
+        function calculate1RM(weight, reps) {
+            if (reps === 1) return weight;
+            return Math.round(weight * (1 + reps / 30));
+        }
+
+        function processSet() {
+            const exerciseInput = document.getElementById('exercise').value.trim();
+            const exercise = exerciseInput.replace(/\b\w/g, l => l.toUpperCase());
+            const weight = parseFloat(document.getElementById('weight').value);
+            const reps = parseInt(document.getElementById('reps').value);
+
+            if (!exercise || isNaN(weight) || isNaN(reps)) {
+                alert("Please fill out all fields with valid numbers.");
+                return;
+            }
+
+            const estimated1RM = calculate1RM(weight, reps);
+
+            if (editingIndex !== null) {
+                workouts[editingIndex].exercise = exercise;
+                workouts[editingIndex].weight = weight;
+                workouts[editingIndex].reps = reps;
+                workouts[editingIndex].estimated1RM = estimated1RM;
+                
+                editingIndex = null;
+                document.getElementById('formTitle').innerText = 'Log a Set';
+                document.getElementById('submitBtn').innerText = 'Log Set';
+                document.getElementById('cancelEditBtn').style.display = 'none';
+            } else {
+                const date = new Date().toLocaleDateString();
+                workouts.unshift({ date, exercise, weight, reps, estimated1RM });
+            }
+
+            saveAndRender();
+
+            document.getElementById('weight').value = '';
+            document.getElementById('reps').value = '';
+            document.getElementById('exercise').value = '';
+            document.getElementById('exercise').focus();
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('workoutData', JSON.stringify(workouts));
+            renderHistory();
+            updateExerciseDropdowns();
+            updateChart();
+        }
+
+        function editSet(index) {
+            editingIndex = index;
+            const workout = workouts[index];
+            
+            document.getElementById('exercise').value = workout.exercise;
+            document.getElementById('weight').value = workout.weight;
+            document.getElementById('reps').value = workout.reps;
+            
+            document.getElementById('formTitle').innerText = `Edit Set (${workout.date})`;
+            document.getElementById('submitBtn').innerText = 'Update Set';
+            document.getElementById('cancelEditBtn').style.display = 'block';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelEdit() {
+            editingIndex = null;
+            document.getElementById('weight').value = '';
+            document.getElementById('reps').value = '';
+            document.getElementById('exercise').value = '';
+            
+            document.getElementById('formTitle').innerText = 'Log a Set';
+            document.getElementById('submitBtn').innerText = 'Log Set';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+        }
+
+        function deleteSet(index) {
+            if (confirm(`Are you sure you want to delete this set of ${workouts[index].exercise}?`)) {
+                workouts.splice(index, 1);
+                if (editingIndex === index) cancelEdit();
+                saveAndRender();
+            }
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyContainer');
+            container.innerHTML = ''; 
+
+            if (workouts.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted);">No workouts logged yet.</p>';
+                return;
+            }
+
+            const grouped = {};
+            const dateOrder = [];
+
+            workouts.forEach((workout, index) => {
+                if (!grouped[workout.date]) {
+                    grouped[workout.date] = [];
+                    dateOrder.push(workout.date);
+                }
+                grouped[workout.date].push({ ...workout, originalIndex: index });
+            });
+
+            dateOrder.forEach(date => {
+                const sessionDiv = document.createElement('div');
+                sessionDiv.className = 'session-group';
+
+                const header = document.createElement('h3');
+                header.className = 'session-header';
+                header.innerHTML = `📅 ${date}`;
+
+                const table = document.createElement('table');
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Exercise</th>
+                            <th>W × R</th>
+                            <th>1RM</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${grouped[date].map(item => `
+                            <tr>
+                                <td>${item.exercise}</td>
+                                <td>${item.weight} × ${item.reps}</td>
+                                <td><strong>${item.estimated1RM}</strong></td>
+                                <td>
+                                    <button class="action-btn edit-btn" onclick="editSet(${item.originalIndex})">Edit</button>
+                                    <button class="action-btn del-btn" onclick="deleteSet(${item.originalIndex})">Del</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+
+                sessionDiv.appendChild(header);
+                sessionDiv.appendChild(table);
+                container.appendChild(sessionDiv);
+            });
+        }
+
+        function updateExerciseDropdowns() {
+            const historyExercises = workouts.map(w => w.exercise);
+            const combinedExercises = [...new Set([...defaultExercises, ...historyExercises])].sort();
+
+            const datalist = document.getElementById('exerciseOptions');
+            datalist.innerHTML = '';
+            combinedExercises.forEach(ex => {
+                const option = document.createElement('option');
+                option.value = ex;
+                datalist.appendChild(option);
+            });
+
+            const chartSelect = document.getElementById('chartExerciseSelect');
+            const currentChartValue = chartSelect.value;
+            
+            const uniqueLoggedExercises = [...new Set(workouts.map(w => w.exercise))].sort();
+            
+            chartSelect.innerHTML = '<option value="">-- Select an Exercise --</option>';
+            uniqueLoggedExercises.forEach(ex => {
+                const option = document.createElement('option');
+                option.value = ex;
+                option.textContent = ex;
+                chartSelect.appendChild(option);
+            });
+
+            if (uniqueLoggedExercises.includes(currentChartValue)) {
+                chartSelect.value = currentChartValue;
+            } else if (uniqueLoggedExercises.length > 0 && !currentChartValue) {
+                 chartSelect.value = uniqueLoggedExercises[0];
+                 updateChart();
+            }
+        }
+
+        function updateChart() {
+            const selectedExercise = document.getElementById('chartExerciseSelect').value;
+            if (!selectedExercise) {
+                if (chartInstance) chartInstance.destroy();
+                return;
+            }
+
+            const filteredWorkouts = workouts.filter(w => w.exercise === selectedExercise);
+
+            const dailyMax = {};
+            filteredWorkouts.forEach(w => {
+                if (!dailyMax[w.date] || w.estimated1RM > dailyMax[w.date]) {
+                    dailyMax[w.date] = w.estimated1RM;
+                }
+            });
+
+            const sortedDates = Object.keys(dailyMax).sort((a, b) => new Date(a) - new Date(b));
+            const chartData = sortedDates.map(date => dailyMax[date]);
+
+            renderChartCanvas(sortedDates, chartData, selectedExercise);
+        }
+
+        function renderChartCanvas(labels, data, exerciseName) {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            const isDark = document.body.classList.contains('dark-mode');
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            const textColor = isDark ? '#9ca3af' : '#6b7280';
+
+            Chart.defaults.color = textColor;
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `Est. 1RM for ${exerciseName}`,
+                        data: data,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#3b82f6',
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    scales: { 
+                        y: { 
+                            beginAtZero: false, 
+                            title: { display: true, text: 'Weight' },
+                            grid: { color: gridColor }
+                        },
+                        x: {
+                            grid: { color: gridColor }
+                        }
+                    } 
+                }
+            });
+        }
+
+        // --- IMPORT/EXPORT LOGIC ---
+        function exportToCSV() {
+            if (workouts.length === 0) {
+                alert("There is no data to export.");
+                return;
+            }
+            let csvContent = "data:text/csv;charset=utf-8,Date,Exercise,Weight,Reps,Estimated 1RM\n";
+            workouts.forEach(w => {
+                const safeDate = `"${w.date}"`;
+                const safeExercise = `"${w.exercise.replace(/"/g, '""')}"`;
+                csvContent += `${safeDate},${safeExercise},${w.weight},${w.reps},${w.estimated1RM}\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `workout_history_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function importFromCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const lines = e.target.result.split('\n').filter(line => line.trim() !== '');
+                if (lines.length <= 1) {
+                    alert("The CSV file appears to be empty or invalid.");
+                    return;
+                }
+                let importedWorkouts = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(item => item.replace(/(^"|"$)/g, '').trim());
+                    if (row.length >= 4) {
+                        const date = row[0];
+                        const exercise = row[1];
+                        const weight = parseFloat(row[2]);
+                        const reps = parseInt(row[3]);
+                        if (date && exercise && !isNaN(weight) && !isNaN(reps)) {
+                            const estimated1RM = parseInt(row[4]) || calculate1RM(weight, reps);
+                            importedWorkouts.push({ date, exercise, weight, reps, estimated1RM });
+                        }
+                    }
+                }
+                if (importedWorkouts.length > 0) {
+                    workouts = [...workouts, ...importedWorkouts];
+                    workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    saveAndRender();
+                    alert(`Successfully imported ${importedWorkouts.length} sets!`);
+                } else {
+                    alert("Could not find valid workout data in this CSV.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function clearAllData() {
+            if (confirm("Are you sure you want to delete ALL your workout data? This cannot be undone.")) {
+                workouts = [];
+                saveAndRender();
+                if (chartInstance) chartInstance.destroy();
+            }
+        }
+    </script>
+</body>
+</html>
