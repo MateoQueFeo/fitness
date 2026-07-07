@@ -67,6 +67,7 @@ function clearWorkouts() {
 }
 
 const timerDisplayEl = document.getElementById('timerDisplay');
+const timerCardEl = document.getElementById('timerCard');
 const formTitleEl = document.getElementById('formTitle');
 const exerciseInputEl = document.getElementById('exercise');
 const weightInputEl = document.getElementById('weight');
@@ -83,6 +84,7 @@ const toastEl = document.getElementById('toast');
 const csvFileInputEl = document.getElementById('csvFileInput');
 const addMinBtnEl = document.getElementById('addMinBtn');
 const resetTimerBtnEl = document.getElementById('resetTimerBtn');
+const metronomeToggleBtnEl = document.getElementById('metronomeToggleBtn');
 const importBtnEl = document.getElementById('importBtn');
 const exportBtnEl = document.getElementById('exportBtn');
 const clearDataBtnEl = document.getElementById('clearDataBtn');
@@ -95,6 +97,7 @@ let workouts = [];
 let exerciseDictionary = {};
 let chartInstance = null;
 let editingWorkoutId = null;
+
 let timerState = {
     interval: null,
     endTime: 0,
@@ -103,6 +106,12 @@ let timerState = {
     defaultDuration: DEFAULT_TIMER_DURATION,
     flashTimeout: null,
 };
+
+let metronomeState = {
+    isRunning: false,
+    interval: null
+};
+
 let audioCtx;
 let audioInitialized = false;
 
@@ -117,7 +126,6 @@ function sortWorkouts() {
 function resolveExerciseName(rawInput) {
     if (!rawInput) return '';
     const sanitizedInput = rawInput.trim().toLowerCase();
-
     for (const key in exerciseDictionary) {
         const exercise = exerciseDictionary[key];
         if (exercise.name.toLowerCase() === sanitizedInput) {
@@ -147,12 +155,10 @@ async function main() {
             console.warn('Service worker registration failed.', err);
         });
     }
-
     if (typeof Chart === 'undefined') {
         showToast('Charting library failed to load.', 'error');
-        if(chartCardEl) chartCardEl.style.display = 'none';
+        if (chartCardEl) chartCardEl.style.display = 'none';
     }
-
     try {
         await Promise.all([
             initDB().then(async () => {
@@ -180,6 +186,7 @@ function setupEventListeners() {
     document.addEventListener('click', initAudioOnce, { once: true });
     addMinBtnEl.addEventListener('click', addMinuteToTimer);
     resetTimerBtnEl.addEventListener('click', resetTimer);
+    metronomeToggleBtnEl.addEventListener('click', toggleMetronome);
     submitBtnEl.addEventListener('click', processSet);
     cancelEditBtnEl.addEventListener('click', cancelEdit);
     chartExerciseSelectEl.addEventListener('change', handleChartSelection);
@@ -213,18 +220,15 @@ function showToast(message, type = 'info') {
 function showConfirmationModal(message, onConfirm) {
     modalMessageEl.textContent = message;
     confirmationModalEl.style.display = 'flex';
-
     const handleConfirm = () => {
         onConfirm();
         hideModal();
     };
-
     const hideModal = () => {
         confirmationModalEl.style.display = 'none';
         modalConfirmBtnEl.removeEventListener('click', handleConfirm);
         modalCancelBtnEl.removeEventListener('click', hideModal);
     };
-
     modalConfirmBtnEl.addEventListener('click', handleConfirm);
     modalCancelBtnEl.addEventListener('click', hideModal);
 }
@@ -244,11 +248,8 @@ function initAudio() {
 }
 
 function playBeep(onFinish = false) {
-    if (!audioInitialized) initAudio();
-    if (!audioCtx) return;
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
+    initAudio();
+    if (!audioCtx || audioCtx.state === 'suspended') return;
     try {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -313,27 +314,54 @@ function resetTimer() {
     updateTimerUI(timerState.defaultDuration);
 }
 
+function metronomeTick() {
+    playBeep(false);
+    timerCardEl.classList.add('ticking');
+    setTimeout(() => {
+        timerCardEl.classList.remove('ticking');
+    }, 100);
+}
+
+function startMetronome() {
+    initAudio();
+    if (metronomeState.isRunning) return;
+    metronomeState.isRunning = true;
+    metronomeState.interval = setInterval(metronomeTick, 1000);
+    metronomeToggleBtnEl.classList.add('active');
+}
+
+function stopMetronome() {
+    if (!metronomeState.isRunning) return;
+    metronomeState.isRunning = false;
+    clearInterval(metronomeState.interval);
+    metronomeToggleBtnEl.classList.remove('active');
+}
+
+function toggleMetronome() {
+    if (metronomeState.isRunning) {
+        stopMetronome();
+    } else {
+        startMetronome();
+    }
+}
+
 async function processSet() {
     const exercise = resolveExerciseName(exerciseInputEl.value);
     const weight = parseFloat(weightInputEl.value);
     const reps = parseInt(repsInputEl.value);
-
     if (!exercise || isNaN(weight) || isNaN(reps) || weight < 0 || reps < 0) {
         showToast("Please enter valid exercise details.", "error");
         return;
     }
-
     exerciseInputEl.value = exercise;
     const estimated1RM = calculate1RM(weight, reps);
     const date = getLocalDate();
-
     if (editingWorkoutId !== null) {
         const workoutIndex = workouts.findIndex(w => w.id === editingWorkoutId);
         if (workoutIndex === -1) {
             showToast("Error finding set to update.", "error");
             return cancelEdit();
         }
-
         const workoutToUpdate = { ...workouts[workoutIndex], exercise, weight, reps, estimated1RM };
         try {
             await updateWorkout(workoutToUpdate);
@@ -398,7 +426,6 @@ async function deleteSet(id) {
     showConfirmationModal("Are you sure you want to delete this set?", async () => {
         const workoutIndex = workouts.findIndex(w => w.id === id);
         if (workoutIndex === -1) return;
-
         try {
             await deleteWorkout(id);
             workouts.splice(workoutIndex, 1);
@@ -434,12 +461,10 @@ function renderHistory() {
         historyContainerEl.innerHTML = '<p style="color: var(--text-secondary);">No workouts logged yet.</p>';
         return;
     }
-
     const sessions = workouts.reduce((acc, workout) => {
         (acc[workout.date] = acc[workout.date] || []).push(workout);
         return acc;
     }, {});
-
     const historyHtml = Object.keys(sessions).map(date => {
         const setsHtml = sessions[date].map(w => `
             <tr id="workout-row-${w.id}">
@@ -452,7 +477,6 @@ function renderHistory() {
                 </td>
             </tr>
         `).join('');
-
         return `
             <div class="session-group" id="session-${date}">
                 <h3 class="session-header">📅 ${formatDateForDisplay(date)}</h3>
@@ -463,7 +487,6 @@ function renderHistory() {
             </div>
         `;
     }).join('');
-
     historyContainerEl.innerHTML = historyHtml;
 }
 
@@ -508,12 +531,9 @@ function updateExerciseDropdowns(newExercise = null) {
     ]);
     if (newExercise) allExercises.add(newExercise);
     renderDatalist(Array.from(allExercises).sort());
-
     const uniqueLoggedExercises = [...new Set(workouts.map(w => w.exercise))].sort();
     const currentChartValue = chartExerciseSelectEl.value;
-
     chartExerciseSelectEl.innerHTML = '<option value="">-- Select an Exercise --</option>' + uniqueLoggedExercises.map(ex => `<option value="${ex}">${ex}</option>`).join('');
-
     if (uniqueLoggedExercises.includes(currentChartValue)) {
         chartExerciseSelectEl.value = currentChartValue;
     } else if (newExercise && uniqueLoggedExercises.includes(newExercise)) {
@@ -528,13 +548,11 @@ function handleChartSelection() {
 function updateChart() {
     const selectedExercise = chartExerciseSelectEl.value;
     if (chartInstance) chartInstance.destroy();
-
     if (!selectedExercise || typeof Chart === 'undefined') {
         chartContainerEl.style.display = 'none';
         return;
     }
     chartContainerEl.style.display = 'block';
-
     const dailyMax = workouts
         .filter(w => w.exercise === selectedExercise)
         .reduce((acc, w) => {
@@ -543,7 +561,6 @@ function updateChart() {
             }
             return acc;
         }, {});
-
     const sortedDates = Object.keys(dailyMax).sort((a, b) => new Date(a) - new Date(b));
     const chartData = sortedDates.map(date => dailyMax[date]);
     renderChartCanvas(sortedDates, chartData, selectedExercise);
@@ -553,7 +570,6 @@ function renderChartCanvas(labels, data, exerciseName) {
     const ctx = document.getElementById('progressChart').getContext('2d');
     const style = getComputedStyle(document.documentElement);
     Chart.defaults.color = style.getPropertyValue('--text-secondary').trim();
-
     chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
@@ -598,21 +614,17 @@ function exportToCSV() {
 async function importFromCSV(event) {
     const file = event.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
-
     reader.onerror = () => {
         showToast('Failed to read the file.', 'error');
         event.target.value = '';
     };
-
     reader.onload = async function(e) {
         let originalWorkouts = [...workouts];
         try {
             const text = e.target.result;
             const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
             if (lines.length < 2) throw new Error("CSV file is empty or missing data rows.");
-
             const headers = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
             const fieldMap = {
                 date: headers.indexOf('date'),
@@ -620,12 +632,10 @@ async function importFromCSV(event) {
                 weight: headers.indexOf('weight'),
                 reps: headers.indexOf('reps')
             };
-            
             const requiredHeaders = ['date', 'exercise', 'weight', 'reps'];
             if (requiredHeaders.some(h => fieldMap[h] === -1)) {
                 throw new Error("Required columns (Date, Exercise, Weight, Reps) not found in CSV.");
             }
-
             const parsedWorkouts = lines.slice(1).map(row => {
                 const cols = row.split(',').map(c => c.trim().replace(/"/g, ''));
                 if (cols.length < requiredHeaders.length) return null;
@@ -640,23 +650,19 @@ async function importFromCSV(event) {
                     estimated1RM: calculate1RM(weight, reps)
                 };
             }).filter(Boolean);
-
             if (parsedWorkouts.length === 0) throw new Error("No valid workout data found in CSV.");
-            
             showConfirmationModal(`Found ${parsedWorkouts.length} sets. This will ADD them to your current history. Continue?`, async () => {
                 for (const workout of parsedWorkouts) {
                     const newId = await addWorkout(workout);
                     workout.id = newId;
                     workouts.push(workout);
                 }
-    
                 sortWorkouts();
                 cancelEdit();
                 renderInitial();
                 updateChart();
                 showToast(`Successfully imported ${parsedWorkouts.length} sets!`, 'success');
             });
-
         } catch (err) {
             showToast(err.message, "error");
             workouts = originalWorkouts;
@@ -666,7 +672,6 @@ async function importFromCSV(event) {
             event.target.value = '';
         }
     };
-
     reader.readAsText(file);
 }
 

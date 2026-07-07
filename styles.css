@@ -74,6 +74,13 @@ main {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
 }
+.timer-card.ticking {
+    animation: metronome-tick 0.1s ease-out;
+}
+@keyframes metronome-tick {
+    0% { border-color: var(--gold-primary); }
+    100% { border-color: var(--border-color); }
+}
 .timer-display {
     font-size: 2.2rem;
     font-weight: bold;
@@ -102,6 +109,12 @@ main {
     font-weight: bold;
     font-size: 0.9rem;
     cursor: pointer;
+    background-color: #333;
+    color: var(--text-primary);
+}
+.timer-btn:active, #metronomeToggleBtn.active {
+    background-color: var(--gold-primary);
+    color: #000;
 }
 .add-min-btn {
     background-color: var(--gold-primary);
@@ -109,10 +122,6 @@ main {
 }
 .add-min-btn:active {
     background-color: var(--gold-hover);
-}
-.stop-btn {
-    background-color: #333;
-    color: var(--text-primary);
 }
 .stop-btn:active {
     background-color: #444;
