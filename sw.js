@@ -4,9 +4,11 @@ const ASSETS_TO_CACHE = [
   '/index.html',
   '/styles.css',
   '/app.js',
-  '/chart.js',
   '/manifest.json',
-  '/exercises.json'
+  '/exercises.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/icon-maskable.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -41,17 +43,20 @@ self.addEventListener('fetch', (event) => {
       if (cachedResponse) {
         return cachedResponse;
       }
+
       return fetch(event.request).then((fetchResponse) => {
-        if (fetchResponse.ok) {
-          const cache = caches.open(CACHE_NAME);
-          cache.then(c => c.put(event.request, fetchResponse.clone()));
+        if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
+          return fetchResponse;
         }
+
+        const responseToCache = fetchResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseToCache);
+        });
+        
         return fetchResponse;
       }).catch(() => {
-        return new Response('You are offline.', {
-          status: 503,
-          statusText: 'Service Unavailable'
-        });
+        return caches.match('/');
       });
     })
   );

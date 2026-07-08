@@ -155,10 +155,7 @@ async function main() {
             console.warn('Service worker registration failed.', err);
         });
     }
-    if (typeof Chart === 'undefined') {
-        showToast('Charting library failed to load.', 'error');
-        if (chartCardEl) chartCardEl.style.display = 'none';
-    }
+
     try {
         await Promise.all([
             initDB().then(async () => {
@@ -171,6 +168,12 @@ async function main() {
     } catch (e) {
         showToast(`Could not load history: ${e.message}`, "error");
     }
+
+    if (typeof Chart === 'undefined') {
+        showToast('Charting library failed to load.', 'error');
+        if (chartCardEl) chartCardEl.style.display = 'none';
+    }
+
     setupEventListeners();
 }
 
@@ -181,7 +184,9 @@ function renderInitial() {
 }
 
 function setupEventListeners() {
-    const initAudioOnce = () => initAudio();
+    const initAudioOnce = () => {
+        if (!audioInitialized) initAudio();
+    };
     document.addEventListener('touchend', initAudioOnce, { once: true });
     document.addEventListener('click', initAudioOnce, { once: true });
     addMinBtnEl.addEventListener('click', addMinuteToTimer);
@@ -234,7 +239,7 @@ function showConfirmationModal(message, onConfirm) {
 }
 
 function initAudio() {
-    if (audioInitialized) return;
+    if (audioInitialized || audioCtx) return;
     try {
         audioCtx = new(window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') {
@@ -248,8 +253,7 @@ function initAudio() {
 }
 
 function playBeep(onFinish = false) {
-    initAudio();
-    if (!audioCtx || audioCtx.state === 'suspended') return;
+    if (!audioCtx || !audioInitialized || audioCtx.state === 'suspended') return;
     try {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -650,24 +654,35 @@ async function importFromCSV(event) {
                     estimated1RM: calculate1RM(weight, reps)
                 };
             }).filter(Boolean);
-            if (parsedWorkouts.length === 0) throw new Error("No valid workout data found in CSV.");
+
+            if (parsedWorkouts.length === 0) {
+                throw new Error("No valid workout data found in CSV.");
+            }
+
             showConfirmationModal(`Found ${parsedWorkouts.length} sets. This will ADD them to your current history. Continue?`, async () => {
-                for (const workout of parsedWorkouts) {
-                    const newId = await addWorkout(workout);
-                    workout.id = newId;
-                    workouts.push(workout);
+                const newWorkouts = [];
+                try {
+                    for (const workout of parsedWorkouts) {
+                        const newId = await addWorkout(workout);
+                        workout.id = newId;
+                        newWorkouts.push(workout);
+                    }
+                    workouts.push(...newWorkouts);
+                    sortWorkouts();
+                    cancelEdit();
+                    renderInitial();
+                    updateChart();
+                    showToast(`Successfully imported ${newWorkouts.length} sets!`, 'success');
+                } catch (importErr) {
+                    showToast(`An error occurred during import: ${importErr.message}`, "error");
+                    workouts = originalWorkouts;
+                    sortWorkouts();
+                    renderInitial();
+                    updateChart();
                 }
-                sortWorkouts();
-                cancelEdit();
-                renderInitial();
-                updateChart();
-                showToast(`Successfully imported ${parsedWorkouts.length} sets!`, 'success');
             });
         } catch (err) {
             showToast(err.message, "error");
-            workouts = originalWorkouts;
-            sortWorkouts();
-            renderInitial();
         } finally {
             event.target.value = '';
         }
