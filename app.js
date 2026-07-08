@@ -160,11 +160,11 @@ async function main() {
         await Promise.all([
             initDB().then(async () => {
                 workouts = await getAllWorkouts();
-                sortWorkouts();
             }),
             loadExerciseDictionary()
         ]);
-        renderInitial();
+        sortWorkouts();
+        renderAll();
     } catch (e) {
         showToast(`Could not load history: ${e.message}`, "error");
     }
@@ -177,15 +177,18 @@ async function main() {
     setupEventListeners();
 }
 
-function renderInitial() {
+function renderAll() {
     renderHistory();
     renderPRs();
     updateExerciseDropdowns();
+    updateChart();
 }
 
 function setupEventListeners() {
     const initAudioOnce = () => {
         if (!audioInitialized) initAudio();
+        document.removeEventListener('touchend', initAudioOnce);
+        document.removeEventListener('click', initAudioOnce);
     };
     document.addEventListener('touchend', initAudioOnce, { once: true });
     document.addEventListener('click', initAudioOnce, { once: true });
@@ -215,10 +218,10 @@ function handleHistoryClick(event) {
 
 function showToast(message, type = 'info') {
     toastEl.textContent = message;
-    toastEl.classList.remove('show', 'success', 'error', 'info');
-    toastEl.classList.add('show', type);
+    toastEl.className = 'toast show';
+    toastEl.classList.add(type);
     setTimeout(() => {
-        toastEl.classList.remove('show', 'success', 'error', 'info');
+        toastEl.className = 'toast';
     }, 3000);
 }
 
@@ -239,13 +242,16 @@ function showConfirmationModal(message, onConfirm) {
 }
 
 function initAudio() {
-    if (audioInitialized || audioCtx) return;
+    if (audioInitialized) return;
     try {
         audioCtx = new(window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
+            audioCtx.resume().then(() => {
+                audioInitialized = true;
+            }).catch(e => console.warn("Failed to resume audio context.", e));
+        } else {
+            audioInitialized = true;
         }
-        audioInitialized = true;
     } catch (e) {
         console.warn('AudioContext could not be initialized.', e);
         audioInitialized = false;
@@ -253,7 +259,7 @@ function initAudio() {
 }
 
 function playBeep(onFinish = false) {
-    if (!audioCtx || !audioInitialized || audioCtx.state === 'suspended') return;
+    if (!audioInitialized || !audioCtx || audioCtx.state !== 'running') return;
     try {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -371,10 +377,7 @@ async function processSet() {
             await updateWorkout(workoutToUpdate);
             workouts[workoutIndex] = workoutToUpdate;
             sortWorkouts();
-            renderHistory();
-            renderPRs();
-            updateExerciseDropdowns(exercise);
-            updateChart();
+            renderAll();
             showToast("Set updated!", "success");
             cancelEdit();
         } catch (e) {
@@ -385,12 +388,9 @@ async function processSet() {
         try {
             const newId = await addWorkout(newWorkout);
             newWorkout.id = newId;
-            workouts.unshift(newWorkout);
+            workouts.push(newWorkout);
             sortWorkouts();
-            renderHistory();
-            renderPRs();
-            updateExerciseDropdowns(exercise);
-            updateChart();
+            renderAll();
             startTimer();
             weightInputEl.value = '';
             repsInputEl.value = '';
@@ -434,10 +434,7 @@ async function deleteSet(id) {
             await deleteWorkout(id);
             workouts.splice(workoutIndex, 1);
             if (editingWorkoutId === id) cancelEdit();
-            renderHistory();
-            renderPRs();
-            updateExerciseDropdowns();
-            updateChart();
+            renderAll();
             showToast("Set deleted.", "info");
         } catch (e) {
             showToast(`Error deleting set: ${e.message}`, "error");
@@ -451,8 +448,7 @@ async function clearAllData() {
             await clearWorkouts();
             workouts = [];
             cancelEdit();
-            renderInitial();
-            updateChart();
+            renderAll();
             showToast("All data has been cleared.", "info");
         } catch (e) {
             showToast(`Error clearing data: ${e.message}`, "error");
@@ -670,15 +666,13 @@ async function importFromCSV(event) {
                     workouts.push(...newWorkouts);
                     sortWorkouts();
                     cancelEdit();
-                    renderInitial();
-                    updateChart();
+                    renderAll();
                     showToast(`Successfully imported ${newWorkouts.length} sets!`, 'success');
                 } catch (importErr) {
                     showToast(`An error occurred during import: ${importErr.message}`, "error");
                     workouts = originalWorkouts;
                     sortWorkouts();
-                    renderInitial();
-                    updateChart();
+                    renderAll();
                 }
             });
         } catch (err) {
