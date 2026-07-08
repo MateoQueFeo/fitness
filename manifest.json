@@ -1,6 +1,6 @@
 {
   "name": "Workout Tracker",
-  "short_name": "WorkoutTracker",
+  "short_name": "Workout Tracker",
   "description": "Track your workouts, sets, and progress over time offline.",
   "start_url": "/",
   "display": "standalone",

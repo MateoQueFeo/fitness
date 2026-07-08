@@ -2,7 +2,6 @@ const DB_NAME = 'WorkoutTrackerDB';
 const STORE_NAME = 'workoutsStore';
 const DEFAULT_TIMER_DURATION = 60;
 let db;
-
 function initDB() {
     return new Promise((resolve, reject) => {
         if (db) return resolve(db);
@@ -20,12 +19,10 @@ function initDB() {
         };
     });
 }
-
 function getStore(mode) {
     const tx = db.transaction(STORE_NAME, mode);
     return tx.objectStore(STORE_NAME);
 }
-
 function addWorkout(workout) {
     return new Promise((resolve, reject) => {
         const request = getStore('readwrite').add(workout);
@@ -33,7 +30,6 @@ function addWorkout(workout) {
         request.onerror = (event) => reject(event.target.error);
     });
 }
-
 function updateWorkout(workout) {
     return new Promise((resolve, reject) => {
         const request = getStore('readwrite').put(workout);
@@ -41,7 +37,6 @@ function updateWorkout(workout) {
         request.onerror = (event) => reject(event.target.error);
     });
 }
-
 function deleteWorkout(id) {
     return new Promise((resolve, reject) => {
         const request = getStore('readwrite').delete(id);
@@ -49,7 +44,6 @@ function deleteWorkout(id) {
         request.onerror = (event) => reject(event.target.error);
     });
 }
-
 function getAllWorkouts() {
     return new Promise((resolve, reject) => {
         const request = getStore('readonly').getAll();
@@ -57,7 +51,6 @@ function getAllWorkouts() {
         request.onerror = (event) => reject(event.target.error);
     });
 }
-
 function clearWorkouts() {
     return new Promise((resolve, reject) => {
         const request = getStore('readwrite').clear();
@@ -65,7 +58,6 @@ function clearWorkouts() {
         request.onerror = (event) => reject(event.target.error);
     });
 }
-
 const timerDisplayEl = document.getElementById('timerDisplay');
 const timerCardEl = document.getElementById('timerCard');
 const formTitleEl = document.getElementById('formTitle');
@@ -92,12 +84,10 @@ const confirmationModalEl = document.getElementById('confirmationModal');
 const modalMessageEl = document.getElementById('modalMessage');
 const modalConfirmBtnEl = document.getElementById('modalConfirmBtn');
 const modalCancelBtnEl = document.getElementById('modalCancelBtn');
-
 let workouts = [];
 let exerciseDictionary = {};
 let chartInstance = null;
 let editingWorkoutId = null;
-
 let timerState = {
     interval: null,
     endTime: 0,
@@ -106,23 +96,18 @@ let timerState = {
     defaultDuration: DEFAULT_TIMER_DURATION,
     flashTimeout: null,
 };
-
 let metronomeState = {
     isRunning: false,
     interval: null
 };
-
 let audioCtx;
 let audioInitialized = false;
-
 const getLocalDate = () => new Date().toISOString().split('T')[0];
 const calculate1RM = (weight, reps) => Math.round(weight * (1 + reps / 30));
 const formatDateForDisplay = (dateString) => !dateString ? '' : new Date(dateString).toLocaleDateString(undefined, { timeZone: 'UTC', month: '2-digit', day: '2-digit', year: 'numeric' });
-
 function sortWorkouts() {
     workouts.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id);
 }
-
 function resolveExerciseName(rawInput) {
     if (!rawInput) return '';
     const sanitizedInput = rawInput.trim().toLowerCase();
@@ -137,7 +122,6 @@ function resolveExerciseName(rawInput) {
     }
     return rawInput.trim().split(/\s+/).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 }
-
 async function loadExerciseDictionary() {
     try {
         const response = await fetch('./exercises.json');
@@ -148,14 +132,12 @@ async function loadExerciseDictionary() {
         exerciseDictionary = {};
     }
 }
-
 async function main() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch((err) => {
             console.warn('Service worker registration failed.', err);
         });
     }
-
     try {
         await Promise.all([
             initDB().then(async () => {
@@ -168,22 +150,18 @@ async function main() {
     } catch (e) {
         showToast(`Could not load history: ${e.message}`, "error");
     }
-
     if (typeof Chart === 'undefined') {
         showToast('Charting library failed to load.', 'error');
         if (chartCardEl) chartCardEl.style.display = 'none';
     }
-
     setupEventListeners();
 }
-
 function renderAll() {
     renderHistory();
     renderPRs();
     updateExerciseDropdowns();
     updateChart();
 }
-
 function setupEventListeners() {
     const initAudioOnce = () => {
         if (!audioInitialized) initAudio();
@@ -203,8 +181,17 @@ function setupEventListeners() {
     clearDataBtnEl.addEventListener('click', clearAllData);
     csvFileInputEl.addEventListener('change', importFromCSV);
     historyContainerEl.addEventListener('click', handleHistoryClick);
+    exerciseInputEl.addEventListener('input', handleExerciseInput);
 }
-
+function handleExerciseInput(event) {
+    const newExercise = event.target.value;
+    const existingOptions = Array.from(exerciseOptionsEl.options).map(opt => opt.value);
+    if (newExercise && !existingOptions.some(opt => opt.toLowerCase() === newExercise.toLowerCase())) {
+        const newOption = document.createElement('option');
+        newOption.value = newExercise;
+        exerciseOptionsEl.appendChild(newOption);
+    }
+}
 function handleHistoryClick(event) {
     const target = event.target.closest('button[data-id]');
     if (!target) return;
@@ -215,7 +202,6 @@ function handleHistoryClick(event) {
         deleteSet(id);
     }
 }
-
 function showToast(message, type = 'info') {
     toastEl.textContent = message;
     toastEl.className = 'toast show';
@@ -224,7 +210,6 @@ function showToast(message, type = 'info') {
         toastEl.className = 'toast';
     }, 3000);
 }
-
 function showConfirmationModal(message, onConfirm) {
     modalMessageEl.textContent = message;
     confirmationModalEl.style.display = 'flex';
@@ -240,7 +225,6 @@ function showConfirmationModal(message, onConfirm) {
     modalConfirmBtnEl.addEventListener('click', handleConfirm);
     modalCancelBtnEl.addEventListener('click', hideModal);
 }
-
 function initAudio() {
     if (audioInitialized) return;
     try {
@@ -257,7 +241,6 @@ function initAudio() {
         audioInitialized = false;
     }
 }
-
 function playBeep(onFinish = false) {
     if (!audioInitialized || !audioCtx || audioCtx.state !== 'running') return;
     try {
@@ -275,13 +258,11 @@ function playBeep(onFinish = false) {
         console.warn('Audio playback failed.', e);
     }
 }
-
 function updateTimerUI(seconds) {
     const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
     const secs = (seconds % 60).toString().padStart(2, '0');
     timerDisplayEl.innerText = `${mins}:${secs}`;
 }
-
 function timerTick() {
     const secondsLeft = Math.round((timerState.endTime - Date.now()) / 1000);
     if (secondsLeft <= 0) {
@@ -293,7 +274,6 @@ function timerTick() {
         updateTimerUI(secondsLeft);
     }
 }
-
 function startTimer() {
     initAudio();
     if (timerState.isRunning) return;
@@ -303,19 +283,14 @@ function startTimer() {
     updateTimerUI(timerState.defaultDuration);
     timerState.interval = setInterval(timerTick, 1000);
 }
-
 function addMinuteToTimer() {
     initAudio();
-    if (!timerState.isRunning) {
-        timerState.defaultDuration += 60;
-        updateTimerUI(timerState.defaultDuration);
-    } else {
+    if (timerState.isRunning) {
         timerState.endTime += 60000;
         const secondsLeft = Math.round((timerState.endTime - Date.now()) / 1000);
         updateTimerUI(secondsLeft);
     }
 }
-
 function resetTimer() {
     clearInterval(timerState.interval);
     clearTimeout(timerState.flashTimeout);
@@ -323,7 +298,6 @@ function resetTimer() {
     timerDisplayEl.classList.remove('active', 'finished');
     updateTimerUI(timerState.defaultDuration);
 }
-
 function metronomeTick() {
     playBeep(false);
     timerCardEl.classList.add('ticking');
@@ -331,7 +305,6 @@ function metronomeTick() {
         timerCardEl.classList.remove('ticking');
     }, 100);
 }
-
 function startMetronome() {
     initAudio();
     if (metronomeState.isRunning) return;
@@ -339,14 +312,12 @@ function startMetronome() {
     metronomeState.interval = setInterval(metronomeTick, 1000);
     metronomeToggleBtnEl.classList.add('active');
 }
-
 function stopMetronome() {
     if (!metronomeState.isRunning) return;
     metronomeState.isRunning = false;
     clearInterval(metronomeState.interval);
     metronomeToggleBtnEl.classList.remove('active');
 }
-
 function toggleMetronome() {
     if (metronomeState.isRunning) {
         stopMetronome();
@@ -354,7 +325,6 @@ function toggleMetronome() {
         startMetronome();
     }
 }
-
 async function processSet() {
     const exercise = resolveExerciseName(exerciseInputEl.value);
     const weight = parseFloat(weightInputEl.value);
@@ -401,7 +371,6 @@ async function processSet() {
         }
     }
 }
-
 function editSet(id) {
     editingWorkoutId = id;
     const workout = workouts.find(w => w.id === id);
@@ -415,7 +384,6 @@ function editSet(id) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
-
 function cancelEdit() {
     editingWorkoutId = null;
     formTitleEl.innerText = 'Log a Set';
@@ -425,7 +393,6 @@ function cancelEdit() {
     weightInputEl.value = '';
     repsInputEl.value = '';
 }
-
 async function deleteSet(id) {
     showConfirmationModal("Are you sure you want to delete this set?", async () => {
         const workoutIndex = workouts.findIndex(w => w.id === id);
@@ -441,7 +408,6 @@ async function deleteSet(id) {
         }
     });
 }
-
 async function clearAllData() {
     showConfirmationModal("DELETE ALL workout data? This cannot be undone.", async () => {
         try {
@@ -455,7 +421,6 @@ async function clearAllData() {
         }
     });
 }
-
 function renderHistory() {
     if (workouts.length === 0) {
         historyContainerEl.innerHTML = '<p style="color: var(--text-secondary);">No workouts logged yet.</p>';
@@ -489,7 +454,6 @@ function renderHistory() {
     }).join('');
     historyContainerEl.innerHTML = historyHtml;
 }
-
 function renderPRs() {
     if (workouts.length === 0) {
         prContainerEl.innerHTML = '<p style="color: var(--text-secondary); margin: 0;">Log a workout to see personal records.</p>';
@@ -516,13 +480,11 @@ function renderPRs() {
             </tbody>
         </table>`;
 }
-
 function renderDatalist(exerciseArray) {
     exerciseOptionsEl.innerHTML = exerciseArray
         .map(ex => `<option value="${ex}"></option>`)
         .join('');
 }
-
 function updateExerciseDropdowns(newExercise = null) {
     const dictionaryExercises = Object.values(exerciseDictionary).map(ex => ex.name);
     const allExercises = new Set([
@@ -540,11 +502,9 @@ function updateExerciseDropdowns(newExercise = null) {
         chartExerciseSelectEl.value = newExercise;
     }
 }
-
 function handleChartSelection() {
     updateChart();
 }
-
 function updateChart() {
     const selectedExercise = chartExerciseSelectEl.value;
     if (chartInstance) chartInstance.destroy();
@@ -565,7 +525,6 @@ function updateChart() {
     const chartData = sortedDates.map(date => dailyMax[date]);
     renderChartCanvas(sortedDates, chartData, selectedExercise);
 }
-
 function renderChartCanvas(labels, data, exerciseName) {
     const ctx = document.getElementById('progressChart').getContext('2d');
     const style = getComputedStyle(document.documentElement);
@@ -595,7 +554,6 @@ function renderChartCanvas(labels, data, exerciseName) {
         }
     });
 }
-
 function exportToCSV() {
     if (workouts.length === 0) return showToast("No data to export.", "error");
     let csvContent = "Date,Exercise,Weight,Reps,Estimated 1RM\n";
@@ -610,7 +568,6 @@ function exportToCSV() {
     link.remove();
     showToast("Backup CSV file exported!", "success");
 }
-
 async function importFromCSV(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -642,6 +599,13 @@ async function importFromCSV(event) {
                 const weight = parseFloat(cols[fieldMap.weight]);
                 const reps = parseInt(cols[fieldMap.reps]);
                 if (!cols[fieldMap.date] || !cols[fieldMap.exercise] || isNaN(weight) || isNaN(reps)) return null;
+                const setExists = workouts.some(w =>
+                    w.date === cols[fieldMap.date] &&
+                    w.exercise.toLowerCase() === cols[fieldMap.exercise].toLowerCase() &&
+                    w.weight === weight &&
+                    w.reps === reps
+                );
+                if (setExists) return null;
                 return {
                     date: cols[fieldMap.date],
                     exercise: resolveExerciseName(cols[fieldMap.exercise]),
@@ -650,12 +614,10 @@ async function importFromCSV(event) {
                     estimated1RM: calculate1RM(weight, reps)
                 };
             }).filter(Boolean);
-
             if (parsedWorkouts.length === 0) {
-                throw new Error("No valid workout data found in CSV.");
+                throw new Error("No new workout data found in CSV. Sets may already exist.");
             }
-
-            showConfirmationModal(`Found ${parsedWorkouts.length} sets. This will ADD them to your current history. Continue?`, async () => {
+            showConfirmationModal(`Found ${parsedWorkouts.length} new sets. This will ADD them to your current history. Continue?`, async () => {
                 const newWorkouts = [];
                 try {
                     for (const workout of parsedWorkouts) {
@@ -683,5 +645,4 @@ async function importFromCSV(event) {
     };
     reader.readAsText(file);
 }
-
 window.onload = main;
