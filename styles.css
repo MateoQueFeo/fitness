@@ -291,9 +291,9 @@ td {
     justify-content: center;
 }
 .day-name {
-    font-size: 0.75rem !important;
+    font-size: 0.75rem;
     color: var(--text-secondary);
-    font-weight: normal !important;
+    font-weight: normal;
 }
 .calendar-day {
     cursor: pointer;

@@ -134,7 +134,7 @@ function resolveExerciseName(rawInput) {
         if (exercise.name.toLowerCase() === sanitizedInput) {
             return exercise.name;
         }
-        if (exercise.aliases && exercise.aliases.includes(sanitizedInput)) {
+        if (exercise.aliases && exercise.aliases.map(a => a.toLowerCase()).includes(sanitizedInput)) {
             return exercise.name;
         }
     }
