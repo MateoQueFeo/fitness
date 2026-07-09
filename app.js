@@ -2,7 +2,6 @@ const DB_NAME = 'WorkoutTrackerDB';
 const STORE_NAME = 'workoutsStore';
 const DEFAULT_TIMER_DURATION = 60;
 let db;
-
 function initDB() {
     return new Promise((resolve, reject) => {
         if (db) return resolve(db);
@@ -59,7 +58,6 @@ function clearWorkouts() {
         request.onerror = (event) => reject(event.target.error);
     });
 }
-
 const timerDisplayEl = document.getElementById('timerDisplay');
 const timerCardEl = document.getElementById('timerCard');
 const formTitleEl = document.getElementById('formTitle');
@@ -90,7 +88,6 @@ const prevMonthBtn = document.getElementById('prev-month-btn');
 const nextMonthBtn = document.getElementById('next-month-btn');
 const monthYearHeaderEl = document.getElementById('month-year-header');
 const calendarGridEl = document.getElementById('calendar-grid');
-
 let workouts = [];
 let exerciseDictionary = {};
 let chartInstance = null;
@@ -99,7 +96,6 @@ let calendarState = {
     date: new Date(),
     selectedDate: null
 };
-
 let timerState = {
     interval: null,
     endTime: 0,
@@ -114,7 +110,6 @@ let metronomeState = {
 };
 let audioCtx;
 let audioInitialized = false;
-
 const getLocalDate = (date = new Date()) => {
     const offset = date.getTimezoneOffset();
     const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
@@ -122,7 +117,6 @@ const getLocalDate = (date = new Date()) => {
 };
 const calculate1RM = (weight, reps) => Math.round(weight * (1 + reps / 30));
 const formatDateForDisplay = (dateString) => !dateString ? '' : new Date(`${dateString}T00:00:00`).toLocaleDateString(undefined, { timeZone: 'UTC', month: '2-digit', day: '2-digit', year: 'numeric' });
-
 function sortWorkouts() {
     workouts.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id);
 }
@@ -181,7 +175,11 @@ function renderAll(newExerciseForChart = null) {
     renderCalendar();
     renderSetsForDate(calendarState.selectedDate);
     renderPRs();
+    const shouldSelectNewExercise = newExerciseForChart && !workouts.some(w => w.exercise === newExerciseForChart);
     updateExerciseDropdowns(newExerciseForChart);
+    if (shouldSelectNewExercise) {
+        chartExerciseSelectEl.value = newExerciseForChart;
+    }
     updateChart(newExerciseForChart);
 }
 function setupEventListeners() {
@@ -475,11 +473,9 @@ function renderCalendar() {
     const firstDayOfMonth = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const today = getLocalDate(new Date());
-
     for (let i = 0; i < firstDayOfMonth; i++) {
         calendarGridEl.appendChild(document.createElement('div'));
     }
-
     for (let i = 1; i <= daysInMonth; i++) {
         const dayEl = document.createElement('div');
         const dayDate = new Date(year, month, i);
@@ -488,7 +484,6 @@ function renderCalendar() {
         dayEl.textContent = i;
         dayEl.className = 'calendar-day';
         dayEl.dataset.date = dayDateStr;
-
         if (workoutDates.has(dayDateStr)) dayEl.classList.add('has-workout');
         if (dayDateStr === today) dayEl.classList.add('today');
         if (dayDateStr === calendarState.selectedDate) dayEl.classList.add('selected');
@@ -509,7 +504,7 @@ function renderSetsForDate(dateStr) {
     const setsHtml = setsForDay.map(w => `
         <tr id="workout-row-${w.id}">
             <td>${w.exercise}</td>
-            <td>${w.weight} × ${w.reps}</td>
+            <td>${w.weight} &times; ${w.reps}</td>
             <td><strong>${w.estimated1RM}</strong></td>
             <td style="white-space: nowrap;">
                 <button class="action-btn edit-btn" data-id="${w.id}" aria-label="Edit set: ${w.exercise} at ${w.weight} for ${w.reps} reps">Edit</button>
@@ -519,9 +514,9 @@ function renderSetsForDate(dateStr) {
     `).join('');
     historyContainerEl.innerHTML = `
         <div class="session-group" id="session-${dateStr}">
-            <h3 class="session-header">📅 Sets for ${formatDateForDisplay(dateStr)}</h3>
+            <h3 class="session-header">&#128197; Sets for ${formatDateForDisplay(dateStr)}</h3>
             <table>
-                <thead><tr><th>Exercise</th><th>W × R</th><th>1RM</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Exercise</th><th>W &times; R</th><th>1RM</th><th>Actions</th></tr></thead>
                 <tbody>${setsHtml}</tbody>
             </table>
         </div>
@@ -532,19 +527,16 @@ function renderPRs() {
         prContainerEl.innerHTML = '<p style="color: var(--text-secondary); margin: 0;">Log a workout to see personal records.</p>';
         return;
     }
-
     const prs = workouts.reduce((acc, w) => {
         if (!acc[w.exercise] || w.estimated1RM > acc[w.exercise].estimated1RM) {
             acc[w.exercise] = { ...w };
         }
         return acc;
     }, {});
-
     const exerciseToCategoryMap = Object.values(exerciseDictionary).reduce((map, item) => {
         map[item.name] = item.category;
         return map;
     }, {});
-
     const prsByCategory = Object.values(prs).reduce((acc, pr) => {
         const category = exerciseToCategoryMap[pr.exercise] || 'Other';
         if (!acc[category]) {
@@ -553,7 +545,6 @@ function renderPRs() {
         acc[category].push(pr);
         return acc;
     }, {});
-
     const sortedCategories = Object.keys(prsByCategory).sort();
     
     let html = '';
@@ -565,18 +556,16 @@ function renderPRs() {
                 <tbody>
         `;
         const sortedPrs = prsByCategory[category].sort((a,b) => a.exercise.localeCompare(b.exercise));
-
         sortedPrs.forEach(pr => {
             html += `
                 <tr>
                     <td><strong>${pr.exercise}</strong></td>
-                    <td class="pr-gold">★ ${pr.estimated1RM}</td>
+                    <td class="pr-gold">${pr.estimated1RM}</td>
                 </tr>
             `;
         });
         html += '</tbody></table>';
     });
-
     prContainerEl.innerHTML = html;
 }
 function renderDatalist(exerciseArray) {
@@ -667,6 +656,27 @@ function exportToCSV() {
     link.remove();
     showToast("Backup CSV file exported!", "success");
 }
+function parseCSVRow(row) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < row.length; i++) {
+        const char = row[i];
+        if (char === '"' && i + 1 < row.length && row[i+1] === '"') {
+            current += '"';
+            i++;
+        } else if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            result.push(current);
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    result.push(current);
+    return result;
+}
 async function importFromCSV(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -696,7 +706,7 @@ async function importFromCSV(event) {
                 throw new Error("Required columns (Date, Exercise, Weight, Reps) not found in CSV.");
             }
             const allParsed = lines.slice(1).map(row => {
-                const cols = row.split(',').map(c => c.trim().replace(/"/g, ''));
+                const cols = parseCSVRow(row);
                 if (cols.length < requiredHeaders.length) return null;
                 const weight = parseFloat(cols[fieldMap.weight]);
                 const reps = parseInt(cols[fieldMap.reps]);

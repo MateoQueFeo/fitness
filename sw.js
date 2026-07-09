@@ -1,4 +1,4 @@
-const CACHE_NAME = 'workout-tracker-cache-v2';
+const CACHE_NAME = 'workout-tracker-cache-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -8,13 +8,13 @@ const ASSETS_TO_CACHE = [
   '/exercises.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
-  '/icons/icon-maskable.png'
+  '/icons/icon-maskable.png',
+  'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('Service Worker: Caching Files');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
@@ -26,7 +26,6 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Service Worker: Clearing Old Cache');
             return caches.delete(cacheName);
           }
         })
@@ -40,25 +39,6 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    if (event.request.url.startsWith('https://cdnjs.cloudflare.com')) {
-        event.respondWith(
-            caches.open(CACHE_NAME).then(async (cache) => {
-                try {
-                    const networkResponse = await fetch(event.request);
-                    cache.put(event.request, networkResponse.clone());
-                    return networkResponse;
-                } catch (error) {
-                    const cachedResponse = await cache.match(event.request);
-                    if (cachedResponse) {
-                        return cachedResponse;
-                    }
-                    return new Response(null, { status: 404, statusText: 'Not Found' });
-                }
-            })
-        );
-        return;
-    }
-    
     event.respondWith(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.match(event.request).then((cachedResponse) => {
@@ -75,7 +55,7 @@ self.addEventListener('fetch', (event) => {
                     if (event.request.destination === 'document') {
                        return caches.match('/index.html');
                     }
-                    return Response.error();
+                    return new Response(null, { status: 404, statusText: 'Not Found' });
                 });
             });
         })

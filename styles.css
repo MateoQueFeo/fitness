@@ -206,6 +206,10 @@ th {
 td {
     font-size: 0.95rem;
 }
+#prContainer td:last-child {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
 .action-btn {
     padding: 4px 8px;
     border-radius: 4px;
