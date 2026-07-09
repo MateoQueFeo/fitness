@@ -15,6 +15,7 @@
 </head>
 <body>
     <header class="header-container">
+        <h1>Workout Tracker</h1>
     </header>
     <main>
         <div class="card timer-card" id="timerCard">
@@ -64,8 +65,18 @@
             </div>
         </div>
         <div class="card">
-            <h2>History</h2>
-            <div id="historyContainer"></div>
+            <h2>📅 History Calendar</h2>
+            <div id="calendar-container">
+                <div class="calendar-header">
+                    <button id="prev-month-btn">‹</button>
+                    <h3 id="month-year-header"></h3>
+                    <button id="next-month-btn">›</button>
+                </div>
+                <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+            <div id="historyContainer">
+                 <p style="color: var(--text-secondary); text-align: center; padding-top: 16px;">Select a day on the calendar to view sets.</p>
+            </div>
             <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
             <div class="footer-actions">
                 <button id="importBtn">📂 Import</button>
@@ -85,6 +96,6 @@
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-L0Shl7nXXzGUDTscLMgo7TGnq2k7GdXLTru2ro5qSziQC_LUUeyV6hWleXvo/6tENF19z+dVGKBASWroik4pMA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="./app.js"></script>
+    <script src="./app.js" defer></script>
 </body>
 </html>

@@ -2,6 +2,7 @@ const DB_NAME = 'WorkoutTrackerDB';
 const STORE_NAME = 'workoutsStore';
 const DEFAULT_TIMER_DURATION = 60;
 let db;
+
 function initDB() {
     return new Promise((resolve, reject) => {
         if (db) return resolve(db);
@@ -58,6 +59,7 @@ function clearWorkouts() {
         request.onerror = (event) => reject(event.target.error);
     });
 }
+
 const timerDisplayEl = document.getElementById('timerDisplay');
 const timerCardEl = document.getElementById('timerCard');
 const formTitleEl = document.getElementById('formTitle');
@@ -84,10 +86,20 @@ const confirmationModalEl = document.getElementById('confirmationModal');
 const modalMessageEl = document.getElementById('modalMessage');
 const modalConfirmBtnEl = document.getElementById('modalConfirmBtn');
 const modalCancelBtnEl = document.getElementById('modalCancelBtn');
+const prevMonthBtn = document.getElementById('prev-month-btn');
+const nextMonthBtn = document.getElementById('next-month-btn');
+const monthYearHeaderEl = document.getElementById('month-year-header');
+const calendarGridEl = document.getElementById('calendar-grid');
+
 let workouts = [];
 let exerciseDictionary = {};
 let chartInstance = null;
 let editingWorkoutId = null;
+let calendarState = {
+    date: new Date(),
+    selectedDate: null
+};
+
 let timerState = {
     interval: null,
     endTime: 0,
@@ -102,9 +114,15 @@ let metronomeState = {
 };
 let audioCtx;
 let audioInitialized = false;
-const getLocalDate = () => new Date().toISOString().split('T')[0];
+
+const getLocalDate = (date = new Date()) => {
+    const offset = date.getTimezoneOffset();
+    const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
+    return adjustedDate.toISOString().split('T')[0];
+};
 const calculate1RM = (weight, reps) => Math.round(weight * (1 + reps / 30));
-const formatDateForDisplay = (dateString) => !dateString ? '' : new Date(dateString).toLocaleDateString(undefined, { timeZone: 'UTC', month: '2-digit', day: '2-digit', year: 'numeric' });
+const formatDateForDisplay = (dateString) => !dateString ? '' : new Date(`${dateString}T00:00:00`).toLocaleDateString(undefined, { timeZone: 'UTC', month: '2-digit', day: '2-digit', year: 'numeric' });
+
 function sortWorkouts() {
     workouts.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id);
 }
@@ -125,11 +143,14 @@ function resolveExerciseName(rawInput) {
 async function loadExerciseDictionary() {
     try {
         const response = await fetch('./exercises.json');
-        if (!response.ok) throw new Error('Failed to load exercises.json');
+        if (!response.ok) {
+            throw new Error(`Failed to load exercises.json: ${response.statusText}`);
+        }
         exerciseDictionary = await response.json();
     } catch (error) {
         showToast('Could not load exercise dictionary.', 'error');
         exerciseDictionary = {};
+        return Promise.reject(error);
     }
 }
 async function main() {
@@ -157,7 +178,8 @@ async function main() {
     setupEventListeners();
 }
 function renderAll(newExerciseForChart = null) {
-    renderHistory();
+    renderCalendar();
+    renderSetsForDate(calendarState.selectedDate);
     renderPRs();
     updateExerciseDropdowns(newExerciseForChart);
     updateChart(newExerciseForChart);
@@ -181,6 +203,22 @@ function setupEventListeners() {
     clearDataBtnEl.addEventListener('click', clearAllData);
     csvFileInputEl.addEventListener('change', importFromCSV);
     historyContainerEl.addEventListener('click', handleHistoryClick);
+    prevMonthBtn.addEventListener('click', () => {
+        calendarState.date.setMonth(calendarState.date.getMonth() - 1);
+        renderCalendar();
+    });
+    nextMonthBtn.addEventListener('click', () => {
+        calendarState.date.setMonth(calendarState.date.getMonth() + 1);
+        renderCalendar();
+    });
+    calendarGridEl.addEventListener('click', (e) => {
+        const dayEl = e.target.closest('.calendar-day');
+        if (dayEl && dayEl.dataset.date) {
+            calendarState.selectedDate = dayEl.dataset.date;
+            renderCalendar();
+            renderSetsForDate(calendarState.selectedDate);
+        }
+    });
 }
 function handleHistoryClick(event) {
     const target = event.target.closest('button[data-id]');
@@ -263,7 +301,12 @@ function timerTick() {
     }
 }
 function startTimer() {
-    if (!audioInitialized) initAudio();
+    if (!audioInitialized) {
+        initAudio();
+        if (!audioInitialized) {
+            showToast("Audio not available in this browser.", "error");
+        }
+    }
     if (timerState.isRunning) return;
     timerState.isRunning = true;
     timerState.endTime = Date.now() + (timerState.defaultDuration * 1000);
@@ -331,6 +374,7 @@ async function processSet() {
             await updateWorkout(workoutToUpdate);
             workouts[workoutIndex] = workoutToUpdate;
             sortWorkouts();
+            calendarState.selectedDate = workoutToUpdate.date;
             renderAll();
             showToast("Set updated!", "success");
             cancelEdit();
@@ -345,6 +389,7 @@ async function processSet() {
             newWorkout.id = newId;
             workouts.push(newWorkout);
             sortWorkouts();
+            calendarState.selectedDate = date;
             renderAll(isNewExercise ? exercise : null);
             startTimer();
             weightInputEl.value = '';
@@ -382,10 +427,15 @@ async function deleteSet(id) {
     showConfirmationModal("Are you sure you want to delete this set?", async () => {
         const workoutIndex = workouts.findIndex(w => w.id === id);
         if (workoutIndex === -1) return;
+        const dateOfDeletedSet = workouts[workoutIndex].date;
         try {
             await deleteWorkout(id);
             workouts.splice(workoutIndex, 1);
             if (editingWorkoutId === id) cancelEdit();
+            const stillHasWorkoutsOnDate = workouts.some(w => w.date === dateOfDeletedSet);
+            if (!stillHasWorkoutsOnDate && calendarState.selectedDate === dateOfDeletedSet) {
+                 calendarState.selectedDate = null;
+            }
             renderAll();
             showToast("Set deleted.", "info");
         } catch (e) {
@@ -398,6 +448,7 @@ async function clearAllData() {
         try {
             await clearWorkouts();
             workouts = [];
+            calendarState.selectedDate = null;
             cancelEdit();
             renderAll();
             showToast("All data has been cleared.", "info");
@@ -406,64 +457,127 @@ async function clearAllData() {
         }
     });
 }
-function renderHistory() {
-    if (workouts.length === 0) {
-        historyContainerEl.innerHTML = '<p style="color: var(--text-secondary);">No workouts logged yet.</p>';
+function renderCalendar() {
+    const year = calendarState.date.getFullYear();
+    const month = calendarState.date.getMonth();
+    monthYearHeaderEl.textContent = `${calendarState.date.toLocaleString('default', { month: 'long' })} ${year}`;
+    
+    calendarGridEl.innerHTML = '';
+    const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    dayNames.forEach(name => {
+        const dayNameEl = document.createElement('div');
+        dayNameEl.className = 'day-name';
+        dayNameEl.textContent = name;
+        calendarGridEl.appendChild(dayNameEl);
+    });
+    
+    const workoutDates = new Set(workouts.map(w => w.date));
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = getLocalDate(new Date());
+
+    for (let i = 0; i < firstDayOfMonth; i++) {
+        calendarGridEl.appendChild(document.createElement('div'));
+    }
+
+    for (let i = 1; i <= daysInMonth; i++) {
+        const dayEl = document.createElement('div');
+        const dayDate = new Date(year, month, i);
+        const dayDateStr = getLocalDate(dayDate);
+        
+        dayEl.textContent = i;
+        dayEl.className = 'calendar-day';
+        dayEl.dataset.date = dayDateStr;
+
+        if (workoutDates.has(dayDateStr)) dayEl.classList.add('has-workout');
+        if (dayDateStr === today) dayEl.classList.add('today');
+        if (dayDateStr === calendarState.selectedDate) dayEl.classList.add('selected');
+        
+        calendarGridEl.appendChild(dayEl);
+    }
+}
+function renderSetsForDate(dateStr) {
+    if (!dateStr) {
+        historyContainerEl.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding-top: 16px;">Select a day on the calendar to view sets.</p>';
         return;
     }
-    const sessions = workouts.reduce((acc, workout) => {
-        (acc[workout.date] = acc[workout.date] || []).push(workout);
-        return acc;
-    }, {});
-    const historyHtml = Object.keys(sessions).map(date => {
-        const setsHtml = sessions[date].map(w => `
-            <tr id="workout-row-${w.id}">
-                <td>${w.exercise}</td>
-                <td>${w.weight} × ${w.reps}</td>
-                <td><strong>${w.estimated1RM}</strong></td>
-                <td style="white-space: nowrap;">
-                    <button class="action-btn edit-btn" data-id="${w.id}" aria-label="Edit set for ${w.exercise} on ${formatDateForDisplay(date)}">Edit</button>
-                    <button class="action-btn del-btn" data-id="${w.id}" aria-label="Delete set for ${w.exercise} on ${formatDateForDisplay(date)}">Del</button>
-                </td>
-            </tr>
-        `).join('');
-        return `
-            <div class="session-group" id="session-${date}">
-                <h3 class="session-header">📅 ${formatDateForDisplay(date)}</h3>
-                <table>
-                    <thead><tr><th>Exercise</th><th>W × R</th><th>1RM</th><th>Actions</th></tr></thead>
-                    <tbody>${setsHtml}</tbody>
-                </table>
-            </div>
-        `;
-    }).join('');
-    historyContainerEl.innerHTML = historyHtml;
+    const setsForDay = workouts.filter(w => w.date === dateStr).sort((a,b) => a.id - b.id);
+    if (setsForDay.length === 0) {
+        historyContainerEl.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding-top: 16px;">No sets logged for ${formatDateForDisplay(dateStr)}.</p>`;
+        return;
+    }
+    const setsHtml = setsForDay.map(w => `
+        <tr id="workout-row-${w.id}">
+            <td>${w.exercise}</td>
+            <td>${w.weight} × ${w.reps}</td>
+            <td><strong>${w.estimated1RM}</strong></td>
+            <td style="white-space: nowrap;">
+                <button class="action-btn edit-btn" data-id="${w.id}" aria-label="Edit set: ${w.exercise} at ${w.weight} for ${w.reps} reps">Edit</button>
+                <button class="action-btn del-btn" data-id="${w.id}" aria-label="Delete set: ${w.exercise} at ${w.weight} for ${w.reps} reps">Del</button>
+            </td>
+        </tr>
+    `).join('');
+    historyContainerEl.innerHTML = `
+        <div class="session-group" id="session-${dateStr}">
+            <h3 class="session-header">📅 Sets for ${formatDateForDisplay(dateStr)}</h3>
+            <table>
+                <thead><tr><th>Exercise</th><th>W × R</th><th>1RM</th><th>Actions</th></tr></thead>
+                <tbody>${setsHtml}</tbody>
+            </table>
+        </div>
+    `;
 }
 function renderPRs() {
     if (workouts.length === 0) {
         prContainerEl.innerHTML = '<p style="color: var(--text-secondary); margin: 0;">Log a workout to see personal records.</p>';
         return;
     }
+
     const prs = workouts.reduce((acc, w) => {
         if (!acc[w.exercise] || w.estimated1RM > acc[w.exercise].estimated1RM) {
-            acc[w.exercise] = w;
+            acc[w.exercise] = { ...w };
         }
         return acc;
     }, {});
-    const sortedPRExercises = Object.keys(prs).sort();
-    prContainerEl.innerHTML = `
-        <table>
-            <thead><tr><th>Exercise</th><th>Best Set</th><th>Best 1RM</th></tr></thead>
-            <tbody>
-                ${sortedPRExercises.map(exName => `
-                    <tr>
-                        <td><strong>${prs[exName].exercise}</strong></td>
-                        <td>${prs[exName].weight} × ${prs[exName].reps}</td>
-                        <td class="pr-gold">★ ${prs[exName].estimated1RM}</td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>`;
+
+    const exerciseToCategoryMap = Object.values(exerciseDictionary).reduce((map, item) => {
+        map[item.name] = item.category;
+        return map;
+    }, {});
+
+    const prsByCategory = Object.values(prs).reduce((acc, pr) => {
+        const category = exerciseToCategoryMap[pr.exercise] || 'Other';
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+        acc[category].push(pr);
+        return acc;
+    }, {});
+
+    const sortedCategories = Object.keys(prsByCategory).sort();
+    
+    let html = '';
+    sortedCategories.forEach(category => {
+        html += `<h3 class="session-header" style="margin-top:16px;">${category}</h3>`;
+        html += `
+            <table>
+                <thead><tr><th>Exercise</th><th>Best 1RM</th></tr></thead>
+                <tbody>
+        `;
+        const sortedPrs = prsByCategory[category].sort((a,b) => a.exercise.localeCompare(b.exercise));
+
+        sortedPrs.forEach(pr => {
+            html += `
+                <tr>
+                    <td><strong>${pr.exercise}</strong></td>
+                    <td class="pr-gold">★ ${pr.estimated1RM}</td>
+                </tr>
+            `;
+        });
+        html += '</tbody></table>';
+    });
+
+    prContainerEl.innerHTML = html;
 }
 function renderDatalist(exerciseArray) {
     exerciseOptionsEl.innerHTML = exerciseArray
@@ -566,7 +680,10 @@ async function importFromCSV(event) {
         try {
             const text = e.target.result;
             const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-            if (lines.length < 2) throw new Error("CSV file is empty or missing data rows.");
+            if (lines.length < 2) {
+                showToast("CSV file is empty or missing data rows.", "error");
+                return;
+            }
             const headers = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
             const fieldMap = {
                 date: headers.indexOf('date'),
@@ -584,9 +701,10 @@ async function importFromCSV(event) {
                 const weight = parseFloat(cols[fieldMap.weight]);
                 const reps = parseInt(cols[fieldMap.reps]);
                 if (!cols[fieldMap.date] || !cols[fieldMap.exercise] || isNaN(weight) || isNaN(reps)) return null;
+                const exerciseName = resolveExerciseName(cols[fieldMap.exercise]);
                 const setExists = workouts.some(w =>
                     w.date === cols[fieldMap.date] &&
-                    w.exercise.toLowerCase() === cols[fieldMap.exercise].toLowerCase() &&
+                    w.exercise.toLowerCase() === exerciseName.toLowerCase() &&
                     w.weight === weight &&
                     w.reps === reps
                 );
@@ -594,7 +712,7 @@ async function importFromCSV(event) {
                     isDuplicate: setExists,
                     data: {
                         date: cols[fieldMap.date],
-                        exercise: resolveExerciseName(cols[fieldMap.exercise]),
+                        exercise: exerciseName,
                         weight,
                         reps,
                         estimated1RM: calculate1RM(weight, reps)
@@ -605,10 +723,11 @@ async function importFromCSV(event) {
             const duplicateSets = allParsed.filter(p => p.isDuplicate);
             if (newSets.length === 0) {
                 if (duplicateSets.length > 0) {
-                    throw new Error(`Import failed: The file contains ${duplicateSets.length} set(s), but they are all duplicates of existing entries.`);
+                    showToast(`Import finished. ${duplicateSets.length} duplicate set(s) were ignored.`, 'info');
                 } else {
-                    throw new Error("No valid workout data found in the CSV file.");
+                    showToast("No valid new workout data found in the CSV file.", "error");
                 }
+                return;
             }
             const setsToImport = newSets.map(s => s.data);
             let confirmationMessage = `Found ${newSets.length} new sets to import.`;

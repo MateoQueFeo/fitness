@@ -1,4 +1,4 @@
-const CACHE_NAME = 'workout-tracker-cache-v1';
+const CACHE_NAME = 'workout-tracker-cache-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -46,7 +46,7 @@ self.addEventListener('fetch', (event) => {
                 }
 
                 return fetch(event.request).then((networkResponse) => {
-                    if (networkResponse && networkResponse.status === 200) {
+                    if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
                         cache.put(event.request, networkResponse.clone());
                     }
                     return networkResponse;
