@@ -1,0 +1,124 @@
+body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #000000; color: #e0e0e0; }
+header { background: #111111; padding: 16px; text-align: center; border-bottom: 2px solid #ffd700; font-weight: bold; font-size: 1.2rem; color: #ffd700; }
+#timerBar {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #1a1a1a;
+    border-bottom: 2px solid #ffd700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    z-index: 1000;
+    box-sizing: border-box;
+}
+#timerDisplay {
+    color: #ffd700;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+.timer-controls button {
+    width: auto;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    margin-left: 8px;
+    background-color: #333;
+    color: #ffd700;
+    border: 1px solid #ffd700;
+    margin-top: 0;
+}
+#metronomeToggle.active {
+    background-color: #ffd700;
+    color: #000;
+}
+.container { padding: 16px; max-width: 600px; margin: 0 auto; }
+.card { background: #111111; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 4px 6px rgba(255,215,0,0.1); border: 1px solid #333; }
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+h2 { color: #ffd700; font-size: 1.2rem; margin-top: 0;}
+h3 { color: #d4af37; font-size: 1rem; border-bottom: 1px solid #333; padding-bottom: 4px;}
+button { background: #ffd700; color: #000000; border: none; padding: 14px; border-radius: 8px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+button:disabled { background: #555; color: #888; cursor: not-allowed; }
+button.secondary { background: #222222; color: #ffd700; margin-bottom: 10px; border: 1px solid #ffd700; }
+.card-actions button {
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  width: auto;
+  margin-top: 0;
+  margin-left: 5px;
+}
+button.edit-btn {
+  background: #444;
+  color: #ffd700;
+  border: 1px solid #ffd700;
+}
+button.delete-btn {
+  background: #8B0000;
+  color: #ffffff;
+  border: 1px solid #ff0000;
+}
+button.skip-btn {
+    background: #444;
+    color: #aaa;
+    border: 1px solid #666;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    width: auto;
+    margin: 0 0 0 10px;
+}
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+.button-group .secondary {
+    width: 100%;
+}
+select {
+  background: #222222;
+  color: #ffd700;
+  border: 1px solid #ffd700;
+  padding: 14px;
+  border-radius: 8px;
+  width: 100%;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 10px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23ffd700%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22/%3E%3C/svg%3E');
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: .65em auto;
+}
+input[type="number"] { background: #222222; color: white; border: 1px solid #444; padding: 10px; border-radius: 4px; width: 70px; margin-right: 8px; text-align: center;}
+.set-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: #1a1a1a; padding: 10px; border-radius: 6px;}
+.set-row.skipped {
+    background: #111;
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+.set-inputs { display: flex; align-items: center; }
+.target-calc { font-size: 0.85rem; color: #aaa; margin-bottom: 8px; }
+.hidden { display: none !important; }
+.menu-item { background: #1a1a1a; padding: 16px; margin-bottom: 10px; border-radius: 8px; border-left: 4px solid #ffd700; cursor: pointer; font-weight: bold; color: #ffffff; }
+.checkbox-row { display: flex; align-items: center; margin-bottom: 8px; flex-grow: 1; }
+.checkbox-row input[type="checkbox"] { transform: scale(1.5); margin-right: 12px; accent-color: #ffd700;}
+.exercise-item { background: #1a1a1a; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.9rem; }
+.exercise-details summary { cursor: pointer; list-style: none; }
+.exercise-details summary::-webkit-details-marker { display: none; }
+.exercise-details summary:focus { outline: none; }
+.compound-summary { color: #ffd700; font-size: 1.2rem; font-weight: bold; }
+.isolation-summary { color: #e0e0e0; font-size: 1.1rem; font-weight: bold; }
+.details-content { padding-top: 8px; color: #aaa; font-size: 0.85rem; }
+.exercise-details { display: inline; }
+.rm-badge { background-color: #000000; color: #ffd700; border: 1px solid #ffd700; font-size: 0.75rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-left: 8px; }
+
+/* Modal Styles */
+.modal-container { position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
+.modal-content { background-color: #1a1a1a; margin: 15% auto; padding: 20px; border: 1px solid #ffd700; width: 80%; max-width: 500px; border-radius: 8px; }
+.close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+.close-btn:hover, .close-btn:focus { color: #ffd700; text-decoration: none; cursor: pointer; }
