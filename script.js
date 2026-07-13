@@ -1,141 +1,6 @@
-const workouts = [
-    {
-        id: 1, name: "Side Lunge",
-        warmups: [
-            { name: "Cossack Squats (5/side)", desc: "Stand with feet wide. Shift weight to one side, squatting down while keeping the other leg straight. Alternate sides." },
-            { name: "Dynamic Leg Swings (10/leg)", desc: "Stand holding onto a support. Swing one leg forward and backward, then side to side. Repeat on other leg." }
-        ],
-        compound: { name: "Side Lunge", desc: "Step out laterally, bend knee, push hips back. Keep trailing leg straight." },
-        isolations: [
-            { name: "Leg Extension Machine", desc: "Extend legs fully, squeeze quads." },
-            { name: "Cable Adduction", desc: "Pull cabled leg across front of standing leg." }
-        ],
-        cooldowns: [
-            { name: "Butterfly Stretch (60s)", desc: "Sit on the floor, bring the soles of your feet together, and let your knees fall to the sides. Gently press knees toward the floor." },
-            { name: "Kneeling Quad Stretch (60s/leg)", desc: "Kneel on one knee, with the other foot forward. Lean forward and feel the stretch in the hip flexor and quad of the back leg." }
-        ]
-    },
-    {
-        id: 2, name: "Incline Chest Press",
-        warmups: [
-            { name: "Arm Circles (15 fwd/rev)", desc: "Extend arms to the sides. Make small circles forward, then gradually larger. Repeat in reverse." },
-            { name: "Bodyweight Arm Crossovers (15 reps)", desc: "Stand with arms extended forward. Swing them open wide, then cross them in front of your chest. Alternate which arm crosses on top." }
-        ],
-        compound: { name: "30-Degree Incline DB Chest Press", desc: "30-deg incline. Press straight up, lower to chest level." },
-        isolations: [
-            { name: "Low-to-High Cable Crossover", desc: "Underhand grip, bring hands upward and together." },
-            { name: "Overhead Cable Triceps Extension", desc: "Rope attachment, extend arms straight up behind head." }
-        ],
-        cooldowns: [
-            { name: "Doorway Chest Stretch (60s)", desc: "Place forearms on a doorframe, elbows slightly below shoulders. Step forward until you feel a stretch in your chest." },
-            { name: "Overhead Triceps Stretch (60s/arm)", desc: "Raise one arm, bend the elbow to drop your hand behind your head. Use the other hand to gently pull the elbow." }
-        ]
-    },
-    {
-        id: 3, name: "Walking Lunge",
-        warmups: [
-            { name: "Bodyweight Forward Lunges (5/leg)", desc: "Step forward with one leg, lowering your hips until both knees are bent at a 90-degree angle. Push back to the start." },
-            { name: "High Knees (20s)", desc: "Run in place, bringing your knees up towards your chest as high as possible." }
-        ],
-        compound: { name: "Walking Lunge", desc: "Hold dumbbells. Step forward, lower hips until rear knee nearly touches ground. Push off rear foot." },
-        isolations: [
-            { name: "Lying Leg Curl Machine", desc: "Lie face down, pad on lower calves, curl legs up." },
-            { name: "Standing Calf Raise", desc: "Stand on edge of block, let heels drop, press up onto toes." }
-        ],
-        cooldowns: [
-            { name: "Standing Wall Calf Stretch (60s/leg)", desc: "Face a wall, step one foot back, keeping the leg straight and heel on the floor. Lean forward." },
-            { name: "Seated Toe Touch (60s)", desc: "Sit with legs straight out. Hinge at your hips and reach for your toes, keeping your back straight." }
-        ]
-    },
-    {
-        id: 4, name: "Bent-Over Row",
-        warmups: [
-            { name: "Cat-Cow (10 reps)", desc: "On all fours, inhale as you drop your belly and look up (Cow). Exhale as you round your spine and tuck your chin (Cat)." },
-            { name: "Arm Swings (15 reps)", desc: "Stand with feet shoulder-width apart. Swing arms forward and back, then side to side, allowing gentle torso rotation." }
-        ],
-        compound: { name: "Bent-Over Dumbbell Row", desc: "Hinge at hips, back straight. Pull dumbbells up to ribcage, squeeze shoulder blades." },
-        isolations: [
-            { name: "Single-Arm Concentration Curl", desc: "Sit on bench, arm against inner thigh, curl weight up." },
-            { name: "Cable Rear Delt Fly", desc: "Set cables to shoulder height, cross arms, pull outward and backward." }
-        ],
-        cooldowns: [
-            { name: "Cross-Body Shoulder Stretch (60s/arm)", desc: "Pull one arm across your chest with the other, keeping the shoulder down. Feel the stretch in the back of the shoulder." },
-            { name: "Child’s Pose (60s)", desc: "Kneel on the floor, sit back on your heels, and fold forward, resting your forehead on the floor with arms extended." }
-        ]
-    },
-    {
-        id: 5, name: "Curtsy Lunge",
-        warmups: [
-            { name: "Glute Bridges (10 reps)", desc: "Lie on your back, knees bent, feet flat. Lift your hips off the floor until your body forms a straight line from shoulders to knees." },
-            { name: "Fire Hydrants (10/leg)", desc: "On all fours, keep your knee bent and lift one leg out to the side, keeping your back flat." }
-        ],
-        compound: { name: "Curtsy Lunge", desc: "Step right foot diagonally behind left foot, bend both knees." },
-        isolations: [
-            { name: "Cable Glute Kickback", desc: "Attach ankle strap to low cable, kick leg straight back." },
-            { name: "Seated Hip Abduction Machine", desc: "Push legs outward against resistance." }
-        ],
-        cooldowns: [
-            { name: "Figure-4 Stretch (60s/leg)", desc: "Lie on your back, cross one ankle over the opposite knee. Pull the bottom leg toward your chest." },
-            { name: "Pigeon Pose (60s/leg)", desc: "From a plank, bring one knee forward to the outside of the same-side hand, and extend the back leg. Fold forward." }
-        ]
-    },
-    {
-        id: 6, name: "Standing Arnold Press",
-        warmups: [
-            { name: "Shoulder Shrugs (15 reps)", desc: "Stand tall and lift your shoulders up toward your ears, then lower them back down." },
-            { name: "Wall Angels (10 reps)", desc: "Stand with your back against a wall. Slide your arms up and down the wall, keeping elbows and wrists in contact." }
-        ],
-        compound: { name: "Standing Arnold Press", desc: "Palms facing you. Press overhead and rotate wrists so palms face forward." },
-        isolations: [
-            { name: "Dumbbell Lateral Raise", desc: "Raise weights straight out to sides with slight elbow bend." },
-            { name: "Cable Triceps Pushdown", desc: "Keep elbows pinned, push bar down until arms extended." }
-        ],
-        cooldowns: [
-            { name: "Neck Lateral Flexion Stretch (30s/side)", desc: "Gently tilt your head to one side, bringing your ear toward your shoulder. Do not force the stretch." },
-            { name: "Behind-the-Back Shoulder Stretch (60s)", desc: "Clasp hands behind your back and gently lift your arms away from your body." }
-        ]
-    },
-    {
-        id: 7, name: "Romanian Deadlift",
-        warmups: [
-            { name: "Bodyweight Good Mornings (10 reps)", desc: "Stand with feet shoulder-width apart, hands behind head. Hinge at the hips, keeping back straight, until your torso is parallel to the floor." },
-            { name: "Inchworms (5 reps)", desc: "From standing, fold forward and walk your hands out to a plank position. Walk your feet in to meet your hands." }
-        ],
-        compound: { name: "Romanian Deadlift", desc: "Legs mostly straight, back flat, push hips backward to lower weight down legs." },
-        isolations: [
-            { name: "Seated Leg Curl Machine", desc: "Pad above ankles, pull heels backward and down." },
-            { name: "45-Degree Back Extension", desc: "Lock feet, lower upper body, use lower back to pull torso up." }
-        ],
-        cooldowns: [
-            { name: "Downward Facing Dog (60s)", desc: "From all fours, lift your hips up and back, forming an inverted V-shape with your body." },
-            { name: "Supine Knee-to-Chest (60s/leg)", desc: "Lie on your back and pull one knee into your chest, holding the stretch." }
-        ]
-    },
-    {
-        id: 8, name: "Lat Pulldown",
-        warmups: [
-            { name: "Scapular Pull-ups (10 reps)", desc: "Hang from a pull-up bar. Without bending your arms, pull your shoulder blades down and back, lifting your body slightly." },
-            { name: "Torso Twists (15 reps/side)", desc: "Stand with feet wide, holding a light weight or just your hands. Rotate your torso from side to side." }
-        ],
-        compound: { name: "Lat Pulldown", desc: "Wide grip. Pull bar down to upper chest driving elbows down and back." },
-        isolations: [
-            { name: "Straight Arm Cable Pulldown", desc: "Straight bar high pulley, push bar down in arc to thighs." },
-            { name: "Dumbbell Hammer Curl", desc: "Neutral grip, curl weights toward shoulders." }
-        ],
-        cooldowns: [
-            { name: "Overhead Lat Stretch (60s/arm)", desc: "Reach one arm overhead, grasp the wrist with your other hand, and gently pull to the side." },
-            { name: "Wrist Flexor/Extensor Stretch (30s each way/arm)", desc: "Extend one arm, palm up. Use the other hand to pull the fingers back. Flip your hand over and repeat." }
-        ]
-    }
-];
+let workouts = [];
 let currentWorkout = null;
 const workoutSelect = document.getElementById('workoutSelect');
-workouts.forEach(w => {
-  let option = document.createElement('option');
-  option.value = w.id;
-  option.innerText = w.name;
-  workoutSelect.appendChild(option);
-});
 let timerInterval = null;
 let countdown = 60;
 const defaultCountdown = 60;
@@ -144,6 +9,33 @@ const timerBar = document.getElementById('timerBar');
 let audioCtx = null;
 let metronomeInterval = null;
 let isMetronomeOn = false;
+
+// Function to fetch workouts and initialize the app
+async function initializeApp() {
+    try {
+        const response = await fetch('workouts.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        workouts = await response.json();
+        
+        // Populate the workout selector dropdown
+        workouts.forEach(w => {
+            let option = document.createElement('option');
+            option.value = w.id;
+            option.innerText = w.name;
+            workoutSelect.appendChild(option);
+        });
+
+    } catch (error) {
+        console.error("Could not fetch or parse workouts.json:", error);
+        alert("Failed to load workout data. Please try again later.");
+    }
+}
+
+// Call initializeApp when the DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeApp);
+
 
 function initAudio() {
     if (!audioCtx) {
