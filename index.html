@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FitTracker</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="manifest" href="./manifest.json">
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -21,13 +21,25 @@
     <div class="loader"></div>
   </div>
 
+  <div id="notification" class="notification hidden"></div>
+
+  <div id="confirmModal" class="modal-container hidden">
+    <div class="modal-content">
+      <p id="confirmModalText"></p>
+      <div class="button-group">
+        <button id="confirmModalCancel" class="secondary">Cancel</button>
+        <button id="confirmModalConfirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
   <div id="appContainer" class="hidden">
     <div id="timerBar" class="hidden">
       <span id="timerDisplay">01:00</span>
       <div class="timer-controls">
         <button id="metronomeToggle">Metronome</button>
-        <button id="addMinuteBtn">+1 Min</button>
-        <button id="resetTimerBtn">Reset</button>
+        <button id="addMinuteBtn" aria-label="Add one minute to timer">+1 Min</button>
+        <button id="resetTimerBtn" aria-label="Reset timer">Reset</button>
       </div>
     </div>
     <header>FitTracker</header>
@@ -55,16 +67,8 @@
       <h3>Workout Logs</h3>
       <div id="historyContent"></div>
     </div>
-
-    <div id="editModal" class="modal-container hidden">
-        <div class="modal-content">
-            <span class="close-btn" id="closeModalBtn">&times;</span>
-            <h2>Edit Log</h2>
-            <div id="editModalBody"></div>
-        </div>
-    </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="./script.js" type="module"></script>
 </body>
 </html>

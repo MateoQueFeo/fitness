@@ -1,45 +1,75 @@
 let workouts = [];
 let currentWorkout = null;
-const workoutSelect = document.getElementById('workoutSelect');
 let timerInterval = null;
 let countdown = 60;
 const defaultCountdown = 60;
-const timerDisplay = document.getElementById('timerDisplay');
-const timerBar = document.getElementById('timerBar');
 let audioCtx = null;
 let metronomeInterval = null;
 let isMetronomeOn = false;
+let notificationTimeout = null;
+let confirmCallback = null;
+
+const appLoader = document.getElementById('appLoader');
+const appContainer = document.getElementById('appContainer');
+const workoutSelect = document.getElementById('workoutSelect');
+const timerDisplay = document.getElementById('timerDisplay');
+const timerBar = document.getElementById('timerBar');
 
 async function initializeApp() {
+    workoutSelect.disabled = true;
     try {
-        const response = await fetch('workouts.json');
+        const response = await fetch('./workouts.json');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         workouts = await response.json();
         
         workouts.forEach(w => {
-            let option = new Option(w.name, w.id);
+            const option = new Option(w.name, w.id);
             workoutSelect.appendChild(option);
         });
 
-        document.getElementById('appLoader').classList.add('hidden');
-        document.getElementById('appContainer').classList.remove('hidden');
+        appLoader.classList.add('hidden');
+        appContainer.classList.remove('hidden');
+        workoutSelect.disabled = false;
 
     } catch (error) {
-        console.error("Could not fetch or parse workouts.json:", error);
-        document.getElementById('appLoader').innerHTML = `<p style="color: #ffd700; text-align: center;">Failed to load workout data.<br>${error.message}</p>`;
+        appLoader.innerHTML = `<p style="color: #ffd700; text-align: center;">Failed to load workout data.<br>${error.message}</p>`;
     }
+}
+
+function showNotification(message, isError = false, duration = 5000) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.className = 'notification show';
+    if (isError) notification.classList.add('error');
+    
+    clearTimeout(notificationTimeout);
+    if (duration > 0) {
+        notificationTimeout = setTimeout(() => {
+            notification.className = 'notification hidden';
+        }, duration);
+    }
+}
+
+function showConfirmDialog(text, callback) {
+    const modal = document.getElementById('confirmModal');
+    document.getElementById('confirmModalText').textContent = text;
+    modal.classList.remove('hidden');
+    confirmCallback = callback;
 }
 
 function initAudio() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
 }
 
 function playBeep(frequency, duration) {
-    if (!audioCtx) return;
+    initAudio();
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
     oscillator.connect(gainNode);
@@ -50,32 +80,24 @@ function playBeep(frequency, duration) {
     oscillator.stop(audioCtx.currentTime + duration);
 }
 
-function playMetronomeBeep() {
-    playBeep(880, 0.05);
-}
-
-function playTimerEndSound() {
-    playBeep(1000, 0.5);
-}
+const playMetronomeBeep = () => playBeep(880, 0.05);
+const playTimerEndSound = () => playBeep(1000, 0.5);
 
 function toggleMetronome() {
-    initAudio();
     isMetronomeOn = !isMetronomeOn;
     const metronomeBtn = document.getElementById('metronomeToggle');
+    metronomeBtn.classList.toggle('active', isMetronomeOn);
     if (isMetronomeOn) {
-        metronomeBtn.classList.add('active');
+        initAudio();
         metronomeInterval = setInterval(playMetronomeBeep, 1000);
     } else {
-        metronomeBtn.classList.remove('active');
         clearInterval(metronomeInterval);
         metronomeInterval = null;
     }
 }
 
 function stopMetronome() {
-    if (isMetronomeOn) {
-        toggleMetronome();
-    }
+    if (isMetronomeOn) toggleMetronome();
 }
 
 function updateTimerDisplay() {
@@ -108,29 +130,61 @@ function resetTimer() {
     updateTimerDisplay();
 }
 
-function addMinute() {
+const addMinute = () => {
     countdown += 60;
     updateTimerDisplay();
+};
+
+function goHome() {
+    document.getElementById('mainMenu').classList.remove('hidden');
+    document.getElementById('workoutScreen').classList.add('hidden');
+    document.getElementById('historyScreen').classList.add('hidden');
+    workoutSelect.value = '';
+    timerBar.classList.add('hidden');
+    resetTimer();
+    stopMetronome();
+    currentWorkout = null;
 }
 
-function handleSetCompletion(checkbox, inputIds, isAmrap = false) {
-    const repsInput = document.getElementById(inputIds[0]);
-    const weightInput = document.getElementById(inputIds[1]);
-    if (checkbox.checked) {
-        if (!repsInput.value || !weightInput.value) {
-            alert('Please enter reps and weight before completing the set.');
-            checkbox.checked = false;
-            return;
-        }
+function getStoredMaxes() {
+    try {
+        return JSON.parse(localStorage.getItem('workoutMaxes') || '{}');
+    } catch (e) {
+        console.error("Failed to parse workout maxes:", e);
+        return {};
     }
-    toggleSetInputs(checkbox.checked, inputIds);
-    if (isAmrap) {
-        if (checkbox.checked) {
-            startTimer();
-        } else {
-            stopTimer();
-        }
+}
+
+function saveStoredMax(exerciseName, rm) {
+    const maxes = getStoredMaxes();
+    const currentMax = maxes[exerciseName] || 0;
+    if (rm > currentMax) {
+        maxes[exerciseName] = rm;
+        localStorage.setItem('workoutMaxes', JSON.stringify(maxes));
     }
+}
+
+const roundToNearest5 = num => Math.round(num / 5) * 5;
+
+function calculateRM(weight, reps) {
+    if (reps <= 0 || weight < 0) return 0;
+    if (reps === 1) return Math.round(weight);
+    let rm = weight * (1 + (reps / 30));
+    return Math.round(rm);
+}
+
+function updateRM(exerciseName, reps, weight, badgeId) {
+    const parsedReps = parseFloat(reps);
+    const parsedWeight = parseFloat(weight);
+    if (isNaN(parsedReps) || isNaN(parsedWeight)) return;
+
+    const rm = calculateRM(parsedWeight, parsedReps);
+    const badge = document.getElementById(badgeId);
+    if (rm > 0) {
+        badge.innerText = `${rm} lbs`;
+        saveStoredMax(exerciseName, rm);
+    }
+    validateWorkoutLog();
 }
 
 function validateWorkoutLog() {
@@ -142,7 +196,8 @@ function validateWorkoutLog() {
         const isSkipped = row.classList.contains('skipped');
         const repsInput = row.querySelector('input[type="number"][placeholder="Reps"]');
         const weightInput = row.querySelector('input[type="number"][placeholder="Wt"]');
-        if (!isSkipped && (repsInput.value === '' || weightInput.value === '')) {
+        
+        if (!isSkipped && (repsInput.value === '' || parseFloat(repsInput.value) <= 0 || weightInput.value === '' || parseFloat(weightInput.value) < 0)) {
             allSetsValid = false;
         }
     });
@@ -152,16 +207,14 @@ function validateWorkoutLog() {
 function skipSet(buttonEl, setId) {
     const setRow = document.getElementById(setId);
     const isSkipped = setRow.classList.toggle('skipped');
-    const checkbox = setRow.querySelector('input[type="checkbox"]');
-    const repsInput = setRow.querySelector('input[placeholder="Reps"]');
-    const weightInput = setRow.querySelector('input[placeholder="Wt"]');
-    checkbox.disabled = isSkipped;
-    repsInput.disabled = isSkipped;
-    weightInput.disabled = isSkipped;
+    ['checkbox', 'input[placeholder="Reps"]', 'input[placeholder="Wt"]'].forEach(sel => {
+        const el = setRow.querySelector(sel);
+        if (el) el.disabled = isSkipped;
+    });
     if (isSkipped) {
-        checkbox.checked = false;
-        repsInput.value = '';
-        weightInput.value = '';
+        setRow.querySelector('input[placeholder="Reps"]').value = '';
+        setRow.querySelector('input[placeholder="Wt"]').value = '';
+        setRow.querySelector('input[type="checkbox"]').checked = false;
         buttonEl.innerText = 'Unskip';
     } else {
         buttonEl.innerText = 'Skip';
@@ -169,78 +222,61 @@ function skipSet(buttonEl, setId) {
     validateWorkoutLog();
 }
 
-function startSelectedWorkout() {
-    const selectedWorkoutId = parseInt(workoutSelect.value);
-    if (selectedWorkoutId) {
-        const selectedWorkout = workouts.find(w => w.id === selectedWorkoutId);
-        if (selectedWorkout) {
-            loadWorkout(selectedWorkout);
-        }
-    }
-}
+const parseSet = setString => {
+    if (!setString || ['Not Logged', 'Skipped'].includes(setString)) return { reps: '', weight: '' };
+    const parts = setString.replace(/\s*lbs\s*/, '').split('x');
+    return { reps: parts[0]?.trim() || '', weight: parts[1]?.trim() || '' };
+};
 
-function goHome() {
-  document.getElementById('mainMenu').classList.remove('hidden');
-  document.getElementById('workoutScreen').classList.add('hidden');
-  document.getElementById('historyScreen').classList.add('hidden');
-  document.getElementById('workoutSelect').value = '';
-  timerBar.classList.add('hidden');
-  stopTimer();
-  stopMetronome();
-  currentWorkout = null;
-}
-
-function closeModal() {
-    document.getElementById('editModal').classList.add('hidden');
-}
-
-function toggleSetInputs(isDisabled, inputIds) {
-    inputIds.forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-            input.disabled = isDisabled;
+function createDOMElement(tag, options = {}) {
+    const element = document.createElement(tag);
+    Object.entries(options).forEach(([key, value]) => {
+        if (key === 'dataset') {
+            Object.assign(element.dataset, value);
+        } else if (key === 'children' && Array.isArray(value)) {
+            value.forEach(child => element.appendChild(child));
+        } else {
+            element[key] = value;
         }
     });
+    return element;
 }
 
-function getStoredMaxes() {
-    try {
-        return JSON.parse(localStorage.getItem('workoutMaxes') || '{}');
-    } catch (e) {
-        return {};
-    }
+function createSetRow(id, label, details, values, isAmrap, exerciseName, badgeId) {
+    const { reps, weight } = values;
+    const createInput = (placeholder, value, action, data) => createDOMElement('input', { type: 'number', placeholder, value, dataset: { action, ...data } });
+
+    return createDOMElement('div', { id, className: 'set-row', children: [
+        createDOMElement('div', { className: 'checkbox-row', children: [
+            createDOMElement('input', { type: 'checkbox', dataset: { action: 'complete-set', inputs: `${id}Reps,${id}Weight`, amrap: isAmrap } }),
+            createDOMElement('div', { children: [
+                createDOMElement('strong', { textContent: label }),
+                createDOMElement('span', { textContent: ` (${details})` })
+            ]})
+        ]}),
+        createDOMElement('div', { className: 'set-inputs', children: [
+            createInput('Reps', reps, 'update-rm', { id: `${id}Reps`, exerciseName, badgeId, weightId: `${id}Weight` }),
+            createInput('Wt', weight, 'update-rm', { id: `${id}Weight`, exerciseName, badgeId, repsId: `${id}Reps` }),
+            createDOMElement('button', { className: 'skip-btn', textContent: 'Skip', dataset: { action: 'skip-set', setId: id } })
+        ]})
+    ]});
 }
 
-function saveStoredMax(exerciseName, rm) {
-    const maxes = getStoredMaxes();
-    maxes[exerciseName] = rm;
-    localStorage.setItem('workoutMaxes', JSON.stringify(maxes));
-}
-
-function roundToNearest5(num) {
-    return Math.round(num / 5) * 5;
-}
-
-function calculateRM(weight, reps) {
-    if (!weight || !reps || reps < 1) return 0;
-    return Math.round(weight * (1 + (reps / 30)));
-}
-
-function updateRM(exerciseName, reps, weight, badgeId) {
-    const rm = calculateRM(parseFloat(weight), parseFloat(reps));
-    if (rm > 0) {
-        document.getElementById(badgeId).innerText = `${rm} lbs`;
-        saveStoredMax(exerciseName, rm);
-    }
-    validateWorkoutLog();
-}
-
-function parseSet(setString) {
-    if (!setString || setString === 'Not Logged' || setString === 'Skipped') return { reps: '', weight: '' };
-    const parts = setString.replace(/\s*lbs\s*/, '').split('x');
-    const reps = parts[0] !== undefined ? parts[0].trim() : '';
-    const weight = parts[1] !== undefined ? parts[1].trim() : '';
-    return { reps, weight };
+function createExerciseSection(title, exercises) {
+    const fragment = document.createDocumentFragment();
+    fragment.appendChild(createDOMElement('h3', { textContent: title }));
+    exercises.forEach(ex => {
+        fragment.appendChild(createDOMElement('div', { className: 'exercise-item', children: [
+            createDOMElement('div', { className: 'checkbox-row', children: [
+                createDOMElement('input', { type: 'checkbox' }),
+                createDOMElement('details', { className: 'exercise-details', children: [
+                    createDOMElement('summary', { textContent: ex.name }),
+                    createDOMElement('div', { className: 'details-content', textContent: ex.desc })
+                ]})
+            ]})
+        ]}));
+    });
+    return fragment;
 }
 
 function loadWorkout(w, logData = null, logIndex = null) {
@@ -248,50 +284,55 @@ function loadWorkout(w, logData = null, logIndex = null) {
     resetTimer();
     timerBar.classList.remove('hidden');
     const maxes = getStoredMaxes();
-    const compoundRM = maxes[w.compound.name] || 0;
+    const workoutContent = document.getElementById('workoutContent');
+    workoutContent.innerHTML = '';
     document.getElementById('mainMenu').classList.add('hidden');
     document.getElementById('workoutScreen').classList.remove('hidden');
-    let html = `<h2>${logData ? 'Edit' : ''} ${w.name}</h2>`;
-    html += `<h3>Warm-ups (No Load)</h3>`;
-    w.warmups.forEach(wu => {
-        html += `<div class="exercise-item"><div class="checkbox-row"><input type="checkbox"><details class="exercise-details"><summary>${wu.name}</summary><div class="details-content">${wu.desc}</div></details></div></div>`;
-    });
-    const s1 = logData ? parseSet(logData.compound.s1) : { reps: 6, weight: compoundRM > 0 ? roundToNearest5(compoundRM * 0.33) : '' };
-    const s2 = logData ? parseSet(logData.compound.s2) : { reps: 6, weight: compoundRM > 0 ? roundToNearest5(compoundRM * 0.66) : '' };
-    const s3 = logData ? parseSet(logData.compound.s3) : { reps: '', weight: compoundRM > 0 ? roundToNearest5(compoundRM * 0.80) : '' };
-    html += `<h3>Compound Lift</h3>
-             <div class="exercise-item">
-                <details class="exercise-details"><summary class="compound-summary">${w.compound.name}<span class="rm-badge" id="compound-rm-badge">${compoundRM ? `${compoundRM} lbs` : 'Log a set'}</span></summary><div class="details-content">${w.compound.desc}</div></details>
-             </div>
-             <div class="set-row" id="cSet1">
-                <div class="checkbox-row"><input type="checkbox" data-action="complete-set" data-inputs="cReps1,cWeight1"><div><strong>Set 1</strong> (6 reps @ 33%)</div></div>
-                <div class="set-inputs"><input type="number" id="cReps1" placeholder="Reps" value="${s1.reps}" data-action="validate"><input type="number" id="cWeight1" placeholder="Wt" value="${s1.weight}" data-action="validate"><button class="skip-btn" data-action="skip-set" data-set-id="cSet1">Skip</button></div>
-             </div>
-             <div class="set-row" id="cSet2">
-                <div class="checkbox-row"><input type="checkbox" data-action="complete-set" data-inputs="cReps2,cWeight2"><div><strong>Set 2</strong> (6 reps @ 66%)</div></div>
-                <div class="set-inputs"><input type="number" id="cReps2" placeholder="Reps" value="${s2.reps}" data-action="validate"><input type="number" id="cWeight2" placeholder="Wt" value="${s2.weight}" data-action="validate"><button class="skip-btn" data-action="skip-set" data-set-id="cSet2">Skip</button></div>
-             </div>
-             <div class="set-row" id="cSet3">
-                <div class="checkbox-row"><input type="checkbox" data-action="complete-set" data-inputs="cReps3,cWeight3" data-amrap="true"><div><strong>Set 3</strong> (AMRAP @ 80%)</div></div>
-                <div class="set-inputs"><input type="number" id="cReps3" placeholder="Reps" value="${s3.reps}" data-action="update-rm" data-exercise-name="${w.compound.name}" data-weight-id="cWeight3" data-badge-id="compound-rm-badge"><input type="number" id="cWeight3" placeholder="Wt" value="${s3.weight}" data-action="update-rm" data-exercise-name="${w.compound.name}" data-reps-id="cReps3" data-badge-id="compound-rm-badge"><button class="skip-btn" data-action="skip-set" data-set-id="cSet3">Skip</button></div>
-             </div>`;
-    html += `<h3>Isolation Lifts (1x AMRAP)</h3>`;
+
+    const fragment = document.createDocumentFragment();
+    fragment.appendChild(createDOMElement('h2', { textContent: `${logData ? 'Edit' : ''} ${w.name}` }));
+    fragment.appendChild(createExerciseSection('Warm-ups (No Load)', w.warmups));
+    
+    fragment.appendChild(createDOMElement('h3', { textContent: 'Compound Lift' }));
+    const compoundRM = maxes[w.compound.name] || 0;
+    fragment.appendChild(createDOMElement('div', { className: 'exercise-item', children: [
+        createDOMElement('details', { className: 'exercise-details', children: [
+            createDOMElement('summary', { className: 'compound-summary', children: [
+                document.createTextNode(w.compound.name),
+                createDOMElement('span', { id: 'compound-rm-badge', className: 'rm-badge', textContent: compoundRM ? `${compoundRM} lbs` : 'Log a set' })
+            ]}),
+            createDOMElement('div', { className: 'details-content', textContent: w.compound.desc })
+        ]})
+    ]}));
+
+    const sets = [
+        { id: 'cSet1', label: 'Set 1', details: '6 reps @ 33%', isAmrap: false, values: logData ? parseSet(logData.compound.s1) : { reps: 6, weight: compoundRM > 0 ? roundToNearest5(compoundRM * 0.33) : '' } },
+        { id: 'cSet2', label: 'Set 2', details: '6 reps @ 66%', isAmrap: false, values: logData ? parseSet(logData.compound.s2) : { reps: 6, weight: compoundRM > 0 ? roundToNearest5(compoundRM * 0.66) : '' } },
+        { id: 'cSet3', label: 'Set 3', details: 'AMRAP @ 80%', isAmrap: true, values: logData ? parseSet(logData.compound.s3) : { reps: '', weight: compoundRM > 0 ? roundToNearest5(compoundRM * 0.80) : '' } }
+    ];
+    sets.forEach(s => fragment.appendChild(createSetRow(s.id, s.label, s.details, s.values, s.isAmrap, w.compound.name, 'compound-rm-badge')));
+
+    fragment.appendChild(createDOMElement('h3', { textContent: 'Isolation Lifts (1x AMRAP)' }));
     w.isolations.forEach((iso, idx) => {
         const isoRM = maxes[iso.name] || 0;
+        fragment.appendChild(createDOMElement('div', { className: 'exercise-item', children: [
+            createDOMElement('details', { className: 'exercise-details', children: [
+                createDOMElement('summary', { className: 'isolation-summary', children: [
+                    document.createTextNode(iso.name),
+                    createDOMElement('span', { id: `iso-rm-badge-${idx}`, className: 'rm-badge', textContent: isoRM ? `${isoRM} lbs` : 'Log a set' })
+                ]}),
+                createDOMElement('div', { className: 'details-content', textContent: iso.desc })
+            ]})
+        ]}));
         const isoSet = logData && logData.isolations[idx] ? parseSet(logData.isolations[idx].log) : { reps: '', weight: '' };
-        html += `
-        <div class="exercise-item"><details class="exercise-details"><summary class="isolation-summary">${iso.name}<span class="rm-badge" id="iso-rm-badge-${idx}">${isoRM ? `${isoRM} lbs` : 'Log a set'}</span></summary><div class="details-content">${iso.desc}</div></details></div>
-        <div class="set-row" id="isoSet${idx}">
-            <div class="checkbox-row"><input type="checkbox" data-action="complete-set" data-inputs="isoReps_${idx},isoWeight_${idx}" data-amrap="true"><div><strong>Set 1</strong> (AMRAP)</div></div>
-            <div class="set-inputs"><input type="number" id="isoReps_${idx}" placeholder="Reps" value="${isoSet.reps}" data-action="update-rm" data-exercise-name="${iso.name}" data-weight-id="isoWeight_${idx}" data-badge-id="iso-rm-badge-${idx}"><input type="number" id="isoWeight_${idx}" placeholder="Wt" value="${isoSet.weight}" data-action="update-rm" data-exercise-name="${iso.name}" data-reps-id="isoReps_${idx}" data-badge-id="iso-rm-badge-${idx}"><button class="skip-btn" data-action="skip-set" data-set-id="isoSet${idx}">Skip</button></div>
-        </div>`;
+        fragment.appendChild(createSetRow(`isoSet${idx}`, 'Set 1', 'AMRAP', isoSet, true, iso.name, `iso-rm-badge-${idx}`));
     });
-    html += `<h3>Cool-downs</h3>`;
-    w.cooldowns.forEach(cd => {
-        html += `<div class="exercise-item"><div class="checkbox-row"><input type="checkbox"><details class="exercise-details"><summary>${cd.name}</summary><div class="details-content">${cd.desc}</div></details></div></div>`;
-    });
-    html += `<button id="saveWorkoutBtn" data-log-index="${logIndex !== null ? logIndex : ''}" data-original-date="${logData ? logData.date : ''}">${logData ? 'Update Log' : 'Save Workout Log'}</button>`;
-    document.getElementById('workoutContent').innerHTML = html;
+    
+    fragment.appendChild(createExerciseSection('Cool-downs', w.cooldowns));
+    fragment.appendChild(createDOMElement('button', { id: 'saveWorkoutBtn', textContent: logData ? 'Update Log' : 'Save Workout Log', dataset: { logIndex: logIndex ?? '', originalDate: logData?.date ?? '' } }));
+    
+    workoutContent.appendChild(fragment);
+
     if (logData) {
         Object.entries({s1: 'cSet1', s2: 'cSet2', s3: 'cSet3'}).forEach(([key, id]) => {
             if (logData.compound[key] === 'Skipped') {
@@ -309,6 +350,14 @@ function loadWorkout(w, logData = null, logIndex = null) {
     validateWorkoutLog();
 }
 
+function startSelectedWorkout() {
+    const selectedWorkoutId = parseInt(workoutSelect.value);
+    if (selectedWorkoutId) {
+        const selectedWorkout = workouts.find(w => w.id === selectedWorkoutId);
+        if (selectedWorkout) loadWorkout(selectedWorkout);
+    }
+}
+
 function getSetData(setId) {
     const setRow = document.getElementById(setId);
     if (setRow.classList.contains('skipped')) return 'Skipped';
@@ -321,31 +370,23 @@ function saveOrUpdateLog(logIndex = null, originalDate = null) {
   const log = {
     date: originalDate || new Date().toISOString().split('T')[0],
     routine: currentWorkout.name,
-    compound: {
-      name: currentWorkout.compound.name,
-      s1: getSetData('cSet1'),
-      s2: getSetData('cSet2'),
-      s3: getSetData('cSet3')
-    },
-    isolations: currentWorkout.isolations.map((iso, idx) => ({
-      name: iso.name,
-      log: getSetData(`isoSet${idx}`)
-    }))
+    compound: { name: currentWorkout.compound.name, s1: getSetData('cSet1'), s2: getSetData('cSet2'), s3: getSetData('cSet3') },
+    isolations: currentWorkout.isolations.map((iso, idx) => ({ name: iso.name, log: getSetData(`isoSet${idx}`) }))
   };
   try {
     let history = getHistory();
     if (logIndex !== null && logIndex !== '') {
         history[logIndex] = log;
-        alert('Workout Updated Successfully!');
+        showNotification('Workout Updated Successfully!');
     } else {
         history.unshift(log);
-        alert('Workout Saved Successfully!');
+        showNotification('Workout Saved Successfully!');
     }
     localStorage.setItem('workoutLogs', JSON.stringify(history));
     goHome();
   } catch (e) {
-    console.error("Failed to save to localStorage:", e);
-    alert("Error: Could not save workout.");
+    showNotification("Error: Could not save workout.", true);
+    console.error("Save log error:", e);
   }
 }
 
@@ -353,7 +394,7 @@ function getHistory() {
     try {
         return JSON.parse(localStorage.getItem('workoutLogs') || '[]');
     } catch(e) {
-        console.error("Failed to parse history from localStorage:", e);
+        console.error("Failed to parse workout history:", e);
         return [];
     }
 }
@@ -363,28 +404,31 @@ function viewHistory() {
   document.getElementById('historyScreen').classList.remove('hidden');
   const history = getHistory();
   document.getElementById('exportButton').disabled = history.length === 0;
-  let html = '';
+  const historyContent = document.getElementById('historyContent');
+  historyContent.innerHTML = '';
   if (history.length === 0) {
-    html = '<p>No workouts logged yet.</p>';
-  } else {
-    history.forEach((log, index) => {
-      html += `<div class="card">
-                 <div class="card-header">
-                   <strong style="color:#ffd700;">${log.date} - ${log.routine}</strong>
-                   <div class="card-actions">
-                     <button class="edit-btn" data-action="edit-log" data-log-index="${index}">Edit</button>
-                     <button class="delete-btn" data-action="delete-log" data-log-index="${index}">Delete</button>
-                   </div>
-                 </div>
-                 <div style="margin-top:8px; font-size:0.9rem;">
-                   <strong>${log.compound.name}:</strong><br>
-                   S1: ${log.compound.s1} | S2: ${log.compound.s2} | S3: ${log.compound.s3}<br><br>
-                   ${log.isolations.map(i => `<strong>${i.name}:</strong> ${i.log}`).join('<br>')}
-                 </div>
-               </div>`;
-    });
+    historyContent.innerHTML = '<p>No workouts logged yet.</p>';
+    return;
   }
-  document.getElementById('historyContent').innerHTML = html;
+  const fragment = document.createDocumentFragment();
+  history.forEach((log, index) => {
+    const card = createDOMElement('div', { className: 'card' });
+    card.innerHTML = `
+        <div class="card-header">
+            <strong style="color:#ffd700;">${log.date} - ${log.routine}</strong>
+            <div class="card-actions">
+                <button class="edit-btn" data-action="edit-log" data-log-index="${index}">Edit</button>
+                <button class="delete-btn" data-action="delete-log" data-log-index="${index}">Delete</button>
+            </div>
+        </div>
+        <div style="margin-top:8px; font-size:0.9rem;">
+            <strong>${log.compound.name}:</strong><br>
+            S1: ${log.compound.s1} | S2: ${log.compound.s2} | S3: ${log.compound.s3}<br><br>
+            ${log.isolations.map(i => `<strong>${i.name}:</strong> ${i.log}`).join('<br>')}
+        </div>`;
+    fragment.appendChild(card);
+  });
+  historyContent.appendChild(fragment);
 }
 
 function editLog(logIndex) {
@@ -393,116 +437,90 @@ function editLog(logIndex) {
     if (logToEdit) {
         const workoutDefinition = workouts.find(w => w.name === logToEdit.routine);
         if (workoutDefinition) {
+            document.getElementById('historyScreen').classList.add('hidden');
             loadWorkout(workoutDefinition, logToEdit, logIndex);
         } else {
-            alert(`Error: Workout definition for "${logToEdit.routine}" not found.`);
+            showNotification(`Error: Workout definition for "${logToEdit.routine}" not found.`, true);
         }
     }
 }
 
 function deleteLog(logIndex) {
-    if (confirm('Are you sure you want to permanently delete this log?')) {
-        let history = getHistory();
+    const history = getHistory();
+    const log = history[logIndex];
+    const confirmationMessage = `Are you sure you want to permanently delete the log for ${log.routine} on ${log.date}? This action cannot be undone.`;
+    
+    showConfirmDialog(confirmationMessage, () => {
         history.splice(logIndex, 1);
         localStorage.setItem('workoutLogs', JSON.stringify(history));
         viewHistory();
-    }
+    });
 }
 
-function triggerImport() {
-    document.getElementById('csvFileInput').click();
+function parseCsv(text) {
+    const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+    if (lines.length <= 1) return [];
+
+    const header = lines.shift().split(',').map(h => h.trim());
+    const dateIndex = header.indexOf("Date");
+    const routineIndex = header.indexOf("Routine");
+    const exerciseIndex = header.indexOf("Exercise");
+    const setIndex = header.indexOf("Set");
+    const repsIndex = header.indexOf("Reps");
+    const weightIndex = header.indexOf("Weight (lbs)");
+    const statusIndex = header.indexOf("Status");
+
+    return lines.map((line, index) => {
+        const values = line.split(',');
+        if (values.length !== header.length) {
+            console.warn(`Malformed CSV line ${index + 2}: ${line}`);
+            return null;
+        }
+
+        const status = statusIndex !== -1 ? values[statusIndex].trim() : 'Completed';
+        const reps = repsIndex !== -1 ? values[repsIndex].trim() : '';
+        const weight = weightIndex !== -1 ? values[weightIndex].trim() : '';
+
+        return {
+            date: dateIndex !== -1 ? values[dateIndex].trim() : '',
+            routine: routineIndex !== -1 ? values[routineIndex].trim() : '',
+            exercise: exerciseIndex !== -1 ? values[exerciseIndex].trim() : '',
+            set: setIndex !== -1 ? parseInt(values[setIndex].trim(), 10) : 0,
+            reps: status === 'Completed' ? reps : '',
+            weight: status === 'Completed' ? weight : '',
+            status: status
+        };
+    }).filter(log => log !== null);
 }
+
 
 function importLogs(event) {
     const file = event.target.files[0];
     if (!file) return;
+    showNotification('Importing... please wait.', false, 0);
     const reader = new FileReader();
+
     reader.onload = function(e) {
         try {
-            const text = e.target.result;
-            const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-            if (lines.length <= 1) {
-                alert("CSV file is empty or has no data rows.");
+            const importedData = parseCsv(e.target.result);
+            if (importedData.length === 0) {
+                showNotification('No valid data found in CSV file.', true);
                 return;
             }
-            lines.shift();
-            
-            let malformedRows = [];
-            let skippedRoutines = new Set();
-            
-            const rawLogs = lines.map((line, index) => {
-                const values = line.split(',');
-                if (values.length !== 6) {
-                    malformedRows.push(index + 2);
-                    return null;
-                }
-                return { date: values[0], routine: values[1], exercise: values[2], set: parseInt(values[3]), reps: values[4], weight: values[5] };
-            }).filter(log => log !== null);
 
-            const existingHistory = getHistory();
-            const historyMap = new Map(existingHistory.map(log => [`${log.date}_${log.routine}`, log]));
-            let newLogsCount = 0;
-            let updatedLogsCount = 0;
+            const { newLogsCount, updatedLogsCount, skippedRoutines } = mergeImportedLogs(importedData);
 
-            const groupedByDateAndRoutine = rawLogs.reduce((acc, log) => {
-                const key = `${log.date}_${log.routine}`;
-                if (!acc[key]) acc[key] = [];
-                acc[key].push(log);
-                return acc;
-            }, {});
-
-            for (const key in groupedByDateAndRoutine) {
-                const group = groupedByDateAndRoutine[key];
-                const first = group[0];
-                const workoutDef = workouts.find(w => w.name === first.routine);
-                if (!workoutDef) {
-                    skippedRoutines.add(first.routine);
-                    continue;
-                }
-
-                let logEntry = historyMap.get(key);
-                if (!logEntry) {
-                    newLogsCount++;
-                    logEntry = {
-                        date: first.date,
-                        routine: first.routine,
-                        compound: { name: workoutDef.compound.name, s1: 'Not Logged', s2: 'Not Logged', s3: 'Not Logged' },
-                        isolations: workoutDef.isolations.map(iso => ({ name: iso.name, log: 'Not Logged' }))
-                    };
-                } else {
-                    updatedLogsCount++;
-                }
-
-                group.forEach(log => {
-                    const logValue = `${log.reps}x${log.weight} lbs`;
-                    if (log.exercise === workoutDef.compound.name) {
-                        logEntry.compound[`s${log.set}`] = logValue;
-                    } else {
-                        const isoIndex = logEntry.isolations.findIndex(i => i.name === log.exercise);
-                        if (isoIndex !== -1) {
-                            logEntry.isolations[isoIndex].log = logValue;
-                        }
-                    }
-                });
-                historyMap.set(key, logEntry);
-            }
-
-            const updatedHistory = Array.from(historyMap.values());
-            updatedHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
-            localStorage.setItem('workoutLogs', JSON.stringify(updatedHistory));
-            
-            let alertMessage = `${newLogsCount} new workout(s) imported, ${updatedLogsCount} existing workout(s) updated.`;
-            if (malformedRows.length > 0) {
-                alertMessage += `\n- ${malformedRows.length} malformed row(s) were skipped at lines: ${malformedRows.join(', ')}.`;
-            }
+            let message = `${newLogsCount} new, ${updatedLogsCount} updated logs processed.`;
             if (skippedRoutines.size > 0) {
-                alertMessage += `\n- Skipped routines not found in current configuration: ${Array.from(skippedRoutines).join(', ')}.`;
+                message += ` Skipped routines not found: ${Array.from(skippedRoutines).join(', ')}.`;
+                showNotification(message, true, 10000);
+            } else {
+                showNotification(message);
             }
-            alert(alertMessage);
             viewHistory();
         } catch (error) {
-            console.error("Failed to import CSV:", error);
-            alert("Import failed. Please ensure the CSV file is formatted correctly.");
+            showNotification(`Import failed: ${error.message}`, true);
+            console.error("Import error:", error);
         } finally {
             event.target.value = '';
         }
@@ -510,39 +528,104 @@ function importLogs(event) {
     reader.readAsText(file);
 }
 
+function mergeImportedLogs(importedData) {
+    const history = getHistory();
+    const historyMap = new Map(history.map(log => [`${log.date}_${log.routine}`, log]));
+    let newLogsCount = 0;
+    let updatedLogsCount = 0;
+    const skippedRoutines = new Set();
+    const workoutNames = new Set(workouts.map(w => w.name));
+
+    const groupedByLog = importedData.reduce((acc, row) => {
+        if (!workoutNames.has(row.routine)) {
+            skippedRoutines.add(row.routine);
+            return acc;
+        }
+        const key = `${row.date}_${row.routine}`;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(row);
+        return acc;
+    }, {});
+
+    for (const key in groupedByLog) {
+        const [date, routineName] = key.split('_');
+        const workoutDef = workouts.find(w => w.name === routineName);
+        if (!workoutDef) continue;
+
+        let isUpdate = historyMap.has(key);
+        let logEntry = historyMap.get(key) || {
+            date: date,
+            routine: routineName,
+            compound: { name: workoutDef.compound.name, s1: 'Not Logged', s2: 'Not Logged', s3: 'Not Logged' },
+            isolations: workoutDef.isolations.map(iso => ({ name: iso.name, log: 'Not Logged' }))
+        };
+
+        if (isUpdate) updatedLogsCount++;
+        else newLogsCount++;
+
+        groupedByLog[key].forEach(row => {
+            let logValue;
+            if (row.status === 'Skipped') {
+                logValue = 'Skipped';
+            } else if (row.reps && row.weight) {
+                logValue = `${row.reps}x${row.weight} lbs`;
+            } else {
+                logValue = 'Not Logged';
+            }
+
+            if (row.exercise === workoutDef.compound.name && row.set >= 1 && row.set <= 3) {
+                logEntry.compound[`s${row.set}`] = logValue;
+            } else {
+                const isoIndex = logEntry.isolations.findIndex(i => i.name === row.exercise);
+                if (isoIndex !== -1) {
+                    logEntry.isolations[isoIndex].log = logValue;
+                }
+            }
+        });
+        historyMap.set(key, logEntry);
+    }
+    
+    const updatedHistory = Array.from(historyMap.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
+    localStorage.setItem('workoutLogs', JSON.stringify(updatedHistory));
+    
+    return { newLogsCount, updatedLogsCount, skippedRoutines };
+}
+
+
 function exportLogs() {
     const history = getHistory();
-    if (history.length === 0) {
-        alert("No logs to export.");
-        return;
-    }
-    const header = "Date,Routine,Exercise,Set,Reps,Weight (lbs)\n";
+    if (history.length === 0) return showNotification("No logs to export.", true);
+    
+    const header = "Date,Routine,Exercise,Set,Reps,Weight (lbs),Status\n";
     const rows = history.flatMap(log => {
         let entryRows = [];
         const { date, routine, compound, isolations } = log;
-        const cSets = { s1: 1, s2: 2, s3: 3 };
-        for (const [key, num] of Object.entries(cSets)) {
-            if (compound[key] === 'Skipped' || compound[key] === 'Not Logged') continue;
-            const { reps, weight } = parseSet(compound[key]);
-            if (reps !== '' && weight !== '') {
-                entryRows.push([date, routine, compound.name, num, reps, weight].join(','));
+
+        const createRow = (exerciseName, setNum, setData) => {
+            const { reps, weight } = parseSet(setData);
+            let status = 'Not Logged';
+            if (setData === 'Skipped') {
+                status = 'Skipped';
+            } else if (reps && weight) {
+                status = 'Completed';
             }
-        }
+            return [date, routine, `"${exerciseName}"`, setNum, reps, weight, status].join(',');
+        };
+
+        entryRows.push(createRow(compound.name, 1, compound.s1));
+        entryRows.push(createRow(compound.name, 2, compound.s2));
+        entryRows.push(createRow(compound.name, 3, compound.s3));
+
         isolations.forEach(iso => {
-            if (iso.log === 'Skipped' || iso.log === 'Not Logged') return;
-            const { reps, weight } = parseSet(iso.log);
-            if (reps !== '' && weight !== '') {
-                entryRows.push([date, routine, iso.name, 1, reps, weight].join(','));
-            }
+            entryRows.push(createRow(iso.name, 1, iso.log));
         });
+
         return entryRows;
     });
+
     const csvContent = header + rows.join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", "fittracker_logs.csv");
+    const link = createDOMElement('a', { href: URL.createObjectURL(blob), download: 'fittracker_logs.csv' });
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -552,60 +635,89 @@ function exportLogs() {
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
 
-    document.body.addEventListener('click', initAudio, { once: true });
-
-    const appContainer = document.getElementById('appContainer');
-
-    appContainer.addEventListener('click', (event) => {
-        const target = event.target;
+    document.body.addEventListener('click', (event) => {
+        const target = event.target.closest('[data-action], button, a');
+        if (!target) return;
+        
         const action = target.dataset.action;
-    
-        if (target.id === 'viewHistoryBtn') { viewHistory(); }
-        else if (target.id === 'backToMenuBtn' || target.id === 'historyBackToMenuBtn') { goHome(); }
-        else if (target.id === 'metronomeToggle') { toggleMetronome(); }
-        else if (target.id === 'addMinuteBtn') { addMinute(); }
-        else if (target.id === 'resetTimerBtn') { resetTimer(); }
-        else if (target.id === 'importButton') { triggerImport(); }
-        else if (target.id === 'exportButton') { exportLogs(); }
-        else if (target.id === 'closeModalBtn') { closeModal(); }
-        else if (target.id === 'saveWorkoutBtn') {
-            const logIndex = target.dataset.logIndex;
-            const originalDate = target.dataset.originalDate;
-            saveOrUpdateLog(logIndex, originalDate);
-        } else if (action === 'skip-set') {
-            skipSet(target, target.dataset.setId);
-        } else if (action === 'edit-log') {
-            editLog(target.dataset.logIndex);
-        } else if (action === 'delete-log') {
-            deleteLog(target.dataset.logIndex);
+        const id = target.id;
+
+        const actions = {
+            'viewHistoryBtn': viewHistory,
+            'backToMenuBtn': goHome,
+            'historyBackToMenuBtn': goHome,
+            'metronomeToggle': toggleMetronome,
+            'addMinuteBtn': addMinute,
+            'resetTimerBtn': resetTimer,
+            'importButton': () => document.getElementById('csvFileInput').click(),
+            'exportButton': exportLogs,
+            'saveWorkoutBtn': () => saveOrUpdateLog(target.dataset.logIndex, target.dataset.originalDate),
+            'skip-set': () => skipSet(target, target.dataset.setId),
+            'edit-log': () => editLog(target.dataset.logIndex),
+            'delete-log': () => deleteLog(target.dataset.logIndex),
+            'confirmModalConfirm': () => {
+                if (typeof confirmCallback === 'function') confirmCallback();
+                document.getElementById('confirmModal').classList.add('hidden');
+                confirmCallback = null;
+            },
+            'confirmModalCancel': () => {
+                document.getElementById('confirmModal').classList.add('hidden');
+                confirmCallback = null;
+            }
+        };
+        
+        if (actions[id]) actions[id]();
+        else if (actions[action]) actions[action]();
+    });
+
+    document.body.addEventListener('change', (event) => {
+        const { target } = event;
+        if (target.id === 'workoutSelect') startSelectedWorkout();
+        else if (target.id === 'csvFileInput') importLogs(event);
+        else if (target.dataset.action === 'complete-set') {
+            const { inputs, amrap } = target.dataset;
+            handleSetCompletion(target, inputs.split(','), amrap === 'true');
         }
     });
 
-    appContainer.addEventListener('change', (event) => {
-        const target = event.target;
-        const action = target.dataset.action;
-
-        if (target.id === 'workoutSelect') { startSelectedWorkout(); }
-        else if (target.id === 'csvFileInput') { importLogs(event); }
-        else if (action === 'complete-set') {
-            const inputIds = target.dataset.inputs.split(',');
-            const isAmrap = target.dataset.amrap === 'true';
-            handleSetCompletion(target, inputIds, isAmrap);
-        }
-    });
-
-    appContainer.addEventListener('input', (event) => {
-        const target = event.target;
-        const action = target.dataset.action;
-
-        if (action === 'validate') {
-            validateWorkoutLog();
-        } else if (action === 'update-rm') {
-            const exerciseName = target.dataset.exerciseName;
-            const badgeId = target.dataset.badgeId;
-            const reps = target.dataset.weightId ? target.value : document.getElementById(target.dataset.repsId).value;
-            const weight = target.dataset.repsId ? target.value : document.getElementById(target.dataset.weightId).value;
+    document.body.addEventListener('input', (event) => {
+        const { target } = event;
+        if (target.dataset.action === 'update-rm') {
+            const { exerciseName, badgeId, weightId, repsId } = target.dataset;
+            const reps = repsId ? document.getElementById(repsId).value : target.value;
+            const weight = weightId ? document.getElementById(weightId).value : target.value;
             updateRM(exerciseName, reps, weight, badgeId);
+        } else if (target.closest('#workoutScreen')) {
+            validateWorkoutLog();
         }
-    });
+    }, true);
 });
+
+function handleSetCompletion(checkbox, inputIds, isAmrap) {
+    const isChecked = checkbox.checked;
+    const inputs = inputIds.map(id => document.getElementById(id));
+    
+    if (isChecked) {
+        if (inputs.some(input => input.value === '' || (input.placeholder === 'Reps' && parseFloat(input.value) <= 0))) {
+            showNotification('Please enter weight and a valid number of reps (>0).', true);
+            checkbox.checked = false;
+            return;
+        }
+        if (isAmrap) {
+            if (timerInterval) {
+                showNotification('An AMRAP timer is already running.', true);
+                checkbox.checked = false;
+                return;
+            }
+            startTimer();
+            showNotification('AMRAP timer started for 60 seconds.');
+        }
+    } else {
+        if (isAmrap) {
+            resetTimer();
+            showNotification('AMRAP timer cancelled.');
+        }
+    }
+    
+    inputs.forEach(input => { if (input) input.disabled = isChecked; });
+}
