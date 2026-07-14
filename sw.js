@@ -1,14 +1,13 @@
 const CACHE_NAME = 'fittracker-cache-v1';
 const urlsToCache = [
-  '/',
-  'index.html',
-  'style.css',
-  'script.js',
-  'workouts.json',
-  'manifest.json',
-  'icon-192.svg',
-  'icon-256.png',
-  'icon-512.png'
+  './',
+  './index.html',
+  './style.css',
+  './script.js',
+  './workouts.json',
+  './manifest.json',
+  './icon-256.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', event => {
@@ -16,9 +15,6 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         return cache.addAll(urlsToCache);
-      })
-      .catch(error => {
-        console.error('Failed to cache resources during install:', error);
       })
   );
 });

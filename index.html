@@ -6,50 +6,65 @@
   <title>FitTracker</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => {
+          console.error('Service Worker registration failed:', err);
+        });
+      });
+    }
+  </script>
 </head>
 <body>
-  <div id="timerBar" class="hidden">
-    <span id="timerDisplay">01:00</span>
-    <div class="timer-controls">
-      <button id="metronomeToggle" onclick="toggleMetronome()">Metronome</button>
-      <button onclick="addMinute()">+1 Min</button>
-      <button onclick="resetTimer()">Reset</button>
-    </div>
-  </div>
-  <header>FitTracker</header>
-  
-  <div class="container" id="mainMenu">
-    <h3>Select a Routine</h3>
-    <select id="workoutSelect" onchange="startSelectedWorkout()">
-      <option value="">Select a Routine...</option>
-    </select>
-    <button class="secondary" onclick="viewHistory()">View Logs</button>
+  <div id="appLoader" class="loader-container">
+    <div class="loader"></div>
   </div>
 
-  <div class="container hidden" id="workoutScreen">
-    <button class="secondary" onclick="goHome()">← Back to Menu</button>
-    <div class="card" id="workoutContent"></div>
-  </div>
-
-  <div class="container hidden" id="historyScreen">
-    <div class="button-group">
-      <button class="secondary" onclick="goHome()">← Back to Menu</button>
-      <button class="secondary" id="importButton" onclick="triggerImport()">Import from CSV</button>
-      <input type="file" id="csvFileInput" class="hidden" accept=".csv" onchange="importLogs(event)">
-      <button class="secondary" id="exportButton" onclick="exportLogs()">Export All as CSV</button>
-    </div>
-    <h3>Workout Logs</h3>
-    <div id="historyContent"></div>
-  </div>
-
-  <div id="editModal" class="modal-container hidden">
-      <div class="modal-content">
-          <span class="close-btn" onclick="closeModal()">&times;</span>
-          <h2>Edit Log</h2>
-          <div id="editModalBody"></div>
+  <div id="appContainer" class="hidden">
+    <div id="timerBar" class="hidden">
+      <span id="timerDisplay">01:00</span>
+      <div class="timer-controls">
+        <button id="metronomeToggle">Metronome</button>
+        <button id="addMinuteBtn">+1 Min</button>
+        <button id="resetTimerBtn">Reset</button>
       </div>
+    </div>
+    <header>FitTracker</header>
+    
+    <div class="container" id="mainMenu">
+      <h3>Select a Routine</h3>
+      <select id="workoutSelect">
+        <option value="">Select a Routine...</option>
+      </select>
+      <button class="secondary" id="viewHistoryBtn">View Logs</button>
+    </div>
+
+    <div class="container hidden" id="workoutScreen">
+      <button class="secondary" id="backToMenuBtn">← Back to Menu</button>
+      <div class="card" id="workoutContent"></div>
+    </div>
+
+    <div class="container hidden" id="historyScreen">
+      <div class="button-group">
+        <button class="secondary" id="historyBackToMenuBtn">← Back to Menu</button>
+        <button class="secondary" id="importButton">Import from CSV</button>
+        <input type="file" id="csvFileInput" class="hidden" accept=".csv">
+        <button class="secondary" id="exportButton">Export All as CSV</button>
+      </div>
+      <h3>Workout Logs</h3>
+      <div id="historyContent"></div>
+    </div>
+
+    <div id="editModal" class="modal-container hidden">
+        <div class="modal-content">
+            <span class="close-btn" id="closeModalBtn">&times;</span>
+            <h2>Edit Log</h2>
+            <div id="editModalBody"></div>
+        </div>
+    </div>
   </div>
 
-  <script src="script.js" defer></script>
+  <script src="script.js"></script>
 </body>
 </html>
