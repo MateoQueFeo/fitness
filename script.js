@@ -85,7 +85,6 @@ function showConfirmDialog(text, callback) {
 
 function playBeep(frequency, duration) {
     if (!audioCtx) return;
-    initAudio();
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
     oscillator.connect(gainNode);
@@ -144,7 +143,9 @@ function stopTimer(notify = false) {
 }
 
 function startTimer() {
-    if (timerInterval) return;
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
     initAudio();
     document.querySelectorAll('input[type="checkbox"][data-amrap="true"]').forEach(cb => {
         if (cb.checked) {
@@ -220,19 +221,6 @@ function calculateRM(weight, reps) {
     return Math.round(rm);
 }
 
-function updateRM(exerciseName, reps, weight, badge) {
-    const parsedReps = parseFloat(reps);
-    const parsedWeight = parseFloat(weight);
-    if (isNaN(parsedReps) || isNaN(parsedWeight)) return;
-
-    const rm = calculateRM(parsedWeight, parsedReps);
-    if (rm > 0) {
-        badge.innerText = `${rm} lbs`;
-        saveStoredMax(exerciseName, rm);
-    }
-    validateWorkoutLog();
-}
-
 function validateWorkoutLog() {
     const saveBtn = document.getElementById('saveWorkoutBtn');
     if (!saveBtn) return;
@@ -240,6 +228,7 @@ function validateWorkoutLog() {
     let hasAtLeastOneSet = false;
     const setRows = document.querySelectorAll('#workoutScreen .set-row');
     setRows.forEach(row => {
+        if(row.dataset.skipped === 'true') return;
         hasAtLeastOneSet = true;
         const repsInput = row.querySelector('input[type="number"][placeholder="Reps"]');
         const weightInput = row.querySelector('input[type="number"][placeholder="Wt"]');
@@ -274,24 +263,16 @@ function createDOMElement(tag, options = {}) {
     return element;
 }
 
-function createSetRow(id, label, details, values, isAmrap, exerciseName, badge) {
+function createSetRow(id, label, details, values, isAmrap) {
     const { reps, weight } = values;
-
     const repsInput = createDOMElement('input', { type: 'number', placeholder: 'Reps', value: reps });
     const weightInput = createDOMElement('input', { type: 'number', placeholder: 'Wt', value: weight });
-
-    const handleInput = () => updateRM(exerciseName, repsInput.value, weightInput.value, badge);
-    repsInput.addEventListener('input', handleInput);
-    weightInput.addEventListener('input', handleInput);
-
-    const setRow = createDOMElement('div', { id, className: 'set-row' });
-
+    const setRow = createDOMElement('div', { id, className: 'set-row', dataset: { skipped: 'false' } });
     const deleteButton = createDOMElement('button', {
         className: 'delete-set-btn',
         textContent: 'Delete',
         listeners: { click: () => deleteSet(setRow) }
     });
-
     const checkbox = createDOMElement('input', {
         type: 'checkbox',
         dataset: { amrap: isAmrap },
@@ -299,26 +280,22 @@ function createSetRow(id, label, details, values, isAmrap, exerciseName, badge) 
             change: (e) => handleSetCompletion(e.target, [repsInput, weightInput], isAmrap)
         }
     });
-
-    const checkboxRow = createDOMElement('div', {
-        className: 'checkbox-row',
+    const setDetails = createDOMElement('div', {
+        className: 'set-details',
         children: [
-            checkbox,
-            createDOMElement('div', {
-                children: [
-                    createDOMElement('strong', { textContent: label }),
-                    createDOMElement('span', { textContent: ` (${details})` })
-                ]
-            })
+            createDOMElement('strong', { textContent: label }),
+            createDOMElement('span', { textContent: ` (${details})` })
         ]
     });
-
     const setInputs = createDOMElement('div', {
         className: 'set-inputs',
         children: [repsInput, weightInput, deleteButton]
     });
-
-    setRow.append(checkboxRow, setInputs);
+    const checkboxRow = createDOMElement('div', {
+        className: 'checkbox-row',
+        children: [checkbox]
+    });
+    setRow.append(setDetails, setInputs, checkboxRow);
     return setRow;
 }
 
@@ -327,8 +304,7 @@ function createExerciseSection(title, exercises) {
     fragment.appendChild(createDOMElement('h3', { textContent: title }));
     exercises.forEach(ex => {
         fragment.appendChild(createDOMElement('div', { className: 'exercise-item', children: [
-            createDOMElement('div', { className: 'checkbox-row', children: [
-                createDOMElement('input', { type: 'checkbox' }),
+            createDOMElement('div', { children: [
                 createDOMElement('details', { className: 'exercise-details', children: [
                     createDOMElement('summary', { textContent: ex.name }),
                     createDOMElement('div', { className: 'details-content', textContent: ex.desc })
@@ -338,6 +314,7 @@ function createExerciseSection(title, exercises) {
     });
     return fragment;
 }
+
 
 function loadWorkout(w, logData = null) {
     currentWorkout = w;
@@ -355,9 +332,7 @@ function loadWorkout(w, logData = null) {
     
     fragment.appendChild(createDOMElement('h3', { textContent: 'Compound Lift' }));
     const compoundRM = maxes[w.compound.name] || 1;
-
     const compoundRmBadge = createDOMElement('span', { className: 'rm-badge', textContent: `${compoundRM} lbs` });
-
     fragment.appendChild(createDOMElement('div', { className: 'exercise-item', children: [
         createDOMElement('details', { className: 'exercise-details', children: [
             createDOMElement('summary', { className: 'compound-summary', children: [
@@ -373,7 +348,7 @@ function loadWorkout(w, logData = null) {
         { id: 'cSet2', label: 'Set 2', details: '6 reps @ 66%', isAmrap: false, values: logData ? parseSet(logData.compound.s2) : { reps: 6, weight: roundToNearest5(compoundRM * 0.66) } },
         { id: 'cSet3', label: 'Set 3', details: 'AMRAP @ 80%', isAmrap: true, values: logData ? parseSet(logData.compound.s3) : { reps: '', weight: roundToNearest5(compoundRM * 0.80) } }
     ];
-    sets.forEach(s => fragment.appendChild(createSetRow(s.id, s.label, s.details, s.values, s.isAmrap, w.compound.name, compoundRmBadge)));
+    sets.forEach(s => fragment.appendChild(createSetRow(s.id, s.label, s.details, s.values, s.isAmrap)));
 
     fragment.appendChild(createDOMElement('h3', { textContent: 'Isolation Lifts (1x AMRAP)' }));
     w.isolations.forEach((iso, idx) => {
@@ -389,7 +364,7 @@ function loadWorkout(w, logData = null) {
             ]})
         ]}));
         const isoSet = logData && logData.isolations[idx] ? parseSet(logData.isolations[idx].log) : { reps: '', weight: '' };
-        fragment.appendChild(createSetRow(`isoSet${idx}`, 'Set 1', 'AMRAP', isoSet, true, iso.name, isoRmBadge));
+        fragment.appendChild(createSetRow(`isoSet${idx}`, 'Set 1', 'AMRAP', isoSet, true));
     });
     
     fragment.appendChild(createExerciseSection('Cool-downs', w.cooldowns));
@@ -415,7 +390,7 @@ function startSelectedWorkout() {
 
 function getSetData(setId) {
     const setRow = document.getElementById(setId);
-    if (!setRow) return 'Skipped';
+    if (!setRow || setRow.dataset.skipped === 'true') return 'Skipped';
     
     const reps = setRow.querySelector('input[placeholder="Reps"]').value;
     const weight = setRow.querySelector('input[placeholder="Wt"]').value;
@@ -425,11 +400,28 @@ function getSetData(setId) {
 function saveOrUpdateLog(logId = null) {
   const log = {
     id: logId || new Date().toISOString(),
-    date: new Date(logId || new Date()).toISOString().split('T')[0],
+    date: (logId ? new Date(logId) : new Date()).toISOString().split('T')[0],
     routine: currentWorkout.name,
     compound: { name: currentWorkout.compound.name, s1: getSetData('cSet1'), s2: getSetData('cSet2'), s3: getSetData('cSet3') },
     isolations: currentWorkout.isolations.map((iso, idx) => ({ name: iso.name, log: getSetData(`isoSet${idx}`) }))
   };
+
+  const updateRmFromSet = (exerciseName, setData) => {
+    if (setData && setData !== 'Not Logged' && setData !== 'Skipped') {
+        const { reps, weight } = parseSet(setData);
+        if (reps && weight) {
+            const rm = calculateRM(parseFloat(weight), parseFloat(reps));
+            if (rm > 0) {
+                saveStoredMax(exerciseName, rm);
+            }
+        }
+    }
+  };
+
+  updateRmFromSet(log.compound.name, log.compound.s1);
+  updateRmFromSet(log.compound.name, log.compound.s2);
+  updateRmFromSet(log.compound.name, log.compound.s3);
+  log.isolations.forEach(iso => updateRmFromSet(iso.name, iso.log));
 
   try {
     let history = getHistory();
@@ -693,9 +685,7 @@ function exportLogs() {
         const createRow = (exerciseName, setNum, setData) => {
             let reps = '', weight = '';
             let status = 'Not Logged';
-            if (setData === 'Skipped') {
-                status = 'Skipped';
-            } else if (setData && setData !== 'Not Logged') {
+            if (setData && setData !== 'Not Logged') {
                 ({ reps, weight } = parseSet(setData));
                 status = 'Completed';
             }
@@ -710,12 +700,14 @@ function exportLogs() {
             ].join(',');
         };
 
-        entryRows.push(createRow(compound.name, 1, compound.s1));
-        entryRows.push(createRow(compound.name, 2, compound.s2));
-        entryRows.push(createRow(compound.name, 3, compound.s3));
+        if (compound.s1 !== 'Skipped') entryRows.push(createRow(compound.name, 1, compound.s1));
+        if (compound.s2 !== 'Skipped') entryRows.push(createRow(compound.name, 2, compound.s2));
+        if (compound.s3 !== 'Skipped') entryRows.push(createRow(compound.name, 3, compound.s3));
 
         isolations.forEach(iso => {
-            entryRows.push(createRow(iso.name, 1, iso.log));
+            if (iso.log !== 'Skipped') {
+                entryRows.push(createRow(iso.name, 1, iso.log));
+            }
         });
 
         return entryRows;
@@ -760,7 +752,9 @@ function deleteSet(setRow) {
     if (setRow) {
         const confirmMessage = `Are you sure you want to remove this set? This will be marked as 'Skipped' in the log.`;
         showConfirmDialog(confirmMessage, () => {
-            setRow.remove();
+            setRow.dataset.skipped = 'true';
+            setRow.style.opacity = '0.5';
+            setRow.querySelectorAll('input, button').forEach(i => i.disabled = true);
             validateWorkoutLog();
             showNotification('Set removed.');
         });
@@ -800,4 +794,8 @@ document.addEventListener('DOMContentLoaded', () => {
             validateWorkoutLog();
         }
     }, true);
+    
+    ['click', 'touchend'].forEach(evt => {
+        document.body.addEventListener(evt, initAudio, { once: true });
+    });
 });

@@ -22,11 +22,12 @@ button.delete-set-btn { background: #600; color: #ffcccc; border: 1px solid #8B0
 select { background-color: #222222; color: #ffd700; border: 1px solid #ffd700; padding: 14px; border-radius: 8px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 10px; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffd700' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; }
 input[type="number"] { background: #222222; color: white; border: 1px solid #444; padding: 10px; border-radius: 4px; width: 70px; margin-right: 8px; text-align: center;}
 .set-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: #1a1a1a; padding: 10px; border-radius: 6px;}
+.set-details { flex-grow: 1; }
 .set-inputs { display: flex; align-items: center; }
 .target-calc { font-size: 0.85rem; color: #aaa; margin-bottom: 8px; }
 .hidden { display: none !important; }
-.checkbox-row { display: flex; align-items: center; margin-bottom: 8px; flex-grow: 1; }
-.checkbox-row input[type="checkbox"] { transform: scale(1.5); margin-right: 12px; accent-color: #ffd700;}
+.checkbox-row { display: flex; align-items: center; margin-left: 12px; }
+.checkbox-row input[type="checkbox"] { transform: scale(1.5); accent-color: #ffd700;}
 .exercise-item { background: #1a1a1a; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.9rem; }
 .exercise-details summary { cursor: pointer; list-style: none; }
 .exercise-details summary::-webkit-details-marker { display: none; }
