@@ -181,7 +181,7 @@ function goHome() {
     document.getElementById('workoutScreen').classList.add('hidden');
     document.getElementById('historyScreen').classList.add('hidden');
     workoutSelect.value = '';
-    if(timerInterval) {
+    if (timerInterval) {
         resetTimer();
     }
     timerBar.classList.add('hidden');
@@ -315,7 +315,6 @@ function createExerciseSection(title, exercises) {
     return fragment;
 }
 
-
 function loadWorkout(w, logData = null) {
     currentWorkout = w;
     if(timerInterval) resetTimer();
@@ -372,7 +371,7 @@ function loadWorkout(w, logData = null) {
     const saveButton = createDOMElement('button', {
         id: 'saveWorkoutBtn',
         textContent: logData ? 'Update Log' : 'Save Workout Log',
-        listeners: { click: () => saveOrUpdateLog(logData ? logData.id : null) }
+        listeners: { click: () => saveOrUpdateLog(logData) }
     });
     
     fragment.appendChild(saveButton);
@@ -397,10 +396,10 @@ function getSetData(setId) {
     return (reps !== '' && weight !== '') ? `${reps}x${weight} lbs` : 'Not Logged';
 }
 
-function saveOrUpdateLog(logId = null) {
+function saveOrUpdateLog(existingLog = null) {
   const log = {
-    id: logId || new Date().toISOString(),
-    date: (logId ? new Date(logId) : new Date()).toISOString().split('T')[0],
+    id: existingLog ? existingLog.id : new Date().toISOString(),
+    date: existingLog ? existingLog.date : new Date().toISOString().split('T')[0],
     routine: currentWorkout.name,
     compound: { name: currentWorkout.compound.name, s1: getSetData('cSet1'), s2: getSetData('cSet2'), s3: getSetData('cSet3') },
     isolations: currentWorkout.isolations.map((iso, idx) => ({ name: iso.name, log: getSetData(`isoSet${idx}`) }))
