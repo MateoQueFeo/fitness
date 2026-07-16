@@ -17,16 +17,16 @@
         },
         "isolations": [
             {
-                "name": "Seated Hip Abduction Machine",
-                "desc": "Targets: Gluteus Medius. Biomechanics: Constant resistance against hip abduction. - - Drive the pads outward with the sides of your legs.\n- Cue: \"Squeeze from the outside of your hips.\""
+                "name": "Cable Hip Abduction",
+                "desc": "Targets: Gluteus Medius. Biomechanics: Constant resistance against hip abduction. - - Stand sideways to a low cable. Move your leg away from your body's midline.\n- Cue: \"Squeeze from the outside of your hips.\""
             },
             {
                 "name": "Cable Adduction",
                 "desc": "Targets: Adductor Group. Biomechanics: Constant cable tension pulling across the midline. - - Stand sideways to a low cable. Pull the cabled leg across your standing leg.\n- Cue: \"Imagine squeezing a ball between your thighs.\""
             },
             {
-                "name": "Leg Extension Machine",
-                "desc": "Targets: Quadriceps. Biomechanics: Constant machine tension isolating knee extension. - - Sit back in the machine pad, extend legs fully.\n- Cue: \"Flex your quads hard at the top lockout.\""
+                "name": "Single-Leg Reverse Nordic Curl",
+                "desc": "Targets: Quadriceps. Biomechanics: Bodyweight eccentric knee extension places quads under immense stretch. - - Kneel with one leg forward for balance, lean torso back slowly, pull back up.\n- Cue: \"Control the descent to maximize the quad stretch.\""
             }
         ],
         "cooldowns": [
@@ -101,16 +101,16 @@
         },
         "isolations": [
             {
-                "name": "Leg Extension Machine",
-                "desc": "Targets: Quadriceps. Biomechanics: Constant machine tension for knee extension. - - Sit with back flat, extend legs to full lockout.\n- Cue: \"Squeeze your quads against the pad at the top.\""
+                "name": "Seated Leg Curl",
+                "desc": "Targets: Hamstrings. Biomechanics: Hip flexion pre-stretches the hamstrings for superior ROM. - - Sit in machine, curl pad towards you one leg at a time.\n- Cue: \"Squeeze the hamstring to move the weight, controlling the release.\""
             },
             {
-                "name": "Cable Glute Kickback",
-                "desc": "Targets: Gluteus Maximus. Biomechanics: Constant tension isolating hip extension. - - Attach ankle strap to low cable, kick leg straight back.\n- Cue: \"Squeeze the glute to move the weight, don't just swing.\""
+                "name": "Full ROM Glute Kickback",
+                "desc": "Targets: Gluteus Maximus. Biomechanics: Constant tension isolating hip extension through full ROM. - - Attach ankle strap to low cable, drive knee to chest for a deep stretch, then kick straight back.\n- Cue: \"Drive knee up to stretch, then squeeze glute to kick back.\""
             },
             {
-                "name": "Lying Leg Curl Machine",
-                "desc": "Targets: Hamstrings. Biomechanics: Constant tension on knee flexion. - - Lie face down, curl pad towards glutes.\n- Cue: \"Imagine pulling your heel to your butt.\""
+                "name": "Cable Adduction",
+                "desc": "Targets: Adductors. Biomechanics: Constant machine tension pulling knees inward. - - Stand sideways to a low cable. Pull the cabled leg across your standing leg.\n- Cue: \"Drive your inner thighs together forcefully.\""
             }
         ],
         "cooldowns": [
@@ -119,8 +119,8 @@
                 "desc": "Targets: Hamstrings & Calves. Biomechanics: Active ankle flexion/extension (pumping) promotes venous return to clear pooled blood, followed by a hamstring stretch. - - Sit with legs straight. Pump your ankles forward and back 20 times to clear lower leg waste, then hinge forward at the hips to reach for toes.\n- Cue: \"Pump the ankles to drain the legs, then melt into the hamstring fold.\""
             },
             {
-                "name": "Standing Wall Calf Stretch",
-                "desc": "Targets: Gastrocnemius & Soleus. Biomechanics: Keeping the leg straight stretches the gastrocnemius. Bending the knee slightly would release the gastrocnemius and allow a deeper stretch of the soleus. - - Face wall, step one foot back, press heel down.\n- Cue: \"Drive your back heel into the ground.\""
+                "name": "Pigeon Pose",
+                "desc": "Targets: Glutes & Hip Flexors. Biomechanics: Deep passive external rotation of the hip joint, providing a superior stretch for the gluteus maximus and medius. - - From plank, bring knee to outside of hand, stretch back leg.\n- Cue: \"Try to square your hips to the front.\""
             }
         ],
         "id": 3
@@ -147,8 +147,8 @@
                 "desc": "Targets: Latissimus Dorsi. Biomechanics: Constant tension matching shoulder extension. - - Stand, push straight bar down in an arc to thighs.\n- Cue: \"Act as a human protractor, hinge only at the shoulder.\""
             },
             {
-                "name": "Cable Bicep Curl",
-                "desc": "Targets: Biceps Brachii. Biomechanics: Cable provides even tension at the bottom and top of the curl. - - Stand facing low cable, curl handle upward.\n- Cue: \"Keep your elbows pinned to your ribs.\""
+                "name": "Unilateral Incline Cable Bicep Curl",
+                "desc": "Targets: Biceps Brachii (Long Head). Biomechanics: Shoulder hyperextension provides maximum stretch and cable provides constant tension. - - Set bench to 45-60 degrees facing away from low cable, curl single handle.\n- Cue: \"Keep elbow pinned back to isolate the stretched bicep.\""
             },
             {
                 "name": "Cable Rear Delt Fly",
@@ -185,16 +185,16 @@
         },
         "isolations": [
             {
-                "name": "Cable Glute Kickback",
-                "desc": "Targets: Gluteus Maximus. Biomechanics: Constant cable tension in hip extension. - - Attach ankle strap, kick straight back.\n- Cue: \"Squeeze the glute consciously at the top.\""
+                "name": "Full ROM Glute Kickback",
+                "desc": "Targets: Gluteus Maximus. Biomechanics: Constant tension isolating hip extension through full ROM. - - Attach ankle strap to low cable, drive knee to chest for a deep stretch, then kick straight back.\n- Cue: \"Drive knee up to stretch, then squeeze glute to kick back.\""
             },
             {
-                "name": "Seated Hip Abduction Machine",
-                "desc": "Targets: Gluteus Medius. Biomechanics: Constant machine tension in hip abduction. - - Push knee pads outward.\n- Cue: \"Squeeze from the outside of your hips.\""
+                "name": "Cable Hip Abduction",
+                "desc": "Targets: Gluteus Medius. Biomechanics: Constant resistance against hip abduction. - - Stand sideways to a low cable. Move your leg away from your body's midline.\n- Cue: \"Squeeze from the outside of your hips.\""
             },
             {
-                "name": "Seated Hip Adduction Machine",
-                "desc": "Targets: Adductors. Biomechanics: Constant machine tension pulling knees inward. - - Squeeze knee pads together towards the midline.\n- Cue: \"Drive your inner thighs together forcefully.\""
+                "name": "Cable Adduction",
+                "desc": "Targets: Adductors. Biomechanics: Constant machine tension pulling knees inward. - - Stand sideways to a low cable. Pull the cabled leg across your standing leg.\n- Cue: \"Drive your inner thighs together forcefully.\""
             }
         ],
         "cooldowns": [
@@ -231,8 +231,8 @@
                 "desc": "Targets: Anterior Deltoid. Biomechanics: Constant tension through shoulder flexion. - - With low cable between legs or to the side, raise handle straight up.\n- Cue: \"Lift with the front of the shoulder, not momentum.\""
             },
             {
-                "name": "Cable Lateral Raise",
-                "desc": "Targets: Lateral Deltoid. Biomechanics: Cable ensures max tension at the bottom of the movement. - - Stand sideways to low cable, raise arm out to side.\n- Cue: \"Lead with the elbow, pushing the wall away.\""
+                "name": "Leaning Cable Lateral Raise",
+                "desc": "Targets: Lateral Deltoid. Biomechanics: Leaning away from the machine increases the stretch at the bottom of the movement. - - Hold machine, lean away, raise handle out to the side.\n- Cue: \"Lead with the elbow and push the weight away from you.\""
             },
             {
                 "name": "Cable Triceps Pushdown",
@@ -245,8 +245,8 @@
                 "desc": "Targets: Deltoids & Upper Trapezius. Biomechanics: Active, slow shoulder rolls flush waste from the shoulders and neck, followed by a chest-opening chest stretch. - - Roll your shoulders slowly forward and backward for 1 minute. Then, clasp hands behind your back and gently lift your arms away from your body.\n- Cue: \"Roll the shoulders to clear tension, then clasp hands and open the chest.\""
             },
             {
-                "name": "Neck Lateral Flexion Stretch",
-                "desc": "Targets: Upper Trapezius. Biomechanics: Passive lateral flexion of the cervical spine. - - Gently tilt ear to shoulder.\n- Cue: \"Let the weight of your head do the work.\""
+                "name": "Cross-Body Shoulder Stretch",
+                "desc": "Targets: Posterior & Lateral Deltoids. Biomechanics: Passive horizontal adduction to release the rear and side shoulders, highly active in the Arnold Press. - - Pull one arm across chest.\n- Cue: \"Look over the shoulder you are stretching.\""
             }
         ],
         "id": 6
@@ -269,16 +269,16 @@
         },
         "isolations": [
             {
-                "name": "Cable Pull-Through",
-                "desc": "Targets: Hamstrings. Biomechanics: Matches hip-hinge extension biomechanic precisely with constant horizontal cable tension. - - Face away from low cable, pull rope through legs by extending hips forward.\n- Cue: \"Snap your hips forward and squeeze the glutes/hamstrings.\""
+                "name": "Seated Leg Curl",
+                "desc": "Targets: Hamstrings. Biomechanics: Hip flexion pre-stretches the hamstrings for superior ROM. - - Sit in machine, curl pad towards you one leg at a time.\n- Cue: \"Squeeze the hamstring to move the weight, controlling the release.\""
             },
             {
-                "name": "Cable Glute Kickback",
-                "desc": "Targets: Gluteus Maximus. Biomechanics: Pure, continuous tension on hip extension without lower back fatigue. - - Low cable ankle strap, drive leg back.\n- Cue: \"Isolate the glute, do not arch your lower back.\""
+                "name": "Single-Leg Glute Bridge",
+                "desc": "Targets: Gluteus Maximus. Biomechanics: Pure hip extension, isolating the glutes from the lower back and hamstrings. - - Lie on back, one foot flat, other leg extended. Drive hips up.\n- Cue: \"Squeeze the glute of the working leg at the top.\""
             },
             {
-                "name": "Machine Back Extension",
-                "desc": "Targets: Erector Spinae. Biomechanics: Machine weight stack provides even tension throughout spinal extension. - - Sit in machine, push back against pad using lower back.\n- Cue: \"Pivot at the hips and lower spine with control.\""
+                "name": "Full ROM Glute Kickback",
+                "desc": "Targets: Gluteus Maximus. Biomechanics: Constant tension isolating hip extension through full ROM. - - Attach ankle strap to low cable, drive knee to chest for a deep stretch, then kick straight back.\n- Cue: \"Drive knee up to stretch, then squeeze glute to kick back.\""
             }
         ],
         "cooldowns": [
@@ -301,8 +301,8 @@
                 "desc": "Targets: Lower Traps & Lats. - - Light weight, pull shoulder blades down/back without bending elbows.\n- Cue: \"Put your shoulder blades in your back pockets.\""
             },
             {
-                "name": "Torso Twists",
-                "desc": "Targets: Obliques. - - Rotate torso side to side.\n- Cue: \"Follow your hands with your eyes.\""
+                "name": "Dead Hang",
+                "desc": "Targets: Lats & Shoulder Capsule. Biomechanics: Passive overhead stretch to decompress the spine and open the shoulder joint. - - Hang from a pull-up bar with a relaxed shoulder girdle for 15-20 seconds.\n- Cue: \"Let gravity pull your hips down and stretch your lats.\""
             }
         ],
         "compound": {
@@ -315,12 +315,12 @@
                 "desc": "Targets: Latissimus Dorsi. Biomechanics: Constant cable tension isolating shoulder extension. - - Push straight bar down in an arc.\n- Cue: \"Hinge only at the shoulder.\""
             },
             {
-                "name": "Cable Rope Hammer Curl",
-                "desc": "Targets: Brachialis & Brachioradialis. Biomechanics: Rope attachment provides constant tension through neutral-grip elbow flexion. - - Low cable with rope, curl upward with neutral grip.\n- Cue: \"Pull the rope ends apart slightly at the top.\""
+                "name": "Standing Unilateral Cable Hammer Curl",
+                "desc": "Targets: Brachialis & Brachioradialis. Biomechanics: Neutral grip places biceps at a disadvantage, isolating the brachialis. Standing allows full peak contraction. - - Use a single D-handle, keep palm facing inward, curl up.\n- Cue: \"Keep your wrist locked in a neutral hammer position.\""
             },
             {
-                "name": "Cable Bicep Curl",
-                "desc": "Targets: Biceps Brachii. Biomechanics: Underhand grip with constant cable tension throughout ROM. - - Low cable straight bar, curl upward with palms facing up.\n- Cue: \"Squeeze your biceps hard against the resistance at the top.\""
+                "name": "Unilateral Incline Cable Bicep Curl",
+                "desc": "Targets: Biceps Brachii (Long Head). Biomechanics: Shoulder hyperextension provides maximum stretch and cable provides constant tension. - - Set bench to 45-60 degrees facing away from low cable, curl single handle.\n- Cue: \"Keep elbow pinned back to isolate the stretched bicep.\""
             }
         ],
         "cooldowns": [
