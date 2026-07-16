@@ -32,7 +32,7 @@ function initAudio() {
 async function initializeApp() {
     workoutSelect.disabled = true;
     try {
-        const response = await fetch('./workouts.json');
+        const response = await fetch('./workouts.json', { cache: 'no-cache' });
         if (!response.ok) {
             let errorMsg = `Failed to load workout data. Status: ${response.status}`;
             throw new Error(errorMsg);
@@ -132,13 +132,13 @@ function updateTimerDisplay() {
 function stopTimer(notify = false) {
     clearInterval(timerInterval);
     timerInterval = null;
-    document.querySelectorAll('input[type="checkbox"][data-amrap="true"]').forEach(cb => {
+    document.querySelectorAll('#workoutScreen input[type="checkbox"]').forEach(cb => {
         if (!cb.checked) {
             cb.disabled = false;
         }
     });
     if (notify) {
-        showNotification('AMRAP timer cancelled.');
+        showNotification('Rest timer cancelled.');
     }
 }
 
@@ -147,10 +147,8 @@ function startTimer() {
         clearInterval(timerInterval);
     }
     initAudio();
-    document.querySelectorAll('input[type="checkbox"][data-amrap="true"]').forEach(cb => {
-        if (cb.checked) {
-            cb.disabled = true;
-        }
+    document.querySelectorAll('#workoutScreen input[type="checkbox"]').forEach(cb => {
+        cb.disabled = true;
     });
     timerInterval = setInterval(() => {
         countdown--;
@@ -168,7 +166,7 @@ function resetTimer(finished = false) {
     countdown = defaultCountdown;
     updateTimerDisplay();
     if(wasRunning && !finished) showNotification('Timer reset.');
-    if(finished) showNotification('Timer finished.');
+    if(finished) showNotification('Rest finished.');
 }
 
 const addMinute = () => {
@@ -397,6 +395,16 @@ function getSetData(setId) {
 }
 
 function saveOrUpdateLog(existingLog = null) {
+  let history = getHistory();
+  if (existingLog) {
+      const stillExists = history.some(h => h.id === existingLog.id);
+      if (!stillExists) {
+          showNotification("Cannot update: This log has been deleted.", true);
+          goHome();
+          return;
+      }
+  }
+
   const log = {
     id: existingLog ? existingLog.id : new Date().toISOString(),
     date: existingLog ? existingLog.date : new Date().toISOString().split('T')[0],
@@ -423,7 +431,6 @@ function saveOrUpdateLog(existingLog = null) {
   log.isolations.forEach(iso => updateRmFromSet(iso.name, iso.log));
 
   try {
-    let history = getHistory();
     const existingIndex = history.findIndex(h => h.id === log.id);
 
     if (existingIndex !== -1) {
@@ -628,7 +635,7 @@ function mergeImportedLogs(importedData) {
             skippedCount++;
             return acc;
         }
-        const key = `${row.date}_${row.routine}`;
+        const key = `${row.date}_${log.routine}`;
         if (!acc[key]) acc[key] = [];
         acc[key].push(row);
         return acc;
@@ -732,15 +739,13 @@ function handleSetCompletion(checkbox, inputs, isAmrap) {
             showNotification('Please enter a positive value (>0) for both reps and weight.', true);
             checkbox.checked = false;
             return;
-        } else if (isAmrap) {
-            startTimer();
-            showNotification('AMRAP timer started for 60 seconds.');
-            checkbox.disabled = true;
         }
+        
+        startTimer();
+        showNotification('Rest timer started for 60 seconds.');
+
     } else {
-        if (isAmrap) {
-            stopTimer(true);
-        }
+        stopTimer(true);
     }
     
     inputs.forEach(input => { if (input) input.disabled = isChecked; });
