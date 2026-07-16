@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fittracker-cache-v5';
+const CACHE_NAME = 'fittracker-cache-v6';
 const urlsToCache = [
   './',
   './index.html',
@@ -12,8 +12,9 @@ const urlsToCache = [
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(urlsToCache);
+    })
   );
 });
 
@@ -33,40 +34,31 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  const requestUrl = new URL(event.request.url);
-
-  if (requestUrl.pathname.endsWith('/workouts.json')) {
-    event.respondWith(
-      caches.open(CACHE_NAME).then(cache => {
-        return fetch(event.request).then(networkResponse => {
-          cache.put(event.request, networkResponse.clone());
+  event.respondWith(
+    fetch(event.request)
+      .then(networkResponse => {
+        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
           return networkResponse;
-        }).catch(() => {
-          return cache.match(event.request);
+        }
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, responseToCache);
+        });
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request).then(cachedResponse => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          if (event.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+          return new Response("You are offline and this resource isn't available in the cache.", {
+            status: 404,
+            statusText: "Offline and not in cache"
+          });
         });
       })
-    );
-    return;
-  }
-
-  event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then(networkResponse => {
-        if (networkResponse && networkResponse.ok) {
-          return caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, networkResponse.clone());
-            return networkResponse;
-          });
-        }
-        return networkResponse;
-      }).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-      });
-    })
   );
 });

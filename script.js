@@ -20,7 +20,9 @@ async function initializeApp() {
     try {
         const response = await fetch('./workouts.json');
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            let errorMsg = `Failed to load workout data. HTTP status: ${response.status}`;
+            if (response.status === 404) errorMsg += ' (File not found)';
+            throw new Error(errorMsg);
         }
         workouts = await response.json();
         
@@ -34,6 +36,7 @@ async function initializeApp() {
         workoutSelect.disabled = false;
 
     } catch (error) {
+        console.error("Initialization Error:", error);
         appLoader.innerHTML = `<p style="color: #ffd700; text-align: center;">Failed to load workout data.<br>${error.message}</p>`;
     }
 }
@@ -69,7 +72,7 @@ function initAudio() {
 }
 
 function playBeep(frequency, duration) {
-    initAudio();
+    if (!audioCtx) return;
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
     oscillator.connect(gainNode);
@@ -84,11 +87,11 @@ const playMetronomeBeep = () => playBeep(880, 0.05);
 const playTimerEndSound = () => playBeep(1000, 0.5);
 
 function toggleMetronome() {
+    initAudio();
     isMetronomeOn = !isMetronomeOn;
     const metronomeBtn = document.getElementById('metronomeToggle');
     metronomeBtn.classList.toggle('active', isMetronomeOn);
     if (isMetronomeOn) {
-        initAudio();
         metronomeInterval = setInterval(playMetronomeBeep, 1000);
     } else {
         clearInterval(metronomeInterval);
@@ -106,18 +109,23 @@ function updateTimerDisplay() {
     timerDisplay.innerText = `${minutes}:${seconds}`;
 }
 
-function stopTimer() {
+function stopTimer(notify = false) {
     clearInterval(timerInterval);
     timerInterval = null;
+    document.querySelectorAll('input[data-amrap="true"]').forEach(cb => cb.disabled = false);
+    if (notify) {
+        showNotification('AMRAP timer cancelled.');
+    }
 }
 
 function startTimer() {
-    stopTimer();
+    if (timerInterval) return;
+    initAudio();
+    document.querySelectorAll('input[data-amrap="true"]').forEach(cb => cb.disabled = true);
     timerInterval = setInterval(() => {
         countdown--;
         updateTimerDisplay();
         if (countdown <= 0) {
-            stopTimer();
             playTimerEndSound();
             resetTimer();
         }
@@ -125,9 +133,11 @@ function startTimer() {
 }
 
 function resetTimer() {
+    const wasRunning = timerInterval !== null;
     stopTimer();
     countdown = defaultCountdown;
     updateTimerDisplay();
+    if(wasRunning) showNotification('Timer finished.');
 }
 
 const addMinute = () => {
@@ -140,8 +150,10 @@ function goHome() {
     document.getElementById('workoutScreen').classList.add('hidden');
     document.getElementById('historyScreen').classList.add('hidden');
     workoutSelect.value = '';
+    if(timerInterval) {
+        resetTimer();
+    }
     timerBar.classList.add('hidden');
-    resetTimer();
     stopMetronome();
     currentWorkout = null;
 }
@@ -168,7 +180,6 @@ const roundToNearest5 = num => Math.round(num / 5) * 5;
 
 function calculateRM(weight, reps) {
     if (reps <= 0 || weight < 0) return 0;
-    if (reps === 1) return Math.round(weight);
     let rm = weight * (1 + (reps / 30));
     return Math.round(rm);
 }
@@ -176,7 +187,7 @@ function calculateRM(weight, reps) {
 function updateRM(exerciseName, reps, weight, badgeId) {
     const parsedReps = parseFloat(reps);
     const parsedWeight = parseFloat(weight);
-    if (isNaN(parsedReps) || isNaN(parsedWeight)) return;
+    if (isNaN(parsedReps) || isNaN(parsedWeight) || parsedReps <= 0 || parsedWeight < 0) return;
 
     const rm = calculateRM(parsedWeight, parsedReps);
     const badge = document.getElementById(badgeId);
@@ -191,35 +202,17 @@ function validateWorkoutLog() {
     const saveBtn = document.getElementById('saveWorkoutBtn');
     if (!saveBtn) return;
     let allSetsValid = true;
+    let hasAtLeastOneSet = false;
     const setRows = document.querySelectorAll('#workoutScreen .set-row');
     setRows.forEach(row => {
-        const isSkipped = row.classList.contains('skipped');
+        hasAtLeastOneSet = true;
         const repsInput = row.querySelector('input[type="number"][placeholder="Reps"]');
         const weightInput = row.querySelector('input[type="number"][placeholder="Wt"]');
-        
-        if (!isSkipped && (repsInput.value === '' || parseFloat(repsInput.value) <= 0 || weightInput.value === '' || parseFloat(weightInput.value) < 0)) {
+        if (repsInput.value === '' || parseFloat(repsInput.value) <= 0 || weightInput.value === '' || parseFloat(weightInput.value) < 0) {
             allSetsValid = false;
         }
     });
-    saveBtn.disabled = !allSetsValid;
-}
-
-function skipSet(buttonEl, setId) {
-    const setRow = document.getElementById(setId);
-    const isSkipped = setRow.classList.toggle('skipped');
-    ['checkbox', 'input[placeholder="Reps"]', 'input[placeholder="Wt"]'].forEach(sel => {
-        const el = setRow.querySelector(sel);
-        if (el) el.disabled = isSkipped;
-    });
-    if (isSkipped) {
-        setRow.querySelector('input[placeholder="Reps"]').value = '';
-        setRow.querySelector('input[placeholder="Wt"]').value = '';
-        setRow.querySelector('input[type="checkbox"]').checked = false;
-        buttonEl.innerText = 'Unskip';
-    } else {
-        buttonEl.innerText = 'Skip';
-    }
-    validateWorkoutLog();
+    saveBtn.disabled = !allSetsValid || !hasAtLeastOneSet;
 }
 
 const parseSet = setString => {
@@ -257,7 +250,7 @@ function createSetRow(id, label, details, values, isAmrap, exerciseName, badgeId
         createDOMElement('div', { className: 'set-inputs', children: [
             createInput('Reps', reps, 'update-rm', { id: `${id}Reps`, exerciseName, badgeId, weightId: `${id}Weight` }),
             createInput('Wt', weight, 'update-rm', { id: `${id}Weight`, exerciseName, badgeId, repsId: `${id}Reps` }),
-            createDOMElement('button', { className: 'skip-btn', textContent: 'Skip', dataset: { action: 'skip-set', setId: id } })
+            createDOMElement('button', { className: 'delete-set-btn', textContent: 'Delete', dataset: { action: 'delete-set', setId: id } })
         ]})
     ]});
 }
@@ -279,9 +272,9 @@ function createExerciseSection(title, exercises) {
     return fragment;
 }
 
-function loadWorkout(w, logData = null, logIndex = null) {
+function loadWorkout(w, logData = null) {
     currentWorkout = w;
-    resetTimer();
+    if(timerInterval) resetTimer();
     timerBar.classList.remove('hidden');
     const maxes = getStoredMaxes();
     const workoutContent = document.getElementById('workoutContent');
@@ -294,32 +287,32 @@ function loadWorkout(w, logData = null, logIndex = null) {
     fragment.appendChild(createExerciseSection('Warm-ups (No Load)', w.warmups));
     
     fragment.appendChild(createDOMElement('h3', { textContent: 'Compound Lift' }));
-    const compoundRM = maxes[w.compound.name] || 0;
+    const compoundRM = maxes[w.compound.name] || 1;
     fragment.appendChild(createDOMElement('div', { className: 'exercise-item', children: [
         createDOMElement('details', { className: 'exercise-details', children: [
             createDOMElement('summary', { className: 'compound-summary', children: [
                 document.createTextNode(w.compound.name),
-                createDOMElement('span', { id: 'compound-rm-badge', className: 'rm-badge', textContent: compoundRM ? `${compoundRM} lbs` : 'Log a set' })
+                createDOMElement('span', { id: 'compound-rm-badge', className: 'rm-badge', textContent: `${compoundRM} lbs` })
             ]}),
             createDOMElement('div', { className: 'details-content', textContent: w.compound.desc })
         ]})
     ]}));
 
     const sets = [
-        { id: 'cSet1', label: 'Set 1', details: '6 reps @ 33%', isAmrap: false, values: logData ? parseSet(logData.compound.s1) : { reps: 6, weight: compoundRM > 0 ? roundToNearest5(compoundRM * 0.33) : '' } },
-        { id: 'cSet2', label: 'Set 2', details: '6 reps @ 66%', isAmrap: false, values: logData ? parseSet(logData.compound.s2) : { reps: 6, weight: compoundRM > 0 ? roundToNearest5(compoundRM * 0.66) : '' } },
-        { id: 'cSet3', label: 'Set 3', details: 'AMRAP @ 80%', isAmrap: true, values: logData ? parseSet(logData.compound.s3) : { reps: '', weight: compoundRM > 0 ? roundToNearest5(compoundRM * 0.80) : '' } }
+        { id: 'cSet1', label: 'Set 1', details: '6 reps @ 33%', isAmrap: false, values: logData ? parseSet(logData.compound.s1) : { reps: 6, weight: roundToNearest5(compoundRM * 0.33) } },
+        { id: 'cSet2', label: 'Set 2', details: '6 reps @ 66%', isAmrap: false, values: logData ? parseSet(logData.compound.s2) : { reps: 6, weight: roundToNearest5(compoundRM * 0.66) } },
+        { id: 'cSet3', label: 'Set 3', details: 'AMRAP @ 80%', isAmrap: true, values: logData ? parseSet(logData.compound.s3) : { reps: '', weight: roundToNearest5(compoundRM * 0.80) } }
     ];
     sets.forEach(s => fragment.appendChild(createSetRow(s.id, s.label, s.details, s.values, s.isAmrap, w.compound.name, 'compound-rm-badge')));
 
     fragment.appendChild(createDOMElement('h3', { textContent: 'Isolation Lifts (1x AMRAP)' }));
     w.isolations.forEach((iso, idx) => {
-        const isoRM = maxes[iso.name] || 0;
+        const isoRM = maxes[iso.name] || 1;
         fragment.appendChild(createDOMElement('div', { className: 'exercise-item', children: [
             createDOMElement('details', { className: 'exercise-details', children: [
                 createDOMElement('summary', { className: 'isolation-summary', children: [
                     document.createTextNode(iso.name),
-                    createDOMElement('span', { id: `iso-rm-badge-${idx}`, className: 'rm-badge', textContent: isoRM ? `${isoRM} lbs` : 'Log a set' })
+                    createDOMElement('span', { id: `iso-rm-badge-${idx}`, className: 'rm-badge', textContent: `${isoRM} lbs` })
                 ]}),
                 createDOMElement('div', { className: 'details-content', textContent: iso.desc })
             ]})
@@ -329,24 +322,14 @@ function loadWorkout(w, logData = null, logIndex = null) {
     });
     
     fragment.appendChild(createExerciseSection('Cool-downs', w.cooldowns));
-    fragment.appendChild(createDOMElement('button', { id: 'saveWorkoutBtn', textContent: logData ? 'Update Log' : 'Save Workout Log', dataset: { logIndex: logIndex ?? '', originalDate: logData?.date ?? '' } }));
+    const saveButton = createDOMElement('button', { id: 'saveWorkoutBtn', textContent: logData ? 'Update Log' : 'Save Workout Log'});
+    if (logData) {
+        saveButton.dataset.logId = logData.id;
+    }
+    fragment.appendChild(saveButton);
     
     workoutContent.appendChild(fragment);
 
-    if (logData) {
-        Object.entries({s1: 'cSet1', s2: 'cSet2', s3: 'cSet3'}).forEach(([key, id]) => {
-            if (logData.compound[key] === 'Skipped') {
-                const btn = document.querySelector(`[data-set-id="${id}"]`);
-                if(btn) skipSet(btn, id);
-            }
-        });
-        logData.isolations.forEach((iso, idx) => {
-            if (iso.log === 'Skipped') {
-                const btn = document.querySelector(`[data-set-id="isoSet${idx}"]`);
-                if(btn) skipSet(btn, `isoSet${idx}`);
-            }
-        });
-    }
     validateWorkoutLog();
 }
 
@@ -360,28 +343,35 @@ function startSelectedWorkout() {
 
 function getSetData(setId) {
     const setRow = document.getElementById(setId);
-    if (setRow.classList.contains('skipped')) return 'Skipped';
+    // If the set row doesn't exist, it was deleted by the user.
+    if (!setRow) return 'Not Logged';
+    
     const reps = setRow.querySelector('input[placeholder="Reps"]').value;
     const weight = setRow.querySelector('input[placeholder="Wt"]').value;
     return (reps !== '' && weight !== '') ? `${reps}x${weight} lbs` : 'Not Logged';
 }
 
-function saveOrUpdateLog(logIndex = null, originalDate = null) {
+function saveOrUpdateLog(logId = null) {
   const log = {
-    date: originalDate || new Date().toISOString().split('T')[0],
+    id: logId || new Date().toISOString(),
+    date: new Date(logId || new Date()).toISOString().split('T')[0],
     routine: currentWorkout.name,
     compound: { name: currentWorkout.compound.name, s1: getSetData('cSet1'), s2: getSetData('cSet2'), s3: getSetData('cSet3') },
     isolations: currentWorkout.isolations.map((iso, idx) => ({ name: iso.name, log: getSetData(`isoSet${idx}`) }))
   };
+
   try {
     let history = getHistory();
-    if (logIndex !== null && logIndex !== '') {
-        history[logIndex] = log;
+    const existingIndex = history.findIndex(h => h.id === log.id);
+
+    if (existingIndex !== -1) {
+        history[existingIndex] = log;
         showNotification('Workout Updated Successfully!');
     } else {
-        history.unshift(log);
+        history.push(log);
         showNotification('Workout Saved Successfully!');
     }
+    history.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id.localeCompare(a.id));
     localStorage.setItem('workoutLogs', JSON.stringify(history));
     goHome();
   } catch (e) {
@@ -400,35 +390,39 @@ function getHistory() {
 }
 
 function viewHistory() {
-  document.getElementById('mainMenu').classList.add('hidden');
-  document.getElementById('historyScreen').classList.remove('hidden');
-  const history = getHistory();
-  document.getElementById('exportButton').disabled = history.length === 0;
-  const historyContent = document.getElementById('historyContent');
-  historyContent.innerHTML = '';
-  if (history.length === 0) {
-    historyContent.innerHTML = '<p>No workouts logged yet.</p>';
-    return;
-  }
-  const fragment = document.createDocumentFragment();
-  history.forEach((log, index) => {
-    const card = createDOMElement('div', { className: 'card' });
-    card.innerHTML = `
-        <div class="card-header">
-            <strong style="color:#ffd700;">${log.date} - ${log.routine}</strong>
-            <div class="card-actions">
-                <button class="edit-btn" data-action="edit-log" data-log-index="${index}">Edit</button>
-                <button class="delete-btn" data-action="delete-log" data-log-index="${index}">Delete</button>
-            </div>
-        </div>
-        <div style="margin-top:8px; font-size:0.9rem;">
+    document.getElementById('mainMenu').classList.add('hidden');
+    document.getElementById('historyScreen').classList.remove('hidden');
+    const history = getHistory();
+    document.getElementById('exportButton').disabled = history.length === 0;
+    const historyContent = document.getElementById('historyContent');
+    historyContent.innerHTML = '';
+    if (history.length === 0) {
+        historyContent.textContent = 'No workouts logged yet.';
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    history.forEach((log, index) => {
+        const card = createDOMElement('div', { className: 'card' });
+        
+        const header = createDOMElement('div', { className: 'card-header' });
+        header.appendChild(createDOMElement('strong', { textContent: `${log.date} - ${log.routine}`, style: 'color:#ffd700;' }));
+        const actions = createDOMElement('div', { className: 'card-actions' });
+        actions.appendChild(createDOMElement('button', { className: 'edit-btn', textContent: 'Edit', dataset: { action: 'edit-log', logIndex: index } }));
+        actions.appendChild(createDOMElement('button', { className: 'delete-btn', textContent: 'Delete', dataset: { action: 'delete-log', logIndex: index } }));
+        header.appendChild(actions);
+
+        const body = createDOMElement('div', { style: 'margin-top:8px; font-size:0.9rem;' });
+        body.innerHTML = `
             <strong>${log.compound.name}:</strong><br>
             S1: ${log.compound.s1} | S2: ${log.compound.s2} | S3: ${log.compound.s3}<br><br>
-            ${log.isolations.map(i => `<strong>${i.name}:</strong> ${i.log}`).join('<br>')}
-        </div>`;
-    fragment.appendChild(card);
-  });
-  historyContent.appendChild(fragment);
+            ${log.isolations.map(i => `<strong>${i.name}:</strong> ${i.log}`).join('<br>')}`;
+        
+        card.appendChild(header);
+        card.appendChild(body);
+        fragment.appendChild(card);
+    });
+    historyContent.appendChild(fragment);
 }
 
 function editLog(logIndex) {
@@ -438,7 +432,7 @@ function editLog(logIndex) {
         const workoutDefinition = workouts.find(w => w.name === logToEdit.routine);
         if (workoutDefinition) {
             document.getElementById('historyScreen').classList.add('hidden');
-            loadWorkout(workoutDefinition, logToEdit, logIndex);
+            loadWorkout(workoutDefinition, logToEdit);
         } else {
             showNotification(`Error: Workout definition for "${logToEdit.routine}" not found.`, true);
         }
@@ -461,70 +455,93 @@ function parseCsv(text) {
     const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
     if (lines.length <= 1) return [];
 
-    const header = lines.shift().split(',').map(h => h.trim());
-    const dateIndex = header.indexOf("Date");
-    const routineIndex = header.indexOf("Routine");
-    const exerciseIndex = header.indexOf("Exercise");
-    const setIndex = header.indexOf("Set");
-    const repsIndex = header.indexOf("Reps");
-    const weightIndex = header.indexOf("Weight (lbs)");
-    const statusIndex = header.indexOf("Status");
+    const parseLine = (line) => {
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+                if (inQuotes && line[i + 1] === '"') {
+                    current += '"';
+                    i++; 
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (char === ',' && !inQuotes) {
+                values.push(current.trim());
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        values.push(current.trim());
+        return values;
+    };
+
+    const header = parseLine(lines.shift().toLowerCase());
+    const indices = {
+        date: header.indexOf("date"),
+        routine: header.indexOf("routine"),
+        exercise: header.indexOf("exercise"),
+        set: header.indexOf("set"),
+        reps: header.indexOf("reps"),
+        weight: header.indexOf("weight (lbs)"),
+        status: header.indexOf("status")
+    };
+    if (indices.date === -1 || indices.routine === -1 || indices.exercise === -1) {
+        throw new Error('CSV must contain "Date", "Routine", and "Exercise" columns.');
+    }
 
     return lines.map((line, index) => {
-        const values = line.split(',');
+        const values = parseLine(line);
         if (values.length !== header.length) {
-            console.warn(`Malformed CSV line ${index + 2}: ${line}`);
+            console.warn(`Skipping malformed CSV line ${index + 2}: ${line}`);
             return null;
         }
 
-        const status = statusIndex !== -1 ? values[statusIndex].trim() : 'Completed';
-        const reps = repsIndex !== -1 ? values[repsIndex].trim() : '';
-        const weight = weightIndex !== -1 ? values[weightIndex].trim() : '';
-
         return {
-            date: dateIndex !== -1 ? values[dateIndex].trim() : '',
-            routine: routineIndex !== -1 ? values[routineIndex].trim() : '',
-            exercise: exerciseIndex !== -1 ? values[exerciseIndex].trim() : '',
-            set: setIndex !== -1 ? parseInt(values[setIndex].trim(), 10) : 0,
-            reps: status === 'Completed' ? reps : '',
-            weight: status === 'Completed' ? weight : '',
-            status: status
+            date: values[indices.date],
+            routine: values[indices.routine],
+            exercise: values[indices.exercise],
+            set: parseInt(values[indices.set], 10) || 0,
+            reps: values[indices.reps] || '',
+            weight: values[indices.weight] || '',
+            status: values[indices.status] || 'Completed'
         };
     }).filter(log => log !== null);
 }
 
-
 function importLogs(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+    const fileInput = event.target;
+    const file = fileInput.files[0];
+    if (!file) {
+        fileInput.value = '';
+        return;
+    }
     showNotification('Importing... please wait.', false, 0);
     const reader = new FileReader();
 
     reader.onload = function(e) {
         try {
             const importedData = parseCsv(e.target.result);
-            if (importedData.length === 0) {
-                showNotification('No valid data found in CSV file.', true);
-                return;
-            }
-
-            const { newLogsCount, updatedLogsCount, skippedRoutines } = mergeImportedLogs(importedData);
-
+            const { newLogsCount, updatedLogsCount, skippedCount } = mergeImportedLogs(importedData);
             let message = `${newLogsCount} new, ${updatedLogsCount} updated logs processed.`;
-            if (skippedRoutines.size > 0) {
-                message += ` Skipped routines not found: ${Array.from(skippedRoutines).join(', ')}.`;
-                showNotification(message, true, 10000);
-            } else {
-                showNotification(message);
+            if (skippedCount > 0) {
+                message += ` ${skippedCount} rows skipped (unknown routine or bad format).`;
             }
+            showNotification(message, skippedCount > 0, 8000);
             viewHistory();
         } catch (error) {
-            showNotification(`Import failed: ${error.message}`, true);
-            console.error("Import error:", error);
+            showNotification(`Import failed: ${error.message}`, true, 8000);
         } finally {
-            event.target.value = '';
+            fileInput.value = '';
         }
     };
+    reader.onerror = function() {
+        showNotification('Failed to read the file.', true);
+        fileInput.value = '';
+    }
     reader.readAsText(file);
 }
 
@@ -533,12 +550,12 @@ function mergeImportedLogs(importedData) {
     const historyMap = new Map(history.map(log => [`${log.date}_${log.routine}`, log]));
     let newLogsCount = 0;
     let updatedLogsCount = 0;
-    const skippedRoutines = new Set();
-    const workoutNames = new Set(workouts.map(w => w.name));
+    let skippedCount = 0;
+    const workoutDefs = new Map(workouts.map(w => [w.name, w]));
 
     const groupedByLog = importedData.reduce((acc, row) => {
-        if (!workoutNames.has(row.routine)) {
-            skippedRoutines.add(row.routine);
+        if (!workoutDefs.has(row.routine)) {
+            skippedCount++;
             return acc;
         }
         const key = `${row.date}_${row.routine}`;
@@ -549,30 +566,22 @@ function mergeImportedLogs(importedData) {
 
     for (const key in groupedByLog) {
         const [date, routineName] = key.split('_');
-        const workoutDef = workouts.find(w => w.name === routineName);
-        if (!workoutDef) continue;
-
+        const workoutDef = workoutDefs.get(routineName);
+        
         let isUpdate = historyMap.has(key);
         let logEntry = historyMap.get(key) || {
+            id: new Date(date).toISOString(),
             date: date,
             routine: routineName,
             compound: { name: workoutDef.compound.name, s1: 'Not Logged', s2: 'Not Logged', s3: 'Not Logged' },
             isolations: workoutDef.isolations.map(iso => ({ name: iso.name, log: 'Not Logged' }))
         };
 
-        if (isUpdate) updatedLogsCount++;
-        else newLogsCount++;
+        if(isUpdate) updatedLogsCount++; else newLogsCount++;
 
         groupedByLog[key].forEach(row => {
-            let logValue;
-            if (row.status === 'Skipped') {
-                logValue = 'Skipped';
-            } else if (row.reps && row.weight) {
-                logValue = `${row.reps}x${row.weight} lbs`;
-            } else {
-                logValue = 'Not Logged';
-            }
-
+            const logValue = row.status === 'Skipped' ? 'Skipped' : (row.reps && row.weight ? `${row.reps}x${row.weight} lbs` : 'Not Logged');
+            
             if (row.exercise === workoutDef.compound.name && row.set >= 1 && row.set <= 3) {
                 logEntry.compound[`s${row.set}`] = logValue;
             } else {
@@ -585,31 +594,41 @@ function mergeImportedLogs(importedData) {
         historyMap.set(key, logEntry);
     }
     
-    const updatedHistory = Array.from(historyMap.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
+    const updatedHistory = Array.from(historyMap.values()).sort((a, b) => new Date(b.date) - new Date(a.date) || b.id.localeCompare(a.id));
     localStorage.setItem('workoutLogs', JSON.stringify(updatedHistory));
     
-    return { newLogsCount, updatedLogsCount, skippedRoutines };
+    return { newLogsCount, updatedLogsCount, skippedCount };
 }
-
 
 function exportLogs() {
     const history = getHistory();
     if (history.length === 0) return showNotification("No logs to export.", true);
     
+    const escapeCsvField = (field) => `"${String(field).replace(/"/g, '""')}"`;
     const header = "Date,Routine,Exercise,Set,Reps,Weight (lbs),Status\n";
+    
     const rows = history.flatMap(log => {
         let entryRows = [];
         const { date, routine, compound, isolations } = log;
 
         const createRow = (exerciseName, setNum, setData) => {
-            const { reps, weight } = parseSet(setData);
+            let reps = '', weight = '';
             let status = 'Not Logged';
             if (setData === 'Skipped') {
                 status = 'Skipped';
-            } else if (reps && weight) {
+            } else if (setData && setData !== 'Not Logged') {
+                ({ reps, weight } = parseSet(setData));
                 status = 'Completed';
             }
-            return [date, routine, `"${exerciseName}"`, setNum, reps, weight, status].join(',');
+            return [
+                escapeCsvField(date),
+                escapeCsvField(routine),
+                escapeCsvField(exerciseName),
+                setNum,
+                reps,
+                weight,
+                escapeCsvField(status)
+            ].join(',');
         };
 
         entryRows.push(createRow(compound.name, 1, compound.s1));
@@ -632,6 +651,41 @@ function exportLogs() {
     document.body.removeChild(link);
 }
 
+function handleSetCompletion(checkbox, inputIds, isAmrap) {
+    const isChecked = checkbox.checked;
+    const inputs = inputIds.map(id => document.getElementById(id));
+    
+    if (isChecked) {
+        if (inputs.some(input => input.value === '' || (input.placeholder === 'Reps' && parseFloat(input.value) <= 0))) {
+            showNotification('Please enter weight and a valid number of reps (>0).', true);
+            checkbox.checked = false;
+        } else if (isAmrap) {
+            startTimer();
+            showNotification('AMRAP timer started for 60 seconds.');
+            checkbox.disabled = true;
+        }
+    } else {
+        if (isAmrap) {
+            stopTimer(true);
+            resetTimer();
+        }
+    }
+    
+    inputs.forEach(input => { if (input) input.disabled = isChecked; });
+}
+
+function deleteSet(setId) {
+    const setRow = document.getElementById(setId);
+    if (setRow) {
+        const confirmMessage = `Are you sure you want to remove this set? This cannot be undone for this session.`;
+        showConfirmDialog(confirmMessage, () => {
+            setRow.remove();
+            validateWorkoutLog();
+            showNotification('Set removed.');
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
 
@@ -639,9 +693,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const target = event.target.closest('[data-action], button, a');
         if (!target) return;
         
-        const action = target.dataset.action;
-        const id = target.id;
-
         const actions = {
             'viewHistoryBtn': viewHistory,
             'backToMenuBtn': goHome,
@@ -651,12 +702,14 @@ document.addEventListener('DOMContentLoaded', () => {
             'resetTimerBtn': resetTimer,
             'importButton': () => document.getElementById('csvFileInput').click(),
             'exportButton': exportLogs,
-            'saveWorkoutBtn': () => saveOrUpdateLog(target.dataset.logIndex, target.dataset.originalDate),
-            'skip-set': () => skipSet(target, target.dataset.setId),
+            'saveWorkoutBtn': () => saveOrUpdateLog(target.dataset.logId),
+            'delete-set': () => deleteSet(target.dataset.setId),
             'edit-log': () => editLog(target.dataset.logIndex),
             'delete-log': () => deleteLog(target.dataset.logIndex),
             'confirmModalConfirm': () => {
-                if (typeof confirmCallback === 'function') confirmCallback();
+                if (typeof confirmCallback === 'function') {
+                    confirmCallback();
+                }
                 document.getElementById('confirmModal').classList.add('hidden');
                 confirmCallback = null;
             },
@@ -666,8 +719,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         
-        if (actions[id]) actions[id]();
-        else if (actions[action]) actions[action]();
+        const action = actions[target.id] || actions[target.dataset.action];
+        if (action) {
+            action();
+        }
     });
 
     document.body.addEventListener('change', (event) => {
@@ -692,32 +747,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, true);
 });
-
-function handleSetCompletion(checkbox, inputIds, isAmrap) {
-    const isChecked = checkbox.checked;
-    const inputs = inputIds.map(id => document.getElementById(id));
-    
-    if (isChecked) {
-        if (inputs.some(input => input.value === '' || (input.placeholder === 'Reps' && parseFloat(input.value) <= 0))) {
-            showNotification('Please enter weight and a valid number of reps (>0).', true);
-            checkbox.checked = false;
-            return;
-        }
-        if (isAmrap) {
-            if (timerInterval) {
-                showNotification('An AMRAP timer is already running.', true);
-                checkbox.checked = false;
-                return;
-            }
-            startTimer();
-            showNotification('AMRAP timer started for 60 seconds.');
-        }
-    } else {
-        if (isAmrap) {
-            resetTimer();
-            showNotification('AMRAP timer cancelled.');
-        }
-    }
-    
-    inputs.forEach(input => { if (input) input.disabled = isChecked; });
-}
