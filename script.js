@@ -15,16 +15,31 @@ const workoutSelect = document.getElementById('workoutSelect');
 const timerDisplay = document.getElementById('timerDisplay');
 const timerBar = document.getElementById('timerBar');
 
+function initAudio() {
+    if (!audioCtx) {
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.error("Web Audio API is not supported in this browser.", e);
+            return;
+        }
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(err => console.error("AudioContext resume failed:", err));
+    }
+}
+
 async function initializeApp() {
     workoutSelect.disabled = true;
     try {
         const response = await fetch('./workouts.json');
         if (!response.ok) {
-            let errorMsg = `Failed to load workout data. HTTP status: ${response.status}`;
-            if (response.status === 404) errorMsg += ' (File not found)';
+            let errorMsg = `Failed to load workout data. Status: ${response.status}`;
             throw new Error(errorMsg);
         }
-        workouts = await response.json();
+        
+        const rawText = await response.text();
+        workouts = JSON.parse(rawText);
         
         workouts.forEach(w => {
             const option = new Option(w.name, w.id);
@@ -37,7 +52,13 @@ async function initializeApp() {
 
     } catch (error) {
         console.error("Initialization Error:", error);
-        appLoader.innerHTML = `<p style="color: #ffd700; text-align: center;">Failed to load workout data.<br>${error.message}</p>`;
+        let userMessage = "Failed to load workout data.";
+        if (error instanceof SyntaxError) {
+            userMessage += " The workout file seems to be corrupted.";
+        } else if (error.message) {
+            userMessage += ` Details: ${error.message}`;
+        }
+        appLoader.innerHTML = `<p style="color: #ffd700; text-align: center;">${userMessage}</p>`;
     }
 }
 
@@ -62,22 +83,14 @@ function showConfirmDialog(text, callback) {
     confirmCallback = callback;
 }
 
-function initAudio() {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-}
-
 function playBeep(frequency, duration) {
     if (!audioCtx) return;
+    initAudio();
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
     oscillator.connect(gainNode);
     gainNode.connect(audioCtx.destination);
-    gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
     oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
     oscillator.start(audioCtx.currentTime);
     oscillator.stop(audioCtx.currentTime + duration);
@@ -93,14 +106,22 @@ function toggleMetronome() {
     metronomeBtn.classList.toggle('active', isMetronomeOn);
     if (isMetronomeOn) {
         metronomeInterval = setInterval(playMetronomeBeep, 1000);
+        showNotification('Metronome ON.');
     } else {
         clearInterval(metronomeInterval);
         metronomeInterval = null;
+        showNotification('Metronome OFF.');
     }
 }
 
 function stopMetronome() {
-    if (isMetronomeOn) toggleMetronome();
+    if (isMetronomeOn) {
+        isMetronomeOn = false;
+        const metronomeBtn = document.getElementById('metronomeToggle');
+        metronomeBtn.classList.remove('active');
+        clearInterval(metronomeInterval);
+        metronomeInterval = null;
+    }
 }
 
 function updateTimerDisplay() {
@@ -112,7 +133,11 @@ function updateTimerDisplay() {
 function stopTimer(notify = false) {
     clearInterval(timerInterval);
     timerInterval = null;
-    document.querySelectorAll('input[data-amrap="true"]').forEach(cb => cb.disabled = false);
+    document.querySelectorAll('input[type="checkbox"][data-amrap="true"]').forEach(cb => {
+        if (!cb.checked) {
+            cb.disabled = false;
+        }
+    });
     if (notify) {
         showNotification('AMRAP timer cancelled.');
     }
@@ -121,23 +146,28 @@ function stopTimer(notify = false) {
 function startTimer() {
     if (timerInterval) return;
     initAudio();
-    document.querySelectorAll('input[data-amrap="true"]').forEach(cb => cb.disabled = true);
+    document.querySelectorAll('input[type="checkbox"][data-amrap="true"]').forEach(cb => {
+        if (cb.checked) {
+            cb.disabled = true;
+        }
+    });
     timerInterval = setInterval(() => {
         countdown--;
         updateTimerDisplay();
         if (countdown <= 0) {
             playTimerEndSound();
-            resetTimer();
+            resetTimer(true);
         }
     }, 1000);
 }
 
-function resetTimer() {
+function resetTimer(finished = false) {
     const wasRunning = timerInterval !== null;
     stopTimer();
     countdown = defaultCountdown;
     updateTimerDisplay();
-    if(wasRunning) showNotification('Timer finished.');
+    if(wasRunning && !finished) showNotification('Timer reset.');
+    if(finished) showNotification('Timer finished.');
 }
 
 const addMinute = () => {
@@ -179,18 +209,23 @@ function saveStoredMax(exerciseName, rm) {
 const roundToNearest5 = num => Math.round(num / 5) * 5;
 
 function calculateRM(weight, reps) {
-    if (reps <= 0 || weight < 0) return 0;
-    let rm = weight * (1 + (reps / 30));
+    if (reps <= 0 || weight <= 0) return 0;
+    
+    let rm;
+    if (reps <= 10) {
+        rm = weight / (1.0278 - (0.0278 * reps));
+    } else {
+        rm = weight * (1 + (reps / 30));
+    }
     return Math.round(rm);
 }
 
-function updateRM(exerciseName, reps, weight, badgeId) {
+function updateRM(exerciseName, reps, weight, badge) {
     const parsedReps = parseFloat(reps);
     const parsedWeight = parseFloat(weight);
-    if (isNaN(parsedReps) || isNaN(parsedWeight) || parsedReps <= 0 || parsedWeight < 0) return;
+    if (isNaN(parsedReps) || isNaN(parsedWeight)) return;
 
     const rm = calculateRM(parsedWeight, parsedReps);
-    const badge = document.getElementById(badgeId);
     if (rm > 0) {
         badge.innerText = `${rm} lbs`;
         saveStoredMax(exerciseName, rm);
@@ -208,7 +243,7 @@ function validateWorkoutLog() {
         hasAtLeastOneSet = true;
         const repsInput = row.querySelector('input[type="number"][placeholder="Reps"]');
         const weightInput = row.querySelector('input[type="number"][placeholder="Wt"]');
-        if (repsInput.value === '' || parseFloat(repsInput.value) <= 0 || weightInput.value === '' || parseFloat(weightInput.value) < 0) {
+        if (repsInput.value === '' || parseFloat(repsInput.value) <= 0 || weightInput.value === '' || parseFloat(weightInput.value) <= 0) {
             allSetsValid = false;
         }
     });
@@ -223,36 +258,68 @@ const parseSet = setString => {
 
 function createDOMElement(tag, options = {}) {
     const element = document.createElement(tag);
-    Object.entries(options).forEach(([key, value]) => {
-        if (key === 'dataset') {
-            Object.assign(element.dataset, value);
-        } else if (key === 'children' && Array.isArray(value)) {
-            value.forEach(child => element.appendChild(child));
+    for (const key in options) {
+        if (key === 'children' && Array.isArray(options[key])) {
+            options[key].forEach(child => element.appendChild(child));
+        } else if (key === 'dataset') {
+            Object.assign(element.dataset, options[key]);
+        } else if (key === 'listeners' && typeof options[key] === 'object') {
+            for (const eventName in options[key]) {
+                element.addEventListener(eventName, options[key][eventName]);
+            }
         } else {
-            element[key] = value;
+            element[key] = options[key];
         }
-    });
+    }
     return element;
 }
 
-function createSetRow(id, label, details, values, isAmrap, exerciseName, badgeId) {
+function createSetRow(id, label, details, values, isAmrap, exerciseName, badge) {
     const { reps, weight } = values;
-    const createInput = (placeholder, value, action, data) => createDOMElement('input', { type: 'number', placeholder, value, dataset: { action, ...data } });
 
-    return createDOMElement('div', { id, className: 'set-row', children: [
-        createDOMElement('div', { className: 'checkbox-row', children: [
-            createDOMElement('input', { type: 'checkbox', dataset: { action: 'complete-set', inputs: `${id}Reps,${id}Weight`, amrap: isAmrap } }),
-            createDOMElement('div', { children: [
-                createDOMElement('strong', { textContent: label }),
-                createDOMElement('span', { textContent: ` (${details})` })
-            ]})
-        ]}),
-        createDOMElement('div', { className: 'set-inputs', children: [
-            createInput('Reps', reps, 'update-rm', { id: `${id}Reps`, exerciseName, badgeId, weightId: `${id}Weight` }),
-            createInput('Wt', weight, 'update-rm', { id: `${id}Weight`, exerciseName, badgeId, repsId: `${id}Reps` }),
-            createDOMElement('button', { className: 'delete-set-btn', textContent: 'Delete', dataset: { action: 'delete-set', setId: id } })
-        ]})
-    ]});
+    const repsInput = createDOMElement('input', { type: 'number', placeholder: 'Reps', value: reps });
+    const weightInput = createDOMElement('input', { type: 'number', placeholder: 'Wt', value: weight });
+
+    const handleInput = () => updateRM(exerciseName, repsInput.value, weightInput.value, badge);
+    repsInput.addEventListener('input', handleInput);
+    weightInput.addEventListener('input', handleInput);
+
+    const setRow = createDOMElement('div', { id, className: 'set-row' });
+
+    const deleteButton = createDOMElement('button', {
+        className: 'delete-set-btn',
+        textContent: 'Delete',
+        listeners: { click: () => deleteSet(setRow) }
+    });
+
+    const checkbox = createDOMElement('input', {
+        type: 'checkbox',
+        dataset: { amrap: isAmrap },
+        listeners: {
+            change: (e) => handleSetCompletion(e.target, [repsInput, weightInput], isAmrap)
+        }
+    });
+
+    const checkboxRow = createDOMElement('div', {
+        className: 'checkbox-row',
+        children: [
+            checkbox,
+            createDOMElement('div', {
+                children: [
+                    createDOMElement('strong', { textContent: label }),
+                    createDOMElement('span', { textContent: ` (${details})` })
+                ]
+            })
+        ]
+    });
+
+    const setInputs = createDOMElement('div', {
+        className: 'set-inputs',
+        children: [repsInput, weightInput, deleteButton]
+    });
+
+    setRow.append(checkboxRow, setInputs);
+    return setRow;
 }
 
 function createExerciseSection(title, exercises) {
@@ -288,11 +355,14 @@ function loadWorkout(w, logData = null) {
     
     fragment.appendChild(createDOMElement('h3', { textContent: 'Compound Lift' }));
     const compoundRM = maxes[w.compound.name] || 1;
+
+    const compoundRmBadge = createDOMElement('span', { className: 'rm-badge', textContent: `${compoundRM} lbs` });
+
     fragment.appendChild(createDOMElement('div', { className: 'exercise-item', children: [
         createDOMElement('details', { className: 'exercise-details', children: [
             createDOMElement('summary', { className: 'compound-summary', children: [
                 document.createTextNode(w.compound.name),
-                createDOMElement('span', { id: 'compound-rm-badge', className: 'rm-badge', textContent: `${compoundRM} lbs` })
+                compoundRmBadge
             ]}),
             createDOMElement('div', { className: 'details-content', textContent: w.compound.desc })
         ]})
@@ -303,33 +373,35 @@ function loadWorkout(w, logData = null) {
         { id: 'cSet2', label: 'Set 2', details: '6 reps @ 66%', isAmrap: false, values: logData ? parseSet(logData.compound.s2) : { reps: 6, weight: roundToNearest5(compoundRM * 0.66) } },
         { id: 'cSet3', label: 'Set 3', details: 'AMRAP @ 80%', isAmrap: true, values: logData ? parseSet(logData.compound.s3) : { reps: '', weight: roundToNearest5(compoundRM * 0.80) } }
     ];
-    sets.forEach(s => fragment.appendChild(createSetRow(s.id, s.label, s.details, s.values, s.isAmrap, w.compound.name, 'compound-rm-badge')));
+    sets.forEach(s => fragment.appendChild(createSetRow(s.id, s.label, s.details, s.values, s.isAmrap, w.compound.name, compoundRmBadge)));
 
     fragment.appendChild(createDOMElement('h3', { textContent: 'Isolation Lifts (1x AMRAP)' }));
     w.isolations.forEach((iso, idx) => {
         const isoRM = maxes[iso.name] || 1;
+        const isoRmBadge = createDOMElement('span', { className: 'rm-badge', textContent: `${isoRM} lbs` });
         fragment.appendChild(createDOMElement('div', { className: 'exercise-item', children: [
             createDOMElement('details', { className: 'exercise-details', children: [
                 createDOMElement('summary', { className: 'isolation-summary', children: [
                     document.createTextNode(iso.name),
-                    createDOMElement('span', { id: `iso-rm-badge-${idx}`, className: 'rm-badge', textContent: `${isoRM} lbs` })
+                    isoRmBadge
                 ]}),
                 createDOMElement('div', { className: 'details-content', textContent: iso.desc })
             ]})
         ]}));
         const isoSet = logData && logData.isolations[idx] ? parseSet(logData.isolations[idx].log) : { reps: '', weight: '' };
-        fragment.appendChild(createSetRow(`isoSet${idx}`, 'Set 1', 'AMRAP', isoSet, true, iso.name, `iso-rm-badge-${idx}`));
+        fragment.appendChild(createSetRow(`isoSet${idx}`, 'Set 1', 'AMRAP', isoSet, true, iso.name, isoRmBadge));
     });
     
     fragment.appendChild(createExerciseSection('Cool-downs', w.cooldowns));
-    const saveButton = createDOMElement('button', { id: 'saveWorkoutBtn', textContent: logData ? 'Update Log' : 'Save Workout Log'});
-    if (logData) {
-        saveButton.dataset.logId = logData.id;
-    }
-    fragment.appendChild(saveButton);
     
+    const saveButton = createDOMElement('button', {
+        id: 'saveWorkoutBtn',
+        textContent: logData ? 'Update Log' : 'Save Workout Log',
+        listeners: { click: () => saveOrUpdateLog(logData ? logData.id : null) }
+    });
+    
+    fragment.appendChild(saveButton);
     workoutContent.appendChild(fragment);
-
     validateWorkoutLog();
 }
 
@@ -343,8 +415,7 @@ function startSelectedWorkout() {
 
 function getSetData(setId) {
     const setRow = document.getElementById(setId);
-    // If the set row doesn't exist, it was deleted by the user.
-    if (!setRow) return 'Not Logged';
+    if (!setRow) return 'Skipped';
     
     const reps = setRow.querySelector('input[placeholder="Reps"]').value;
     const weight = setRow.querySelector('input[placeholder="Wt"]').value;
@@ -408,8 +479,16 @@ function viewHistory() {
         const header = createDOMElement('div', { className: 'card-header' });
         header.appendChild(createDOMElement('strong', { textContent: `${log.date} - ${log.routine}`, style: 'color:#ffd700;' }));
         const actions = createDOMElement('div', { className: 'card-actions' });
-        actions.appendChild(createDOMElement('button', { className: 'edit-btn', textContent: 'Edit', dataset: { action: 'edit-log', logIndex: index } }));
-        actions.appendChild(createDOMElement('button', { className: 'delete-btn', textContent: 'Delete', dataset: { action: 'delete-log', logIndex: index } }));
+        actions.appendChild(createDOMElement('button', {
+            className: 'edit-btn',
+            textContent: 'Edit',
+            listeners: { click: () => editLog(index) }
+        }));
+        actions.appendChild(createDOMElement('button', {
+            className: 'delete-btn',
+            textContent: 'Delete',
+            listeners: { click: () => deleteLog(index) }
+        }));
         header.appendChild(actions);
 
         const body = createDOMElement('div', { style: 'margin-top:8px; font-size:0.9rem;' });
@@ -448,6 +527,7 @@ function deleteLog(logIndex) {
         history.splice(logIndex, 1);
         localStorage.setItem('workoutLogs', JSON.stringify(history));
         viewHistory();
+        showNotification('Log deleted.');
     });
 }
 
@@ -461,13 +541,11 @@ function parseCsv(text) {
         let inQuotes = false;
         for (let i = 0; i < line.length; i++) {
             const char = line[i];
-            if (char === '"') {
-                if (inQuotes && line[i + 1] === '"') {
-                    current += '"';
-                    i++; 
-                } else {
-                    inQuotes = !inQuotes;
-                }
+            if (char === '"' && line[i+1] === '"') {
+                current += '"';
+                i++;
+            } else if (char === '"') {
+                inQuotes = !inQuotes;
             } else if (char === ',' && !inQuotes) {
                 values.push(current.trim());
                 current = '';
@@ -489,6 +567,7 @@ function parseCsv(text) {
         weight: header.indexOf("weight (lbs)"),
         status: header.indexOf("status")
     };
+
     if (indices.date === -1 || indices.routine === -1 || indices.exercise === -1) {
         throw new Error('CSV must contain "Date", "Routine", and "Exercise" columns.');
     }
@@ -651,14 +730,17 @@ function exportLogs() {
     document.body.removeChild(link);
 }
 
-function handleSetCompletion(checkbox, inputIds, isAmrap) {
+function handleSetCompletion(checkbox, inputs, isAmrap) {
     const isChecked = checkbox.checked;
-    const inputs = inputIds.map(id => document.getElementById(id));
     
     if (isChecked) {
-        if (inputs.some(input => input.value === '' || (input.placeholder === 'Reps' && parseFloat(input.value) <= 0))) {
-            showNotification('Please enter weight and a valid number of reps (>0).', true);
+        const repsInput = inputs.find(input => input.placeholder === 'Reps');
+        const weightInput = inputs.find(input => input.placeholder === 'Wt');
+
+        if (!repsInput || !weightInput || repsInput.value === '' || weightInput.value === '' || parseFloat(repsInput.value) <= 0 || parseFloat(weightInput.value) <= 0) {
+            showNotification('Please enter a positive value (>0) for both reps and weight.', true);
             checkbox.checked = false;
+            return;
         } else if (isAmrap) {
             startTimer();
             showNotification('AMRAP timer started for 60 seconds.');
@@ -667,17 +749,16 @@ function handleSetCompletion(checkbox, inputIds, isAmrap) {
     } else {
         if (isAmrap) {
             stopTimer(true);
-            resetTimer();
         }
     }
     
     inputs.forEach(input => { if (input) input.disabled = isChecked; });
+    validateWorkoutLog();
 }
 
-function deleteSet(setId) {
-    const setRow = document.getElementById(setId);
+function deleteSet(setRow) {
     if (setRow) {
-        const confirmMessage = `Are you sure you want to remove this set? This cannot be undone for this session.`;
+        const confirmMessage = `Are you sure you want to remove this set? This will be marked as 'Skipped' in the log.`;
         showConfirmDialog(confirmMessage, () => {
             setRow.remove();
             validateWorkoutLog();
@@ -689,60 +770,33 @@ function deleteSet(setId) {
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
 
-    document.body.addEventListener('click', (event) => {
-        const target = event.target.closest('[data-action], button, a');
-        if (!target) return;
-        
-        const actions = {
-            'viewHistoryBtn': viewHistory,
-            'backToMenuBtn': goHome,
-            'historyBackToMenuBtn': goHome,
-            'metronomeToggle': toggleMetronome,
-            'addMinuteBtn': addMinute,
-            'resetTimerBtn': resetTimer,
-            'importButton': () => document.getElementById('csvFileInput').click(),
-            'exportButton': exportLogs,
-            'saveWorkoutBtn': () => saveOrUpdateLog(target.dataset.logId),
-            'delete-set': () => deleteSet(target.dataset.setId),
-            'edit-log': () => editLog(target.dataset.logIndex),
-            'delete-log': () => deleteLog(target.dataset.logIndex),
-            'confirmModalConfirm': () => {
-                if (typeof confirmCallback === 'function') {
-                    confirmCallback();
-                }
-                document.getElementById('confirmModal').classList.add('hidden');
-                confirmCallback = null;
-            },
-            'confirmModalCancel': () => {
-                document.getElementById('confirmModal').classList.add('hidden');
-                confirmCallback = null;
-            }
-        };
-        
-        const action = actions[target.id] || actions[target.dataset.action];
-        if (action) {
-            action();
+    document.getElementById('viewHistoryBtn').addEventListener('click', viewHistory);
+    document.getElementById('backToMenuBtn').addEventListener('click', goHome);
+    document.getElementById('historyBackToMenuBtn').addEventListener('click', goHome);
+    document.getElementById('metronomeToggle').addEventListener('click', toggleMetronome);
+    document.getElementById('addMinuteBtn').addEventListener('click', addMinute);
+    document.getElementById('resetTimerBtn').addEventListener('click', () => resetTimer());
+    document.getElementById('importButton').addEventListener('click', () => document.getElementById('csvFileInput').click());
+    document.getElementById('exportButton').addEventListener('click', exportLogs);
+
+    document.getElementById('confirmModalConfirm').addEventListener('click', () => {
+        if (typeof confirmCallback === 'function') {
+            confirmCallback();
         }
+        document.getElementById('confirmModal').classList.add('hidden');
+        confirmCallback = null;
     });
 
-    document.body.addEventListener('change', (event) => {
-        const { target } = event;
-        if (target.id === 'workoutSelect') startSelectedWorkout();
-        else if (target.id === 'csvFileInput') importLogs(event);
-        else if (target.dataset.action === 'complete-set') {
-            const { inputs, amrap } = target.dataset;
-            handleSetCompletion(target, inputs.split(','), amrap === 'true');
-        }
+    document.getElementById('confirmModalCancel').addEventListener('click', () => {
+        document.getElementById('confirmModal').classList.add('hidden');
+        confirmCallback = null;
     });
 
+    workoutSelect.addEventListener('change', startSelectedWorkout);
+    document.getElementById('csvFileInput').addEventListener('change', importLogs);
+    
     document.body.addEventListener('input', (event) => {
-        const { target } = event;
-        if (target.dataset.action === 'update-rm') {
-            const { exerciseName, badgeId, weightId, repsId } = target.dataset;
-            const reps = repsId ? document.getElementById(repsId).value : target.value;
-            const weight = weightId ? document.getElementById(weightId).value : target.value;
-            updateRM(exerciseName, reps, weight, badgeId);
-        } else if (target.closest('#workoutScreen')) {
+        if (event.target.closest('#workoutScreen')) {
             validateWorkoutLog();
         }
     }, true);

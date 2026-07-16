@@ -4,35 +4,39 @@
         "warmups": [
             {
                 "name": "Lateral Lunge Weight Shifts",
-                "desc": "Targets: Hip Adductors & Glutes. Biomechanics: Gently shift weight side-to-side to lubricate joints. - Stand wide, push hips back, shift weight left to right.\r\n- Cue: \"Imagine sliding side-to-side on a slippery floor.\""
+                "desc": "Targets: Hip Adductors & Glutes. Biomechanics: Gently shift weight side-to-side to lubricate joints. - - Stand wide, push hips back, shift weight left to right.\n- Cue: \"Imagine sliding side-to-side on a slippery floor.\""
             },
             {
                 "name": "Dynamic Leg Swings",
-                "desc": "Targets: Hip Flexors & Extensors. Biomechanics: Lubricates the entire hip capsule. - Swing one leg forward and back like a pendulum.\r\n- Cue: \"Feel the stretch at the top of the forward and backward swing.\""
+                "desc": "Targets: Hip Flexors & Extensors. Biomechanics: Lubricates the entire hip capsule. - - Swing one leg forward and back like a pendulum.\n- Cue: \"Feel the stretch at the top of the forward and backward swing.\""
             }
         ],
         "compound": {
             "name": "Side Lunge",
-            "desc": "Targets: Gluteus Medius (Primary), Adductors (Primary), Quads (Secondary). - Step to the side, bend the working knee, keep trailing leg straight.\r\n- Cue: \"Push the floor away with your bent leg to return to center.\""
+            "desc": "Targets: Gluteus Medius (Primary), Adductors (Primary), Quads (Secondary). - - Step to the side, bend the working knee, keep trailing leg straight.\n- Cue: \"Push the floor away with your bent leg to return to center.\""
         },
         "isolations": [
             {
                 "name": "Seated Hip Abduction Machine",
-                "desc": "Targets: Gluteus Medius. Biomechanics: Constant resistance against hip abduction. - Drive the pads outward with the sides of your legs.\r\n- Cue: \"Squeeze from the outside of your hips.\""
+                "desc": "Targets: Gluteus Medius. Biomechanics: Constant resistance against hip abduction. - - Drive the pads outward with the sides of your legs.\n- Cue: \"Squeeze from the outside of your hips.\""
             },
             {
                 "name": "Cable Adduction",
-                "desc": "Targets: Adductor Group. Biomechanics: Constant cable tension pulling across the midline. - Stand sideways to a low cable. Pull the cabled leg across your standing leg.\r\n- Cue: \"Imagine squeezing a ball between your thighs.\""
+                "desc": "Targets: Adductor Group. Biomechanics: Constant cable tension pulling across the midline. - - Stand sideways to a low cable. Pull the cabled leg across your standing leg.\n- Cue: \"Imagine squeezing a ball between your thighs.\""
+            },
+            {
+                "name": "Leg Extension Machine",
+                "desc": "Targets: Quadriceps. Biomechanics: Constant machine tension isolating knee extension. - - Sit back in the machine pad, extend legs fully.\n- Cue: \"Flex your quads hard at the top lockout.\""
             }
         ],
         "cooldowns": [
             {
                 "name": "Glute Bridge Pulses & Butterfly Stretch",
-                "desc": "Targets: Glutes & Adductors. Biomechanics: Low-intensity active glute bridge pulses act as a muscle pump to flush lower body waste, followed by a static stretch to restore adductor resting length. - Perform 15 slow, bodyweight glute bridges to flush blood through hips. Then, sit with the soles of your feet together and let knees fall wide.\r\n- Cue: \"Pulse gently to pump the muscles, then breathe deep and melt into the static butterfly stretch.\""
+                "desc": "Targets: Glutes & Adductors. Biomechanics: Low-intensity active glute bridge pulses act as a muscle pump to flush lower body waste, followed by a static stretch to restore adductor resting length. - - Perform 15 slow, bodyweight glute bridges to flush blood through hips. Then, sit with the soles of your feet together and let knees fall wide.\n- Cue: \"Pulse gently to pump the muscles, then breathe deep and melt into the static butterfly stretch.\""
             },
             {
                 "name": "Kneeling Quad Stretch",
-                "desc": "Targets: Quads & Hip Flexors. Biomechanics: Passive static hip extension to restore resting length of the rectus femoris. - Kneel on one knee, pull back ankle to glute.\r\n- Cue: \"Tuck your tailbone under for a deeper stretch.\""
+                "desc": "Targets: Quads & Hip Flexors. Biomechanics: Passive static hip extension to restore resting length of the rectus femoris. - - Kneel on one knee, pull back ankle to glute.\n- Cue: \"Tuck your tailbone under for a deeper stretch.\""
             }
         ],
         "id": 1
@@ -42,35 +46,39 @@
         "warmups": [
             {
                 "name": "Arm Circles",
-                "desc": "Targets: Deltoid Complex. - Make circles with arms extended.\r\n- Cue: \"Draw perfect circles with your fingertips.\""
+                "desc": "Targets: Deltoid Complex. - - Make circles with arms extended.\n- Cue: \"Draw perfect circles with your fingertips.\""
             },
             {
                 "name": "Prone Y-Raises (Bodyweight)",
-                "desc": "Targets: Lower Trapezius & Rotator Cuff. Biomechanics: Active shoulder flexion and external rotation to secure the shoulder socket. - Lie face down, extend arms in a \"Y\" shape, thumbs up. Lift arms.\r\n- Cue: \"Initiate the lift by pulling your shoulder blades down and together.\""
+                "desc": "Targets: Lower Trapezius & Rotator Cuff. Biomechanics: Active shoulder flexion and external rotation to secure the shoulder socket. - - Lie face down, extend arms in a \"Y\" shape, thumbs up. Lift arms.\n- Cue: \"Initiate the lift by pulling your shoulder blades down and together.\""
             }
         ],
         "compound": {
             "name": "30-Degree Incline DB Press",
-            "desc": "Targets: Upper Chest (Primary), Anterior Delt (Secondary), Triceps (Secondary). - Press dumbbells up from a 30-degree incline.\r\n- Cue: \"Drive your biceps towards each other at the top.\""
+            "desc": "Targets: Upper Chest (Primary), Anterior Delt (Secondary), Triceps (Secondary). - - Press dumbbells up from a 30-degree incline.\n- Cue: \"Drive your biceps towards each other at the top.\""
         },
         "isolations": [
             {
                 "name": "Low-to-High Cable Crossover",
-                "desc": "Targets: Upper Chest. Biomechanics: Constant upward/inward arc tension. - Pull low cables upward and together to shoulder height.\r\n- Cue: \"Scoop the air up and in.\""
+                "desc": "Targets: Upper Chest. Biomechanics: Constant upward/inward arc tension. - - Pull low cables upward and together to shoulder height.\n- Cue: \"Scoop the air up and in.\""
+            },
+            {
+                "name": "Cable Front Raise",
+                "desc": "Targets: Anterior Deltoid. Biomechanics: Constant cable tension in shoulder flexion. - - Stand facing away from a low cable, pull straight up in front of you.\n- Cue: \"Lift the weight using the front of your shoulder, keeping arms straight.\""
             },
             {
                 "name": "Overhead Cable Triceps Ext.",
-                "desc": "Targets: Triceps (Long Head). Biomechanics: Constant tension in a stretched position. - Face away from high cable, extend elbows overhead.\r\n- Cue: \"Pin elbows to your head; only move forearms.\""
+                "desc": "Targets: Triceps (Long Head). Biomechanics: Constant tension in a stretched position. - - Face away from high cable, extend elbows overhead.\n- Cue: \"Pin elbows to your head; only move forearms.\""
             }
         ],
         "cooldowns": [
             {
                 "name": "Arm Hug Flutters & Doorway Chest Stretch",
-                "desc": "Targets: Pectorals & Anterior Deltoids. Biomechanics: Gentle, dynamic arm crosses pump lactic acid out of the upper chest, followed by a static stretch to open up tight fibers. - Slowly cross arms over your chest, alternating top arms for 1 minute. Then, place forearms on a doorframe and gently step forward.\r\n- Cue: \"Hug yourself slowly to flush the chest, then lean forward to statically stretch the pecs.\""
+                "desc": "Targets: Pectorals & Anterior Deltoids. Biomechanics: Gentle, dynamic arm crosses pump lactic acid out of the upper chest, followed by a static stretch to open up tight fibers. - - Slowly cross arms over your chest, alternating top arms for 1 minute. Then, place forearms on a doorframe and gently step forward.\n- Cue: \"Hug yourself slowly to flush the chest, then lean forward to statically stretch the pecs.\""
             },
             {
                 "name": "Overhead Triceps Stretch",
-                "desc": "Targets: Triceps & Lats. Biomechanics: Passive elbow flexion and shoulder elevation to release the triceps. - Arm overhead, bend elbow, pull with opposite hand.\r\n- Cue: \"Reach your hand down your spine.\""
+                "desc": "Targets: Triceps & Lats. Biomechanics: Passive elbow flexion and shoulder elevation to release the triceps. - - Arm overhead, bend elbow, pull with opposite hand.\n- Cue: \"Reach your hand down your spine.\""
             }
         ],
         "id": 2
@@ -80,39 +88,39 @@
         "warmups": [
             {
                 "name": "Bodyweight Forward Lunges",
-                "desc": "Targets: Quads & Gluteus Maximus. - Step forward, lower hips to 90 degrees.\r\n- Cue: \"Keep front knee aligned with second toe.\""
+                "desc": "Targets: Quads & Gluteus Maximus. - - Step forward, lower hips to 90 degrees.\n- Cue: \"Keep front knee aligned with second toe.\""
             },
             {
                 "name": "Bodyweight Clamshells",
-                "desc": "Targets: Gluteus Medius. Biomechanics: Direct lateral hip external rotation to prime pelvic stabilizers and prevent knee valgus. - Lie on side, knees bent. Keep feet together and lift top knee.\r\n- Cue: \"Imagine hips stacked against a wall; open knee using only the side glute.\""
+                "desc": "Targets: Gluteus Medius. Biomechanics: Direct lateral hip external rotation to prime pelvic stabilizers and prevent knee valgus. - - Lie on side, knees bent. Keep feet together and lift top knee.\n- Cue: \"Imagine hips stacked against a wall; open knee using only the side glute.\""
             }
         ],
         "compound": {
             "name": "Walking Lunge",
-            "desc": "Targets: Quads (Primary), Gluteus Max (Primary), Hamstrings (Secondary). - Step forward, lower hips, push off rear foot.\r\n- Cue: \"Fall forward with control.\""
+            "desc": "Targets: Quads (Primary), Gluteus Max (Primary), Hamstrings (Secondary). - - Step forward, lower hips, push off rear foot.\n- Cue: \"Fall forward with control.\""
         },
         "isolations": [
             {
                 "name": "Leg Extension Machine",
-                "desc": "Targets: Quadriceps. Biomechanics: Constant machine tension for knee extension. - Sit with back flat, extend legs to full lockout.\r\n- Cue: \"Squeeze your quads against the pad at the top.\""
+                "desc": "Targets: Quadriceps. Biomechanics: Constant machine tension for knee extension. - - Sit with back flat, extend legs to full lockout.\n- Cue: \"Squeeze your quads against the pad at the top.\""
             },
             {
                 "name": "Cable Glute Kickback",
-                "desc": "Targets: Gluteus Maximus. Biomechanics: Constant tension isolating hip extension. - Attach ankle strap to low cable, kick leg straight back.\r\n- Cue: \"Squeeze the glute to move the weight, don't just swing.\""
+                "desc": "Targets: Gluteus Maximus. Biomechanics: Constant tension isolating hip extension. - - Attach ankle strap to low cable, kick leg straight back.\n- Cue: \"Squeeze the glute to move the weight, don't just swing.\""
             },
             {
                 "name": "Lying Leg Curl Machine",
-                "desc": "Targets: Hamstrings. Biomechanics: Constant tension on knee flexion. - Lie face down, curl pad towards glutes.\r\n- Cue: \"Imagine pulling your heel to your butt.\""
+                "desc": "Targets: Hamstrings. Biomechanics: Constant tension on knee flexion. - - Lie face down, curl pad towards glutes.\n- Cue: \"Imagine pulling your heel to your butt.\""
             }
         ],
         "cooldowns": [
             {
                 "name": "Ankle Pumps & Seated Toe Touch",
-                "desc": "Targets: Hamstrings & Calves. Biomechanics: Active ankle flexion/extension (pumping) promotes venous return to clear pooled blood, followed by a hamstring stretch. - Sit with legs straight. Pump your ankles forward and back 20 times to clear lower leg waste, then hinge forward at the hips to reach for toes.\r\n- Cue: \"Pump the ankles to drain the legs, then melt into the hamstring fold.\""
+                "desc": "Targets: Hamstrings & Calves. Biomechanics: Active ankle flexion/extension (pumping) promotes venous return to clear pooled blood, followed by a hamstring stretch. - - Sit with legs straight. Pump your ankles forward and back 20 times to clear lower leg waste, then hinge forward at the hips to reach for toes.\n- Cue: \"Pump the ankles to drain the legs, then melt into the hamstring fold.\""
             },
             {
                 "name": "Standing Wall Calf Stretch",
-                "desc": "Targets: Gastrocnemius & Soleus. Biomechanics: Keeping the leg straight stretches the gastrocnemius. Bending the knee slightly would release the gastrocnemius and allow a deeper stretch of the soleus. - Face wall, step one foot back, press heel down.\r\n- Cue: \"Drive your back heel into the ground.\""
+                "desc": "Targets: Gastrocnemius & Soleus. Biomechanics: Keeping the leg straight stretches the gastrocnemius. Bending the knee slightly would release the gastrocnemius and allow a deeper stretch of the soleus. - - Face wall, step one foot back, press heel down.\n- Cue: \"Drive your back heel into the ground.\""
             }
         ],
         "id": 3
@@ -122,39 +130,39 @@
         "warmups": [
             {
                 "name": "Cat-Cow",
-                "desc": "Targets: Erector Spinae & Core. - On all fours, arch and round back.\r\n- Cue: \"Initiate movement from your tailbone.\""
+                "desc": "Targets: Erector Spinae & Core. - - On all fours, arch and round back.\n- Cue: \"Initiate movement from your tailbone.\""
             },
             {
                 "name": "Bent-Over T-Raises (Unweighted)",
-                "desc": "Targets: Rhomboids & Mid-Traps. Biomechanics: Pure scapular retraction to prime upper back before pulling heavy weight. - Hinge at hips, flat back. Raise straight arms to sides (making a \"T\").\r\n- Cue: \"Pinch a coin between your shoulder blades at the top.\""
+                "desc": "Targets: Rhomboids & Mid-Traps. Biomechanics: Pure scapular retraction to prime upper back before pulling heavy weight. - - Hinge at hips, flat back. Raise straight arms to sides (making a \"T\").\n- Cue: \"Pinch a coin between your shoulder blades at the top.\""
             }
         ],
         "compound": {
             "name": "Bent-Over DB Row",
-            "desc": "Targets: Lats (Primary), Biceps (Secondary), Rear Delts (Secondary). - Hinge at hips, pull DBs to ribcage.\r\n- Cue: \"Pull your elbows into your back pockets.\""
+            "desc": "Targets: Lats (Primary), Biceps (Secondary), Rear Delts (Secondary). - - Hinge at hips, pull DBs to ribcage.\n- Cue: \"Pull your elbows into your back pockets.\""
         },
         "isolations": [
             {
                 "name": "Straight Arm Cable Pulldown",
-                "desc": "Targets: Latissimus Dorsi. Biomechanics: Constant tension matching shoulder extension. - Stand, push straight bar down in an arc to thighs.\r\n- Cue: \"Act as a human protractor, hinge only at the shoulder.\""
+                "desc": "Targets: Latissimus Dorsi. Biomechanics: Constant tension matching shoulder extension. - - Stand, push straight bar down in an arc to thighs.\n- Cue: \"Act as a human protractor, hinge only at the shoulder.\""
             },
             {
                 "name": "Cable Bicep Curl",
-                "desc": "Targets: Biceps Brachii. Biomechanics: Cable provides even tension at the bottom and top of the curl. - Stand facing low cable, curl handle upward.\r\n- Cue: \"Keep your elbows pinned to your ribs.\""
+                "desc": "Targets: Biceps Brachii. Biomechanics: Cable provides even tension at the bottom and top of the curl. - - Stand facing low cable, curl handle upward.\n- Cue: \"Keep your elbows pinned to your ribs.\""
             },
             {
                 "name": "Cable Rear Delt Fly",
-                "desc": "Targets: Posterior Deltoid. Biomechanics: Constant tension in horizontal abduction. - Cross arms at high cables, pull outward/backward.\r\n- Cue: \"Stretch a giant rubber band across your chest.\""
+                "desc": "Targets: Posterior Deltoid. Biomechanics: Constant tension in horizontal abduction. - - Cross arms at high cables, pull outward/backward.\n- Cue: \"Stretch a giant rubber band across your chest.\""
             }
         ],
         "cooldowns": [
             {
                 "name": "Wall Slide Mimics & Child's Pose",
-                "desc": "Targets: Lats & Scapular Stabilizers. Biomechanics: Gentle active arm raises against a wall flush the mid-back and biceps, followed by spinal decompression in Child's Pose. - Perform 10 slow bodyweight wall slides (arms sliding up/down wall) to pump the lats. Then, kneel, sit back on your heels, and stretch arms forward.\r\n- Cue: \"Flush the upper back with wall slides, then decompress and breathe into Child's Pose.\""
+                "desc": "Targets: Lats & Scapular Stabilizers. Biomechanics: Gentle active arm raises against a wall flush the mid-back and biceps, followed by spinal decompression in Child's Pose. - - Perform 10 slow bodyweight wall slides (arms sliding up/down wall) to pump the lats. Then, kneel, sit back on your heels, and stretch arms forward.\n- Cue: \"Flush the upper back with wall slides, then decompress and breathe into Child's Pose.\""
             },
             {
                 "name": "Cross-Body Shoulder Stretch",
-                "desc": "Targets: Posterior Deltoid & Rhomboids. Biomechanics: Passive horizontal adduction to release the rear shoulder. - Pull one arm across chest.\r\n- Cue: \"Look over the shoulder you are stretching.\""
+                "desc": "Targets: Posterior Deltoid & Rhomboids. Biomechanics: Passive horizontal adduction to release the rear shoulder. - - Pull one arm across chest.\n- Cue: \"Look over the shoulder you are stretching.\""
             }
         ],
         "id": 4
@@ -164,39 +172,39 @@
         "warmups": [
             {
                 "name": "Glute Bridges",
-                "desc": "Targets: Gluteus Maximus. - Lie on back, lift hips.\r\n- Cue: \"Drive through your heels.\""
+                "desc": "Targets: Gluteus Maximus. - - Lie on back, lift hips.\n- Cue: \"Drive through your heels.\""
             },
             {
                 "name": "Fire Hydrants",
-                "desc": "Targets: Gluteus Medius. - On all fours, lift knee to the side.\r\n- Cue: \"Don't spill the glass of water on your lower back.\""
+                "desc": "Targets: Gluteus Medius. - - On all fours, lift knee to the side.\n- Cue: \"Don't spill the glass of water on your lower back.\""
             }
         ],
         "compound": {
             "name": "Curtsy Lunge",
-            "desc": "Targets: Gluteus Medius (Primary), Glute Max (Primary), Adductors (Secondary). - Step diagonally behind, bend both knees.\r\n- Cue: \"Push off the front foot to return to start.\""
+            "desc": "Targets: Gluteus Medius (Primary), Glute Max (Primary), Adductors (Secondary). - - Step diagonally behind, bend both knees.\n- Cue: \"Push off the front foot to return to start.\""
         },
         "isolations": [
             {
                 "name": "Cable Glute Kickback",
-                "desc": "Targets: Gluteus Maximus. Biomechanics: Constant cable tension in hip extension. - Attach ankle strap, kick straight back.\r\n- Cue: \"Squeeze the glute consciously at the top.\""
+                "desc": "Targets: Gluteus Maximus. Biomechanics: Constant cable tension in hip extension. - - Attach ankle strap, kick straight back.\n- Cue: \"Squeeze the glute consciously at the top.\""
             },
             {
                 "name": "Seated Hip Abduction Machine",
-                "desc": "Targets: Gluteus Medius. Biomechanics: Constant machine tension in hip abduction. - Push knee pads outward.\r\n- Cue: \"Squeeze from the outside of your hips.\""
+                "desc": "Targets: Gluteus Medius. Biomechanics: Constant machine tension in hip abduction. - - Push knee pads outward.\n- Cue: \"Squeeze from the outside of your hips.\""
             },
             {
                 "name": "Seated Hip Adduction Machine",
-                "desc": "Targets: Adductors. Biomechanics: Constant machine tension pulling knees inward. - Squeeze knee pads together towards the midline.\r\n- Cue: \"Drive your inner thighs together forcefully.\""
+                "desc": "Targets: Adductors. Biomechanics: Constant machine tension pulling knees inward. - - Squeeze knee pads together towards the midline.\n- Cue: \"Drive your inner thighs together forcefully.\""
             }
         ],
         "cooldowns": [
             {
                 "name": "Quadruped Hip Rocks & Figure-4 Stretch",
-                "desc": "Targets: Glutes, Piriformis, & Hips. Biomechanics: Controlled active rock-backs pump blood through the deep hip rotators, followed by a targeted static stretch. - On hands and knees, slowly rock your hips back to your heels 10 times. Then, lie on your back, cross ankle over knee, and pull to chest.\r\n- Cue: \"Rock slowly to flush the hips, then hold the Figure-4 stretch to release the glutes.\""
+                "desc": "Targets: Glutes, Piriformis, & Hips. Biomechanics: Controlled active rock-backs pump blood through the deep hip rotators, followed by a targeted static stretch. - - On hands and knees, slowly rock your hips back to your heels 10 times. Then, lie on your back, cross ankle over knee, and pull to chest.\n- Cue: \"Rock slowly to flush the hips, then hold the Figure-4 stretch to release the glutes.\""
             },
             {
                 "name": "Pigeon Pose",
-                "desc": "Targets: Glutes & Hip Flexors. Biomechanics: Deep passive external rotation of the hip joint. - From plank, bring knee to outside of hand, stretch back leg.\r\n- Cue: \"Try to square your hips to the front.\""
+                "desc": "Targets: Glutes & Hip Flexors. Biomechanics: Deep passive external rotation of the hip joint. - - From plank, bring knee to outside of hand, stretch back leg.\n- Cue: \"Try to square your hips to the front.\""
             }
         ],
         "id": 5
@@ -206,39 +214,39 @@
         "warmups": [
             {
                 "name": "Scapular Wall Push-ups",
-                "desc": "Targets: Serratus Anterior. Biomechanics: Scapular protraction/upward rotation to ensure healthy tracking overhead. - Hands flat on wall. Let chest sink in, then push away by spreading shoulder blades wide.\r\n- Cue: \"Push the wall away to hollow out your chest.\""
+                "desc": "Targets: Serratus Anterior. Biomechanics: Scapular protraction/upward rotation to ensure healthy tracking overhead. - - Hands flat on wall. Let chest sink in, then push away by spreading shoulder blades wide.\n- Cue: \"Push the wall away to hollow out your chest.\""
             },
             {
                 "name": "Wall Angels",
-                "desc": "Targets: Rotator Cuff. - Back to wall, slide arms up/down.\r\n- Cue: \"Keep lower back flat against the wall.\""
+                "desc": "Targets: Rotator Cuff. - - Back to wall, slide arms up/down.\n- Cue: \"Keep lower back flat against the wall.\""
             }
         ],
         "compound": {
             "name": "Standing Arnold Press",
-            "desc": "Targets: Anterior Delt (Primary), Lateral Delt (Primary), Triceps (Secondary). - Palms facing you, press and rotate so palms face away.\r\n- Cue: \"Uncork your shoulders as you press.\""
+            "desc": "Targets: Anterior Delt (Primary), Lateral Delt (Primary), Triceps (Secondary). - - Palms facing you, press and rotate so palms face away.\n- Cue: \"Uncork your shoulders as you press.\""
         },
         "isolations": [
             {
                 "name": "Cable Front Raise",
-                "desc": "Targets: Anterior Deltoid. Biomechanics: Constant tension through shoulder flexion. - With low cable between legs or to the side, raise handle straight up.\r\n- Cue: \"Lift with the front of the shoulder, not momentum.\""
+                "desc": "Targets: Anterior Deltoid. Biomechanics: Constant tension through shoulder flexion. - - With low cable between legs or to the side, raise handle straight up.\n- Cue: \"Lift with the front of the shoulder, not momentum.\""
             },
             {
                 "name": "Cable Lateral Raise",
-                "desc": "Targets: Lateral Deltoid. Biomechanics: Cable ensures max tension at the bottom of the movement. - Stand sideways to low cable, raise arm out to side.\r\n- Cue: \"Lead with the elbow, pushing the wall away.\""
+                "desc": "Targets: Lateral Deltoid. Biomechanics: Cable ensures max tension at the bottom of the movement. - - Stand sideways to low cable, raise arm out to side.\n- Cue: \"Lead with the elbow, pushing the wall away.\""
             },
             {
                 "name": "Cable Triceps Pushdown",
-                "desc": "Targets: Triceps Brachii. Biomechanics: Constant downward tension isolating elbow extension. - Pin elbows, push bar straight down.\r\n- Cue: \"Imagine your elbows are nailed to your ribs.\""
+                "desc": "Targets: Triceps Brachii. Biomechanics: Constant downward tension isolating elbow extension. - - Pin elbows, push bar straight down.\n- Cue: \"Imagine your elbows are nailed to your ribs.\""
             }
         ],
         "cooldowns": [
             {
                 "name": "Shoulder Rolls & Behind-the-Back Stretch",
-                "desc": "Targets: Deltoids & Upper Trapezius. Biomechanics: Active, slow shoulder rolls flush waste from the shoulders and neck, followed by a chest-opening chest stretch. - Roll your shoulders slowly forward and backward for 1 minute. Then, clasp hands behind your back and gently lift your arms away from your body.\r\n- Cue: \"Roll the shoulders to clear tension, then clasp hands and open the chest.\""
+                "desc": "Targets: Deltoids & Upper Trapezius. Biomechanics: Active, slow shoulder rolls flush waste from the shoulders and neck, followed by a chest-opening chest stretch. - - Roll your shoulders slowly forward and backward for 1 minute. Then, clasp hands behind your back and gently lift your arms away from your body.\n- Cue: \"Roll the shoulders to clear tension, then clasp hands and open the chest.\""
             },
             {
                 "name": "Neck Lateral Flexion Stretch",
-                "desc": "Targets: Upper Trapezius. Biomechanics: Passive lateral flexion of the cervical spine. - Gently tilt ear to shoulder.\r\n- Cue: \"Let the weight of your head do the work.\""
+                "desc": "Targets: Upper Trapezius. Biomechanics: Passive lateral flexion of the cervical spine. - - Gently tilt ear to shoulder.\n- Cue: \"Let the weight of your head do the work.\""
             }
         ],
         "id": 6
@@ -248,39 +256,39 @@
         "warmups": [
             {
                 "name": "Bodyweight Good Mornings",
-                "desc": "Targets: Hamstrings & Erectors. - Hinge at hips, keep back straight.\r\n- Cue: \"Push your butt to the wall behind you.\""
+                "desc": "Targets: Hamstrings & Erectors. - - Hinge at hips, keep back straight.\n- Cue: \"Push your butt to the wall behind you.\""
             },
             {
                 "name": "Leg Swings (Front-to-Back)",
-                "desc": "Targets: Hamstrings & Hip Flexors. - Swing leg forward and back dynamically.\r\n- Cue: \"Feel the stretch at the end of each swing.\""
+                "desc": "Targets: Hamstrings & Hip Flexors. - - Swing leg forward and back dynamically.\n- Cue: \"Feel the stretch at the end of each swing.\""
             }
         ],
         "compound": {
             "name": "Romanian Deadlift (RDL)",
-            "desc": "Targets: Hamstrings (Primary), Glute Max (Primary), Erector Spinae (Secondary). - Push hips backward, lower bar down legs.\r\n- Cue: \"Scrape your shins with the bar.\""
+            "desc": "Targets: Hamstrings (Primary), Glute Max (Primary), Erector Spinae (Secondary). - - Push hips backward, lower bar down legs.\n- Cue: \"Scrape your shins with the bar.\""
         },
         "isolations": [
             {
                 "name": "Cable Pull-Through",
-                "desc": "Targets: Hamstrings. Biomechanics: Matches hip-hinge extension biomechanic precisely with constant horizontal cable tension. - Face away from low cable, pull rope through legs by extending hips forward.\r\n- Cue: \"Snap your hips forward and squeeze the glutes/hamstrings.\""
+                "desc": "Targets: Hamstrings. Biomechanics: Matches hip-hinge extension biomechanic precisely with constant horizontal cable tension. - - Face away from low cable, pull rope through legs by extending hips forward.\n- Cue: \"Snap your hips forward and squeeze the glutes/hamstrings.\""
             },
             {
                 "name": "Cable Glute Kickback",
-                "desc": "Targets: Gluteus Maximus. Biomechanics: Pure, continuous tension on hip extension without lower back fatigue. - Low cable ankle strap, drive leg back.\r\n- Cue: \"Isolate the glute, do not arch your lower back.\""
+                "desc": "Targets: Gluteus Maximus. Biomechanics: Pure, continuous tension on hip extension without lower back fatigue. - - Low cable ankle strap, drive leg back.\n- Cue: \"Isolate the glute, do not arch your lower back.\""
             },
             {
                 "name": "Machine Back Extension",
-                "desc": "Targets: Erector Spinae. Biomechanics: Machine weight stack provides even tension throughout spinal extension. - Sit in machine, push back against pad using lower back.\r\n- Cue: \"Pivot at the hips and lower spine with control.\""
+                "desc": "Targets: Erector Spinae. Biomechanics: Machine weight stack provides even tension throughout spinal extension. - - Sit in machine, push back against pad using lower back.\n- Cue: \"Pivot at the hips and lower spine with control.\""
             }
         ],
         "cooldowns": [
             {
                 "name": "Dynamic Hip Rocks & Downward Facing Dog",
-                "desc": "Targets: Posterior Chain (Hamstrings, Glutes, Erectors). Biomechanics: Gentle active hip rocking on all fours flushes the lower back and hamstrings, followed by a full-body stretch. - On all fours, gently rock hips side-to-side for 1 minute. Then, press your hips up and back into an inverted V-shape.\r\n- Cue: \"Rock the hips to flush the lower back, then push up into Downward Dog.\""
+                "desc": "Targets: Posterior Chain (Hamstrings, Glutes, Erectors). Biomechanics: Gentle active hip rocking on all fours flushes the lower back and hamstrings, followed by a full-body stretch. - - On all fours, gently rock hips side-to-side for 1 minute. Then, press your hips up and back into an inverted V-shape.\n- Cue: \"Rock the hips to flush the lower back, then push up into Downward Dog.\""
             },
             {
                 "name": "Supine Knee-to-Chest",
-                "desc": "Targets: Glutes & Lower Back. Biomechanics: Passive spinal flexion to decompress lower back erectors. - Lie on back, pull knee to chest.\r\n- Cue: \"Keep your tailbone on the floor.\""
+                "desc": "Targets: Glutes & Lower Back. Biomechanics: Passive spinal flexion to decompress lower back erectors. - - Lie on back, pull knee to chest.\n- Cue: \"Keep your tailbone on the floor.\""
             }
         ],
         "id": 7
@@ -290,35 +298,39 @@
         "warmups": [
             {
                 "name": "Light Scapular Pulldowns",
-                "desc": "Targets: Lower Traps & Lats. - Light weight, pull shoulder blades down/back without bending elbows.\r\n- Cue: \"Put your shoulder blades in your back pockets.\""
+                "desc": "Targets: Lower Traps & Lats. - - Light weight, pull shoulder blades down/back without bending elbows.\n- Cue: \"Put your shoulder blades in your back pockets.\""
             },
             {
                 "name": "Torso Twists",
-                "desc": "Targets: Obliques. - Rotate torso side to side.\r\n- Cue: \"Follow your hands with your eyes.\""
+                "desc": "Targets: Obliques. - - Rotate torso side to side.\n- Cue: \"Follow your hands with your eyes.\""
             }
         ],
         "compound": {
             "name": "Lat Pulldown",
-            "desc": "Targets: Latissimus Dorsi (Primary), Brachialis (Secondary), Biceps (Secondary). - Wide grip, pull bar down to upper chest.\r\n- Cue: \"Drive your elbows down towards the floor.\""
+            "desc": "Targets: Latissimus Dorsi (Primary), Brachialis (Secondary), Biceps (Secondary). - - Wide grip, pull bar down to upper chest.\n- Cue: \"Drive your elbows down towards the floor.\""
         },
         "isolations": [
             {
                 "name": "Straight Arm Cable Pulldown",
-                "desc": "Targets: Latissimus Dorsi. Biomechanics: Constant cable tension isolating shoulder extension. - Push straight bar down in an arc.\r\n- Cue: \"Hinge only at the shoulder.\""
+                "desc": "Targets: Latissimus Dorsi. Biomechanics: Constant cable tension isolating shoulder extension. - - Push straight bar down in an arc.\n- Cue: \"Hinge only at the shoulder.\""
             },
             {
                 "name": "Cable Rope Hammer Curl",
-                "desc": "Targets: Brachialis & Brachioradialis. Biomechanics: Rope attachment provides constant tension through neutral-grip elbow flexion. - Low cable with rope, curl upward with neutral grip.\r\n- Cue: \"Pull the rope ends apart slightly at the top.\""
+                "desc": "Targets: Brachialis & Brachioradialis. Biomechanics: Rope attachment provides constant tension through neutral-grip elbow flexion. - - Low cable with rope, curl upward with neutral grip.\n- Cue: \"Pull the rope ends apart slightly at the top.\""
+            },
+            {
+                "name": "Cable Bicep Curl",
+                "desc": "Targets: Biceps Brachii. Biomechanics: Underhand grip with constant cable tension throughout ROM. - - Low cable straight bar, curl upward with palms facing up.\n- Cue: \"Squeeze your biceps hard against the resistance at the top.\""
             }
         ],
         "cooldowns": [
             {
                 "name": "Active Hand Flips & Wrist Stretch",
-                "desc": "Targets: Forearm Flexors, Extensors, & Lats. Biomechanics: Rhythmic finger and wrist movements pump lactic acid out of the forearms, followed by passive wrist stretches. - Extend arms and rapidly open/close fists 20 times, rotating the wrists. Then, pull fingers back and down to stretch the forearms.\r\n- Cue: \"Pump the hands to clear forearm burning, then hold the wrist stretch.\""
+                "desc": "Targets: Forearm Flexors, Extensors, & Lats. Biomechanics: Rhythmic finger and wrist movements pump lactic acid out of the forearms, followed by passive wrist stretches. - - Extend arms and rapidly open/close fists 20 times, rotating the wrists. Then, pull fingers back and down to stretch the forearms.\n- Cue: \"Pump the hands to clear forearm burning, then hold the wrist stretch.\""
             },
             {
                 "name": "Overhead Lat Stretch",
-                "desc": "Targets: Lats. Biomechanics: Passive lateral shoulder flexion to stretch the lats. - Arm overhead, grasp wrist, pull gently to side.\r\n- Cue: \"Reach up before you reach over.\""
+                "desc": "Targets: Lats. Biomechanics: Passive lateral shoulder flexion to stretch the lats. - - Arm overhead, grasp wrist, pull gently to side.\n- Cue: \"Reach up before you reach over.\""
             }
         ],
         "id": 8
