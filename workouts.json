@@ -23,10 +23,6 @@
             {
                 "name": "Cable Adduction",
                 "desc": "Targets: Adductor Group. Biomechanics: Constant cable tension pulling across the midline. - - Stand sideways to a low cable. Pull the cabled leg across your standing leg.\n- Cue: \"Imagine squeezing a ball between your thighs.\""
-            },
-            {
-                "name": "Single-Leg Reverse Nordic Curl",
-                "desc": "Targets: Quadriceps. Biomechanics: Bodyweight eccentric knee extension places quads under immense stretch. - - Kneel with one leg forward for balance, lean torso back slowly, pull back up.\n- Cue: \"Control the descent to maximize the quad stretch.\""
             }
         ],
         "cooldowns": [
@@ -105,12 +101,8 @@
                 "desc": "Targets: Hamstrings. Biomechanics: Hip flexion pre-stretches the hamstrings for superior ROM. - - Sit in machine, curl pad towards you one leg at a time.\n- Cue: \"Squeeze the hamstring to move the weight, controlling the release.\""
             },
             {
-                "name": "Full ROM Glute Kickback",
-                "desc": "Targets: Gluteus Maximus. Biomechanics: Constant tension isolating hip extension through full ROM. - - Attach ankle strap to low cable, drive knee to chest for a deep stretch, then kick straight back.\n- Cue: \"Drive knee up to stretch, then squeeze glute to kick back.\""
-            },
-            {
-                "name": "Cable Adduction",
-                "desc": "Targets: Adductors. Biomechanics: Constant machine tension pulling knees inward. - - Stand sideways to a low cable. Pull the cabled leg across your standing leg.\n- Cue: \"Drive your inner thighs together forcefully.\""
+                "name": "One-Leg Seated Calf Raise",
+                "desc": "Targets: Soleus. Biomechanics: Performed with a bent knee to isolate the soleus, which is crucial for ankle stability during deep knee flexion like in a lunge. - - Sit with foot on a raised surface, place weight on knee, raise heel.\n- Cue: \"Push through the ball of your foot.\""
             }
         ],
         "cooldowns": [
@@ -184,10 +176,6 @@
             "desc": "Targets: Gluteus Medius (Primary), Glute Max (Primary), Adductors (Secondary). - - Step diagonally behind, bend both knees.\n- Cue: \"Push off the front foot to return to start.\""
         },
         "isolations": [
-            {
-                "name": "Full ROM Glute Kickback",
-                "desc": "Targets: Gluteus Maximus. Biomechanics: Constant tension isolating hip extension through full ROM. - - Attach ankle strap to low cable, drive knee to chest for a deep stretch, then kick straight back.\n- Cue: \"Drive knee up to stretch, then squeeze glute to kick back.\""
-            },
             {
                 "name": "Cable Hip Abduction",
                 "desc": "Targets: Gluteus Medius. Biomechanics: Constant resistance against hip abduction. - - Stand sideways to a low cable. Move your leg away from your body's midline.\n- Cue: \"Squeeze from the outside of your hips.\""
@@ -273,12 +261,8 @@
                 "desc": "Targets: Hamstrings. Biomechanics: Hip flexion pre-stretches the hamstrings for superior ROM. - - Sit in machine, curl pad towards you one leg at a time.\n- Cue: \"Squeeze the hamstring to move the weight, controlling the release.\""
             },
             {
-                "name": "Single-Leg Glute Bridge",
-                "desc": "Targets: Gluteus Maximus. Biomechanics: Pure hip extension, isolating the glutes from the lower back and hamstrings. - - Lie on back, one foot flat, other leg extended. Drive hips up.\n- Cue: \"Squeeze the glute of the working leg at the top.\""
-            },
-            {
-                "name": "Full ROM Glute Kickback",
-                "desc": "Targets: Gluteus Maximus. Biomechanics: Constant tension isolating hip extension through full ROM. - - Attach ankle strap to low cable, drive knee to chest for a deep stretch, then kick straight back.\n- Cue: \"Drive knee up to stretch, then squeeze glute to kick back.\""
+                "name": "One-Leg Standing Calf Raise",
+                "desc": "Targets: Gastrocnemius. Biomechanics: Performed with a straight/locked knee to fully engage the gastrocnemius, which acts as a posterior stabilizer in straight-leg movements like the RDL. - - Stand on one leg, raise heel as high as possible.\n- Cue: \"Drive your body straight up to the ceiling.\""
             }
         ],
         "cooldowns": [
