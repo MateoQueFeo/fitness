@@ -32,15 +32,26 @@ function initAudio() {
 async function initializeApp() {
     workoutSelect.disabled = true;
     try {
-        const response = await fetch('./workouts.json', { cache: 'no-cache' });
+        const response = await fetch('./workouts.json');
         if (!response.ok) {
             let errorMsg = `Failed to load workout data. Status: ${response.status}`;
             throw new Error(errorMsg);
         }
         
-        const rawText = await response.text();
-        workouts = JSON.parse(rawText);
+        const rawJson = await response.json();
         
+        workouts = rawJson.map(item => ({
+            id: item.day_id,
+            name: item.workout_day,
+            warmups: item.phases.warmup.map(ex => ({ name: ex.exercise_name, desc: ex.how_to })),
+            compound: { 
+                name: item.phases.compound[0].exercise_name, 
+                desc: item.phases.compound[0].how_to 
+            },
+            isolations: item.phases.isolation.map(ex => ({ name: ex.exercise_name, desc: ex.how_to })),
+            cooldowns: item.phases.cooldown.map(ex => ({ name: ex.exercise_name, desc: ex.how_to }))
+        }));
+
         workouts.forEach(w => {
             const option = new Option(w.name, w.id);
             workoutSelect.appendChild(option);
@@ -170,7 +181,14 @@ function resetTimer(finished = false) {
 }
 
 const addMinute = () => {
+    if (countdown >= 360) {
+        showNotification("Timer cannot exceed 6 minutes.", false, 3000);
+        return;
+    }
     countdown += 60;
+    if (countdown > 360) {
+        countdown = 360;
+    }
     updateTimerDisplay();
 };
 
@@ -503,6 +521,7 @@ function viewHistory() {
 }
 
 function editLog(logIndex) {
+    if(timerInterval) resetTimer();
     const history = getHistory();
     const logToEdit = history[logIndex];
     if (logToEdit) {
@@ -529,190 +548,41 @@ function deleteLog(logIndex) {
     });
 }
 
-function parseCsv(text) {
-    const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-    if (lines.length <= 1) return [];
-
-    const parseLine = (line) => {
-        const values = [];
-        let current = '';
-        let inQuotes = false;
-        for (let i = 0; i < line.length; i++) {
-            const char = line[i];
-            if (char === '"' && line[i+1] === '"') {
-                current += '"';
-                i++;
-            } else if (char === '"') {
-                inQuotes = !inQuotes;
-            } else if (char === ',' && !inQuotes) {
-                values.push(current.trim());
-                current = '';
-            } else {
-                current += char;
-            }
-        }
-        values.push(current.trim());
-        return values;
-    };
-
-    const header = parseLine(lines.shift().toLowerCase());
-    const indices = {
-        date: header.indexOf("date"),
-        routine: header.indexOf("routine"),
-        exercise: header.indexOf("exercise"),
-        set: header.indexOf("set"),
-        reps: header.indexOf("reps"),
-        weight: header.indexOf("weight (lbs)"),
-        status: header.indexOf("status")
-    };
-
-    if (indices.date === -1 || indices.routine === -1 || indices.exercise === -1) {
-        throw new Error('CSV must contain "Date", "Routine", and "Exercise" columns.');
-    }
-
-    return lines.map((line, index) => {
-        const values = parseLine(line);
-        if (values.length !== header.length) {
-            console.warn(`Skipping malformed CSV line ${index + 2}: ${line}`);
-            return null;
-        }
-
-        return {
-            date: values[indices.date],
-            routine: values[indices.routine],
-            exercise: values[indices.exercise],
-            set: parseInt(values[indices.set], 10) || 0,
-            reps: values[indices.reps] || '',
-            weight: values[indices.weight] || '',
-            status: values[indices.status] || 'Completed'
-        };
-    }).filter(log => log !== null);
-}
-
-function importLogs(event) {
-    const fileInput = event.target;
-    const file = fileInput.files[0];
-    if (!file) {
-        fileInput.value = '';
-        return;
-    }
-    showNotification('Importing... please wait.', false, 0);
-    const reader = new FileReader();
-
-    reader.onload = function(e) {
-        try {
-            const importedData = parseCsv(e.target.result);
-            const { newLogsCount, updatedLogsCount, skippedCount } = mergeImportedLogs(importedData);
-            let message = `${newLogsCount} new, ${updatedLogsCount} updated logs processed.`;
-            if (skippedCount > 0) {
-                message += ` ${skippedCount} rows skipped (unknown routine or bad format).`;
-            }
-            showNotification(message, skippedCount > 0, 8000);
-            viewHistory();
-        } catch (error) {
-            showNotification(`Import failed: ${error.message}`, true, 8000);
-        } finally {
-            fileInput.value = '';
-        }
-    };
-    reader.onerror = function() {
-        showNotification('Failed to read the file.', true);
-        fileInput.value = '';
-    }
-    reader.readAsText(file);
-}
-
-function mergeImportedLogs(importedData) {
-    const history = getHistory();
-    const historyMap = new Map(history.map(log => [`${log.date}_${log.routine}`, log]));
-    let newLogsCount = 0;
-    let updatedLogsCount = 0;
-    let skippedCount = 0;
-    const workoutDefs = new Map(workouts.map(w => [w.name, w]));
-
-    const groupedByLog = importedData.reduce((acc, row) => {
-        if (!workoutDefs.has(row.routine)) {
-            skippedCount++;
-            return acc;
-        }
-        const key = `${row.date}_${log.routine}`;
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(row);
-        return acc;
-    }, {});
-
-    for (const key in groupedByLog) {
-        const [date, routineName] = key.split('_');
-        const workoutDef = workoutDefs.get(routineName);
-        
-        let isUpdate = historyMap.has(key);
-        let logEntry = historyMap.get(key) || {
-            id: new Date(date).toISOString(),
-            date: date,
-            routine: routineName,
-            compound: { name: workoutDef.compound.name, s1: 'Not Logged', s2: 'Not Logged', s3: 'Not Logged' },
-            isolations: workoutDef.isolations.map(iso => ({ name: iso.name, log: 'Not Logged' }))
-        };
-
-        if(isUpdate) updatedLogsCount++; else newLogsCount++;
-
-        groupedByLog[key].forEach(row => {
-            const logValue = row.status === 'Skipped' ? 'Skipped' : (row.reps && row.weight ? `${row.reps}x${row.weight} lbs` : 'Not Logged');
-            
-            if (row.exercise === workoutDef.compound.name && row.set >= 1 && row.set <= 3) {
-                logEntry.compound[`s${row.set}`] = logValue;
-            } else {
-                const isoIndex = logEntry.isolations.findIndex(i => i.name === row.exercise);
-                if (isoIndex !== -1) {
-                    logEntry.isolations[isoIndex].log = logValue;
-                }
-            }
-        });
-        historyMap.set(key, logEntry);
-    }
-    
-    const updatedHistory = Array.from(historyMap.values()).sort((a, b) => new Date(b.date) - new Date(a.date) || b.id.localeCompare(a.id));
-    localStorage.setItem('workoutLogs', JSON.stringify(updatedHistory));
-    
-    return { newLogsCount, updatedLogsCount, skippedCount };
-}
-
 function exportLogs() {
     const history = getHistory();
     if (history.length === 0) return showNotification("No logs to export.", true);
     
     const escapeCsvField = (field) => `"${String(field).replace(/"/g, '""')}"`;
-    const header = "Date,Routine,Exercise,Set,Reps,Weight (lbs),Status\n";
+    const header = "Date,Exercise,Reps,Weight (lbs)\n";
     
     const rows = history.flatMap(log => {
         let entryRows = [];
-        const { date, routine, compound, isolations } = log;
+        const { date, compound, isolations } = log;
 
-        const createRow = (exerciseName, setNum, setData) => {
-            let reps = '', weight = '';
-            let status = 'Not Logged';
-            if (setData && setData !== 'Not Logged') {
-                ({ reps, weight } = parseSet(setData));
-                status = 'Completed';
+        const createRow = (exerciseName, setData) => {
+            const { reps, weight } = parseSet(setData);
+            if (reps && weight) {
+                return [
+                    escapeCsvField(date),
+                    escapeCsvField(exerciseName),
+                    reps,
+                    weight
+                ].join(',');
             }
-            return [
-                escapeCsvField(date),
-                escapeCsvField(routine),
-                escapeCsvField(exerciseName),
-                setNum,
-                reps,
-                weight,
-                escapeCsvField(status)
-            ].join(',');
+            return null;
         };
+        
+        const sets = [
+            { name: compound.name, data: compound.s1 },
+            { name: compound.name, data: compound.s2 },
+            { name: compound.name, data: compound.s3 },
+            ...isolations.map(iso => ({ name: iso.name, data: iso.log }))
+        ];
 
-        if (compound.s1 !== 'Skipped') entryRows.push(createRow(compound.name, 1, compound.s1));
-        if (compound.s2 !== 'Skipped') entryRows.push(createRow(compound.name, 2, compound.s2));
-        if (compound.s3 !== 'Skipped') entryRows.push(createRow(compound.name, 3, compound.s3));
-
-        isolations.forEach(iso => {
-            if (iso.log !== 'Skipped') {
-                entryRows.push(createRow(iso.name, 1, iso.log));
+        sets.forEach(set => {
+            const row = createRow(set.name, set.data);
+            if (row) {
+                entryRows.push(row);
             }
         });
 
@@ -774,7 +644,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('metronomeToggle').addEventListener('click', toggleMetronome);
     document.getElementById('addMinuteBtn').addEventListener('click', addMinute);
     document.getElementById('resetTimerBtn').addEventListener('click', () => resetTimer());
-    document.getElementById('importButton').addEventListener('click', () => document.getElementById('csvFileInput').click());
     document.getElementById('exportButton').addEventListener('click', exportLogs);
 
     document.getElementById('confirmModalConfirm').addEventListener('click', () => {
@@ -791,7 +660,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     workoutSelect.addEventListener('change', startSelectedWorkout);
-    document.getElementById('csvFileInput').addEventListener('change', importLogs);
     
     document.body.addEventListener('input', (event) => {
         if (event.target.closest('#workoutScreen')) {

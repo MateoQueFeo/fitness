@@ -6,6 +6,7 @@
   <title>FitTracker</title>
   <link rel="stylesheet" href="./style.css">
   <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icon-192.png">
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -63,8 +64,6 @@
     <div class="container hidden" id="historyScreen">
       <div class="button-group">
         <button class="secondary" id="historyBackToMenuBtn">← Back to Menu</button>
-        <button class="secondary" id="importButton">Import from CSV</button>
-        <input type="file" id="csvFileInput" class="hidden" accept=".csv">
         <button class="secondary" id="exportButton">Export All as CSV</button>
       </div>
       <h3>Workout Logs</h3>
