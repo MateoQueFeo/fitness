@@ -14,6 +14,9 @@ const appContainer = document.getElementById('appContainer');
 const workoutSelect = document.getElementById('workoutSelect');
 const timerDisplay = document.getElementById('timerDisplay');
 const timerBar = document.getElementById('timerBar');
+const loaderErrorText = document.getElementById('loaderErrorText');
+const retryLoadBtn = document.getElementById('retryLoadBtn');
+const loaderSpinner = document.querySelector('#appLoader .loader');
 
 function initAudio() {
     if (!audioCtx) {
@@ -31,6 +34,10 @@ function initAudio() {
 
 async function initializeApp() {
     workoutSelect.disabled = true;
+    loaderSpinner.classList.remove('hidden');
+    loaderErrorText.classList.add('hidden');
+    retryLoadBtn.classList.add('hidden');
+    
     try {
         const response = await fetch('./workouts.json');
         if (!response.ok) {
@@ -69,7 +76,10 @@ async function initializeApp() {
         } else if (error.message) {
             userMessage += ` Details: ${error.message}`;
         }
-        appLoader.innerHTML = `<p style="color: #ffd700; text-align: center;">${userMessage}</p>`;
+        loaderSpinner.classList.add('hidden');
+        loaderErrorText.textContent = userMessage;
+        loaderErrorText.classList.remove('hidden');
+        retryLoadBtn.classList.remove('hidden');
     }
 }
 
@@ -637,6 +647,7 @@ function deleteSet(setRow) {
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
+    retryLoadBtn.addEventListener('click', initializeApp);
 
     document.getElementById('viewHistoryBtn').addEventListener('click', viewHistory);
     document.getElementById('backToMenuBtn').addEventListener('click', goHome);

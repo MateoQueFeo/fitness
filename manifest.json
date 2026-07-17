@@ -26,16 +26,16 @@
       "purpose": "maskable"
     },
     {
-      "src": "icon-1024.png",
-      "sizes": "1024x1024",
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-1024-maskable.png",
-      "sizes": "1024x1024",
+      "src": "favicon-32x32.png",
+      "sizes": "32x32",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any"
     }
   ],
   "scope": "/"
