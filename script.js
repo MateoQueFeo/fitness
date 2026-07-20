@@ -1,8 +1,24 @@
+const WIDGET_STATE = {
+    HIDDEN: 'hidden',
+    ACTIVE: 'active',
+    SHOW: 'show',
+    ERROR: 'error'
+};
+
+const STORAGE_KEYS = {
+    WORKOUT_LOGS: 'workoutLogs',
+    WORKOUT_MAXES: 'workoutMaxes'
+};
+
+const TIMER_CONFIG = {
+    DEFAULT_REST: 60,
+    MAX_SECONDS: 360
+};
+
 let workouts = [];
 let currentWorkout = null;
 let timerInterval = null;
-let countdown = 60;
-const defaultCountdown = 60;
+let countdown = TIMER_CONFIG.DEFAULT_REST;
 let audioCtx = null;
 let metronomeInterval = null;
 let isMetronomeOn = false;
@@ -34,9 +50,9 @@ function initAudio() {
 
 async function initializeApp() {
     workoutSelect.disabled = true;
-    loaderSpinner.classList.remove('hidden');
-    loaderErrorText.classList.add('hidden');
-    retryLoadBtn.classList.add('hidden');
+    loaderSpinner.classList.remove(WIDGET_STATE.HIDDEN);
+    loaderErrorText.classList.add(WIDGET_STATE.HIDDEN);
+    retryLoadBtn.classList.add(WIDGET_STATE.HIDDEN);
     
     try {
         const response = await fetch('./workouts.json');
@@ -64,8 +80,8 @@ async function initializeApp() {
             workoutSelect.appendChild(option);
         });
 
-        appLoader.classList.add('hidden');
-        appContainer.classList.remove('hidden');
+        appLoader.classList.add(WIDGET_STATE.HIDDEN);
+        appContainer.classList.remove(WIDGET_STATE.HIDDEN);
         workoutSelect.disabled = false;
 
     } catch (error) {
@@ -76,10 +92,10 @@ async function initializeApp() {
         } else if (error.message) {
             userMessage += ` Details: ${error.message}`;
         }
-        loaderSpinner.classList.add('hidden');
+        loaderSpinner.classList.add(WIDGET_STATE.HIDDEN);
         loaderErrorText.textContent = userMessage;
-        loaderErrorText.classList.remove('hidden');
-        retryLoadBtn.classList.remove('hidden');
+        loaderErrorText.classList.remove(WIDGET_STATE.HIDDEN);
+        retryLoadBtn.classList.remove(WIDGET_STATE.HIDDEN);
     }
 }
 
@@ -87,7 +103,7 @@ function showNotification(message, isError = false, duration = 5000) {
     const notification = document.getElementById('notification');
     notification.textContent = message;
     notification.className = 'notification show';
-    if (isError) notification.classList.add('error');
+    if (isError) notification.classList.add(WIDGET_STATE.ERROR);
     
     clearTimeout(notificationTimeout);
     if (duration > 0) {
@@ -100,7 +116,7 @@ function showNotification(message, isError = false, duration = 5000) {
 function showConfirmDialog(text, callback) {
     const modal = document.getElementById('confirmModal');
     document.getElementById('confirmModalText').textContent = text;
-    modal.classList.remove('hidden');
+    modal.classList.remove(WIDGET_STATE.HIDDEN);
     confirmCallback = callback;
 }
 
@@ -123,7 +139,7 @@ function toggleMetronome() {
     initAudio();
     isMetronomeOn = !isMetronomeOn;
     const metronomeBtn = document.getElementById('metronomeToggle');
-    metronomeBtn.classList.toggle('active', isMetronomeOn);
+    metronomeBtn.classList.toggle(WIDGET_STATE.ACTIVE, isMetronomeOn);
     if (isMetronomeOn) {
         metronomeInterval = setInterval(playMetronomeBeep, 1000);
         showNotification('Metronome ON.');
@@ -138,7 +154,7 @@ function stopMetronome() {
     if (isMetronomeOn) {
         isMetronomeOn = false;
         const metronomeBtn = document.getElementById('metronomeToggle');
-        metronomeBtn.classList.remove('active');
+        metronomeBtn.classList.remove(WIDGET_STATE.ACTIVE);
         clearInterval(metronomeInterval);
         metronomeInterval = null;
     }
@@ -184,40 +200,40 @@ function startTimer() {
 function resetTimer(finished = false) {
     const wasRunning = timerInterval !== null;
     stopTimer();
-    countdown = defaultCountdown;
+    countdown = TIMER_CONFIG.DEFAULT_REST;
     updateTimerDisplay();
     if(wasRunning && !finished) showNotification('Timer reset.');
     if(finished) showNotification('Rest finished.');
 }
 
 const addMinute = () => {
-    if (countdown >= 360) {
-        showNotification("Timer cannot exceed 6 minutes.", false, 3000);
+    if (countdown >= TIMER_CONFIG.MAX_SECONDS) {
+        showNotification(`Timer cannot exceed ${TIMER_CONFIG.MAX_SECONDS / 60} minutes.`, false, 3000);
         return;
     }
     countdown += 60;
-    if (countdown > 360) {
-        countdown = 360;
+    if (countdown > TIMER_CONFIG.MAX_SECONDS) {
+        countdown = TIMER_CONFIG.MAX_SECONDS;
     }
     updateTimerDisplay();
 };
 
 function goHome() {
-    document.getElementById('mainMenu').classList.remove('hidden');
-    document.getElementById('workoutScreen').classList.add('hidden');
-    document.getElementById('historyScreen').classList.add('hidden');
+    document.getElementById('mainMenu').classList.remove(WIDGET_STATE.HIDDEN);
+    document.getElementById('workoutScreen').classList.add(WIDGET_STATE.HIDDEN);
+    document.getElementById('historyScreen').classList.add(WIDGET_STATE.HIDDEN);
     workoutSelect.value = '';
     if (timerInterval) {
         resetTimer();
     }
-    timerBar.classList.add('hidden');
+    timerBar.classList.add(WIDGET_STATE.HIDDEN);
     stopMetronome();
     currentWorkout = null;
 }
 
 function getStoredMaxes() {
     try {
-        return JSON.parse(localStorage.getItem('workoutMaxes') || '{}');
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.WORKOUT_MAXES) || '{}');
     } catch (e) {
         console.error("Failed to parse workout maxes:", e);
         return {};
@@ -229,7 +245,7 @@ function saveStoredMax(exerciseName, rm) {
     const currentMax = maxes[exerciseName] || 0;
     if (rm > currentMax) {
         maxes[exerciseName] = rm;
-        localStorage.setItem('workoutMaxes', JSON.stringify(maxes));
+        localStorage.setItem(STORAGE_KEYS.WORKOUT_MAXES, JSON.stringify(maxes));
     }
 }
 
@@ -344,12 +360,12 @@ function createExerciseSection(title, exercises) {
 function loadWorkout(w, logData = null) {
     currentWorkout = w;
     if(timerInterval) resetTimer();
-    timerBar.classList.remove('hidden');
+    timerBar.classList.remove(WIDGET_STATE.HIDDEN);
     const maxes = getStoredMaxes();
     const workoutContent = document.getElementById('workoutContent');
     workoutContent.innerHTML = '';
-    document.getElementById('mainMenu').classList.add('hidden');
-    document.getElementById('workoutScreen').classList.remove('hidden');
+    document.getElementById('mainMenu').classList.add(WIDGET_STATE.HIDDEN);
+    document.getElementById('workoutScreen').classList.remove(WIDGET_STATE.HIDDEN);
 
     const fragment = document.createDocumentFragment();
     fragment.appendChild(createDOMElement('h2', { textContent: `${logData ? 'Edit' : ''} ${w.name}` }));
@@ -469,7 +485,7 @@ function saveOrUpdateLog(existingLog = null) {
         showNotification('Workout Saved Successfully!');
     }
     history.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id.localeCompare(a.id));
-    localStorage.setItem('workoutLogs', JSON.stringify(history));
+    localStorage.setItem(STORAGE_KEYS.WORKOUT_LOGS, JSON.stringify(history));
     goHome();
   } catch (e) {
     showNotification("Error: Could not save workout.", true);
@@ -479,7 +495,7 @@ function saveOrUpdateLog(existingLog = null) {
 
 function getHistory() {
     try {
-        return JSON.parse(localStorage.getItem('workoutLogs') || '[]');
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.WORKOUT_LOGS) || '[]');
     } catch(e) {
         console.error("Failed to parse workout history:", e);
         return [];
@@ -487,8 +503,8 @@ function getHistory() {
 }
 
 function viewHistory() {
-    document.getElementById('mainMenu').classList.add('hidden');
-    document.getElementById('historyScreen').classList.remove('hidden');
+    document.getElementById('mainMenu').classList.add(WIDGET_STATE.HIDDEN);
+    document.getElementById('historyScreen').classList.remove(WIDGET_STATE.HIDDEN);
     const history = getHistory();
     document.getElementById('exportButton').disabled = history.length === 0;
     const historyContent = document.getElementById('historyContent');
@@ -537,7 +553,7 @@ function editLog(logIndex) {
     if (logToEdit) {
         const workoutDefinition = workouts.find(w => w.name === logToEdit.routine);
         if (workoutDefinition) {
-            document.getElementById('historyScreen').classList.add('hidden');
+            document.getElementById('historyScreen').classList.add(WIDGET_STATE.HIDDEN);
             loadWorkout(workoutDefinition, logToEdit);
         } else {
             showNotification(`Error: Workout definition for "${logToEdit.routine}" not found.`, true);
@@ -552,7 +568,7 @@ function deleteLog(logIndex) {
     
     showConfirmDialog(confirmationMessage, () => {
         history.splice(logIndex, 1);
-        localStorage.setItem('workoutLogs', JSON.stringify(history));
+        localStorage.setItem(STORAGE_KEYS.WORKOUT_LOGS, JSON.stringify(history));
         viewHistory();
         showNotification('Log deleted.');
     });
@@ -661,12 +677,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof confirmCallback === 'function') {
             confirmCallback();
         }
-        document.getElementById('confirmModal').classList.add('hidden');
+        document.getElementById('confirmModal').classList.add(WIDGET_STATE.HIDDEN);
         confirmCallback = null;
     });
 
     document.getElementById('confirmModalCancel').addEventListener('click', () => {
-        document.getElementById('confirmModal').classList.add('hidden');
+        document.getElementById('confirmModal').classList.add(WIDGET_STATE.HIDDEN);
         confirmCallback = null;
     });
 
