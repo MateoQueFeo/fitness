@@ -24,6 +24,8 @@ let metronomeInterval = null;
 let isMetronomeOn = false;
 let notificationTimeout = null;
 let confirmCallback = null;
+let isDirty = false;
+let progressChart = null;
 
 const appLoader = document.getElementById('appLoader');
 const appContainer = document.getElementById('appContainer');
@@ -33,6 +35,8 @@ const timerBar = document.getElementById('timerBar');
 const loaderErrorText = document.getElementById('loaderErrorText');
 const retryLoadBtn = document.getElementById('retryLoadBtn');
 const loaderSpinner = document.querySelector('#appLoader .loader');
+const chartScreen = document.getElementById('chartScreen');
+const chartExerciseSelect = document.getElementById('chartExerciseSelect');
 
 function initAudio() {
     if (!audioCtx) {
@@ -218,10 +222,15 @@ const addMinute = () => {
     updateTimerDisplay();
 };
 
-function goHome() {
+function goHome(force = false) {
+    if (!force && isDirty) {
+        showConfirmDialog("You have unsaved changes. Are you sure you want to exit?", () => goHome(true));
+        return;
+    }
     document.getElementById('mainMenu').classList.remove(WIDGET_STATE.HIDDEN);
     document.getElementById('workoutScreen').classList.add(WIDGET_STATE.HIDDEN);
     document.getElementById('historyScreen').classList.add(WIDGET_STATE.HIDDEN);
+    document.getElementById('chartScreen').classList.add(WIDGET_STATE.HIDDEN);
     workoutSelect.value = '';
     if (timerInterval) {
         resetTimer();
@@ -229,6 +238,7 @@ function goHome() {
     timerBar.classList.add(WIDGET_STATE.HIDDEN);
     stopMetronome();
     currentWorkout = null;
+    isDirty = false;
 }
 
 function getStoredMaxes() {
@@ -274,7 +284,7 @@ function validateWorkoutLog() {
         hasAtLeastOneSet = true;
         const repsInput = row.querySelector('input[type="number"][placeholder="Reps"]');
         const weightInput = row.querySelector('input[type="number"][placeholder="Wt"]');
-        if (repsInput.value === '' || parseFloat(repsInput.value) <= 0 || weightInput.value === '' || parseFloat(weightInput.value) <= 0) {
+        if (!repsInput.value || parseFloat(repsInput.value) <= 0 || !weightInput.value || parseFloat(weightInput.value) <= 0) {
             allSetsValid = false;
         }
     });
@@ -313,6 +323,7 @@ function createSetRow(id, label, details, values, isAmrap) {
     const deleteButton = createDOMElement('button', {
         className: 'delete-set-btn',
         textContent: 'Delete',
+        'aria-label': `Delete ${label}`,
         listeners: { click: () => deleteSet(setRow) }
     });
     const checkbox = createDOMElement('input', {
@@ -359,6 +370,7 @@ function createExerciseSection(title, exercises) {
 
 function loadWorkout(w, logData = null) {
     currentWorkout = w;
+    isDirty = false;
     if(timerInterval) resetTimer();
     timerBar.classList.remove(WIDGET_STATE.HIDDEN);
     const maxes = getStoredMaxes();
@@ -405,7 +417,7 @@ function loadWorkout(w, logData = null) {
             ]})
         ]}));
         const isoSet = logData && logData.isolations[idx] ? parseSet(logData.isolations[idx].log) : { reps: '', weight: '' };
-        fragment.appendChild(createSetRow(`isoSet${idx}`, 'Set 1', 'AMRAP', isoSet, true));
+        fragment.appendChild(createSetRow(`isoSet${idx}`, `Set 1 for ${iso.name}`, 'AMRAP', isoSet, true));
     });
     
     fragment.appendChild(createExerciseSection('Cool-downs', w.cooldowns));
@@ -435,7 +447,7 @@ function getSetData(setId) {
     
     const reps = setRow.querySelector('input[placeholder="Reps"]').value;
     const weight = setRow.querySelector('input[placeholder="Wt"]').value;
-    return (reps !== '' && weight !== '') ? `${reps}x${weight} lbs` : 'Not Logged';
+    return (reps && weight && parseFloat(reps) > 0 && parseFloat(weight) > 0) ? `${reps}x${weight} lbs` : 'Not Logged';
 }
 
 function saveOrUpdateLog(existingLog = null) {
@@ -444,7 +456,7 @@ function saveOrUpdateLog(existingLog = null) {
       const stillExists = history.some(h => h.id === existingLog.id);
       if (!stillExists) {
           showNotification("Cannot update: This log has been deleted.", true);
-          goHome();
+          goHome(true);
           return;
       }
   }
@@ -486,7 +498,8 @@ function saveOrUpdateLog(existingLog = null) {
     }
     history.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id.localeCompare(a.id));
     localStorage.setItem(STORAGE_KEYS.WORKOUT_LOGS, JSON.stringify(history));
-    goHome();
+    isDirty = false;
+    goHome(true);
   } catch (e) {
     showNotification("Error: Could not save workout.", true);
     console.error("Save log error:", e);
@@ -631,7 +644,7 @@ function handleSetCompletion(checkbox, inputs, isAmrap) {
         const repsInput = inputs.find(input => input.placeholder === 'Reps');
         const weightInput = inputs.find(input => input.placeholder === 'Wt');
 
-        if (!repsInput || !weightInput || repsInput.value === '' || weightInput.value === '' || parseFloat(repsInput.value) <= 0 || parseFloat(weightInput.value) <= 0) {
+        if (!repsInput || !weightInput || !repsInput.value || parseFloat(repsInput.value) <= 0 || !weightInput.value || parseFloat(weightInput.value) <= 0) {
             showNotification('Please enter a positive value (>0) for both reps and weight.', true);
             checkbox.checked = false;
             return;
@@ -655,10 +668,160 @@ function deleteSet(setRow) {
             setRow.dataset.skipped = 'true';
             setRow.style.opacity = '0.5';
             setRow.querySelectorAll('input, button').forEach(i => i.disabled = true);
+            isDirty = true;
             validateWorkoutLog();
             showNotification('Set removed.');
         });
     }
+}
+
+function viewCharts() {
+    document.getElementById('mainMenu').classList.add(WIDGET_STATE.HIDDEN);
+    chartScreen.classList.remove(WIDGET_STATE.HIDDEN);
+    const history = getHistory();
+    
+    const allExercises = new Set();
+    history.forEach(log => {
+        if (log.compound && log.compound.name) {
+            allExercises.add(log.compound.name);
+        }
+        if (log.isolations && Array.isArray(log.isolations)) {
+            log.isolations.forEach(iso => {
+                if (iso && iso.name) {
+                    allExercises.add(iso.name);
+                }
+            });
+        }
+    });
+
+    const uniqueExercises = [...allExercises].sort();
+
+    chartExerciseSelect.innerHTML = '<option value="">Select an exercise...</option>';
+
+    if (uniqueExercises.length === 0) {
+        chartExerciseSelect.disabled = true;
+        showNotification("No logged exercises available to chart.", false);
+        return;
+    }
+
+    chartExerciseSelect.disabled = false;
+    uniqueExercises.forEach(name => {
+        chartExerciseSelect.appendChild(new Option(name, name));
+    });
+
+    if (progressChart) {
+        progressChart.destroy();
+        progressChart = null;
+    }
+}
+
+function renderProgressChart(exerciseName) {
+    if (progressChart) {
+        progressChart.destroy();
+        progressChart = null;
+    }
+
+    const history = getHistory();
+    
+    const chartData = history.map(log => {
+        let exerciseSetData = null;
+        let rm = 0;
+
+        if (log.compound && log.compound.name === exerciseName) {
+            exerciseSetData = log.compound.s3;
+        } 
+        else if (log.isolations && Array.isArray(log.isolations)) {
+            const isoLog = log.isolations.find(iso => iso.name === exerciseName);
+            if (isoLog) {
+                exerciseSetData = isoLog.log;
+            }
+        }
+
+        if (!exerciseSetData || ['Not Logged', 'Skipped'].includes(exerciseSetData)) {
+            return null;
+        }
+
+        const { reps, weight } = parseSet(exerciseSetData);
+        if (reps && weight) {
+            rm = calculateRM(parseFloat(weight), parseFloat(reps));
+        }
+
+        if (rm > 0) {
+            return {
+                date: log.date,
+                rm: rm
+            };
+        }
+        
+        return null;
+    }).filter(Boolean)
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    if (chartData.length < 2) {
+        showNotification("At least two data points are needed to create a chart for this exercise.", false);
+        return;
+    }
+
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    
+    const themeColors = {
+        primary: 'rgb(255, 215, 0)',
+        primaryTransparent: 'rgba(255, 215, 0, 0.2)',
+        text: '#e0e0e0',
+        grid: 'rgba(224, 224, 224, 0.2)'
+    };
+
+    progressChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.map(d => d.date),
+            datasets: [{
+                label: `Estimated 1RM for ${exerciseName} (lbs)`,
+                data: chartData.map(d => d.rm),
+                borderColor: themeColors.primary,
+                backgroundColor: themeColors.primaryTransparent,
+                tension: 0.1,
+                fill: true,
+                pointBackgroundColor: themeColors.primary,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    title: { 
+                        display: true, 
+                        text: 'Estimated 1RM (lbs)',
+                        color: themeColors.text
+                    },
+                    ticks: { color: themeColors.text },
+                    grid: { color: themeColors.grid }
+                },
+                x: {
+                    title: { 
+                        display: true, 
+                        text: 'Date',
+                        color: themeColors.text 
+                    },
+                    ticks: { color: themeColors.text },
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: themeColors.text,
+                        font: {
+                            size: 14
+                        }
+                    }
+                }
+            }
+        }
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -666,12 +829,20 @@ document.addEventListener('DOMContentLoaded', () => {
     retryLoadBtn.addEventListener('click', initializeApp);
 
     document.getElementById('viewHistoryBtn').addEventListener('click', viewHistory);
-    document.getElementById('backToMenuBtn').addEventListener('click', goHome);
-    document.getElementById('historyBackToMenuBtn').addEventListener('click', goHome);
+    document.getElementById('backToMenuBtn').addEventListener('click', () => goHome(false));
+    document.getElementById('historyBackToMenuBtn').addEventListener('click', () => goHome(true));
     document.getElementById('metronomeToggle').addEventListener('click', toggleMetronome);
     document.getElementById('addMinuteBtn').addEventListener('click', addMinute);
     document.getElementById('resetTimerBtn').addEventListener('click', () => resetTimer());
     document.getElementById('exportButton').addEventListener('click', exportLogs);
+
+    document.getElementById('viewChartsBtn').addEventListener('click', viewCharts);
+    document.getElementById('chartsBackToMenuBtn').addEventListener('click', () => goHome(true));
+    chartExerciseSelect.addEventListener('change', (e) => {
+        if (e.target.value) {
+            renderProgressChart(e.target.value);
+        }
+    });
 
     document.getElementById('confirmModalConfirm').addEventListener('click', () => {
         if (typeof confirmCallback === 'function') {
@@ -690,6 +861,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.body.addEventListener('input', (event) => {
         if (event.target.closest('#workoutScreen')) {
+            isDirty = true;
             validateWorkoutLog();
         }
     }, true);
