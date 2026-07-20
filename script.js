@@ -4,17 +4,14 @@ const WIDGET_STATE = {
     SHOW: 'show',
     ERROR: 'error'
 };
-
 const STORAGE_KEYS = {
     WORKOUT_LOGS: 'workoutLogs',
     WORKOUT_MAXES: 'workoutMaxes'
 };
-
 const TIMER_CONFIG = {
     DEFAULT_REST: 60,
     MAX_SECONDS: 360
 };
-
 let workouts = [];
 let currentWorkout = null;
 let timerInterval = null;
@@ -25,8 +22,6 @@ let isMetronomeOn = false;
 let notificationTimeout = null;
 let confirmCallback = null;
 let isDirty = false;
-let progressChart = null;
-
 const appLoader = document.getElementById('appLoader');
 const appContainer = document.getElementById('appContainer');
 const workoutSelect = document.getElementById('workoutSelect');
@@ -35,13 +30,14 @@ const timerBar = document.getElementById('timerBar');
 const loaderErrorText = document.getElementById('loaderErrorText');
 const retryLoadBtn = document.getElementById('retryLoadBtn');
 const loaderSpinner = document.querySelector('#appLoader .loader');
-const chartScreen = document.getElementById('chartScreen');
-const chartExerciseSelect = document.getElementById('chartExerciseSelect');
+const exerciseDetailModal = document.getElementById('exerciseDetailModal');
+const exerciseDetailTitle = document.getElementById('exerciseDetailTitle');
+const exerciseDetailText = document.getElementById('exerciseDetailText');
 
 function initAudio() {
     if (!audioCtx) {
         try {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            audioCtx = new(window.AudioContext || window.webkitAudioContext)();
         } catch (e) {
             console.error("Web Audio API is not supported in this browser.", e);
             return;
@@ -51,43 +47,45 @@ function initAudio() {
         audioCtx.resume().catch(err => console.error("AudioContext resume failed:", err));
     }
 }
-
 async function initializeApp() {
     workoutSelect.disabled = true;
     loaderSpinner.classList.remove(WIDGET_STATE.HIDDEN);
     loaderErrorText.classList.add(WIDGET_STATE.HIDDEN);
     retryLoadBtn.classList.add(WIDGET_STATE.HIDDEN);
-    
     try {
         const response = await fetch('./workouts.json');
         if (!response.ok) {
             let errorMsg = `Failed to load workout data. Status: ${response.status}`;
             throw new Error(errorMsg);
         }
-        
         const rawJson = await response.json();
-        
         workouts = rawJson.map(item => ({
             id: item.day_id,
             name: item.workout_day,
-            warmups: item.phases.warmup.map(ex => ({ name: ex.exercise_name, desc: ex.how_to })),
-            compound: { 
-                name: item.phases.compound[0].exercise_name, 
-                desc: item.phases.compound[0].how_to 
+            warmups: item.phases.warmup.map(ex => ({
+                name: ex.exercise_name,
+                desc: ex.how_to
+            })),
+            compound: {
+                name: item.phases.compound[0].exercise_name,
+                desc: item.phases.compound[0].how_to
             },
-            isolations: item.phases.isolation.map(ex => ({ name: ex.exercise_name, desc: ex.how_to })),
-            cooldowns: item.phases.cooldown.map(ex => ({ name: ex.exercise_name, desc: ex.how_to }))
+            isolations: item.phases.isolation.map(ex => ({
+                name: ex.exercise_name,
+                desc: ex.how_to
+            })),
+            cooldowns: item.phases.cooldown.map(ex => ({
+                name: ex.exercise_name,
+                desc: ex.how_to
+            }))
         }));
-
         workouts.forEach(w => {
             const option = new Option(w.name, w.id);
             workoutSelect.appendChild(option);
         });
-
         appLoader.classList.add(WIDGET_STATE.HIDDEN);
         appContainer.classList.remove(WIDGET_STATE.HIDDEN);
         workoutSelect.disabled = false;
-
     } catch (error) {
         console.error("Initialization Error:", error);
         let userMessage = "Failed to load workout data.";
@@ -108,7 +106,6 @@ function showNotification(message, isError = false, duration = 5000) {
     notification.textContent = message;
     notification.className = 'notification show';
     if (isError) notification.classList.add(WIDGET_STATE.ERROR);
-    
     clearTimeout(notificationTimeout);
     if (duration > 0) {
         notificationTimeout = setTimeout(() => {
@@ -124,6 +121,16 @@ function showConfirmDialog(text, callback) {
     confirmCallback = callback;
 }
 
+function showExerciseDetailModal(title, text) {
+    exerciseDetailTitle.textContent = title;
+    exerciseDetailText.textContent = text;
+    exerciseDetailModal.classList.remove(WIDGET_STATE.HIDDEN);
+}
+
+function hideExerciseDetailModal() {
+    exerciseDetailModal.classList.add(WIDGET_STATE.HIDDEN);
+}
+
 function playBeep(frequency, duration) {
     if (!audioCtx) return;
     const oscillator = audioCtx.createOscillator();
@@ -135,7 +142,6 @@ function playBeep(frequency, duration) {
     oscillator.start(audioCtx.currentTime);
     oscillator.stop(audioCtx.currentTime + duration);
 }
-
 const playMetronomeBeep = () => playBeep(880, 0.05);
 const playTimerEndSound = () => playBeep(1000, 0.5);
 
@@ -206,10 +212,9 @@ function resetTimer(finished = false) {
     stopTimer();
     countdown = TIMER_CONFIG.DEFAULT_REST;
     updateTimerDisplay();
-    if(wasRunning && !finished) showNotification('Timer reset.');
-    if(finished) showNotification('Rest finished.');
+    if (wasRunning && !finished) showNotification('Timer reset.');
+    if (finished) showNotification('Rest finished.');
 }
-
 const addMinute = () => {
     if (countdown >= TIMER_CONFIG.MAX_SECONDS) {
         showNotification(`Timer cannot exceed ${TIMER_CONFIG.MAX_SECONDS / 60} minutes.`, false, 3000);
@@ -230,7 +235,6 @@ function goHome(force = false) {
     document.getElementById('mainMenu').classList.remove(WIDGET_STATE.HIDDEN);
     document.getElementById('workoutScreen').classList.add(WIDGET_STATE.HIDDEN);
     document.getElementById('historyScreen').classList.add(WIDGET_STATE.HIDDEN);
-    document.getElementById('chartScreen').classList.add(WIDGET_STATE.HIDDEN);
     workoutSelect.value = '';
     if (timerInterval) {
         resetTimer();
@@ -258,12 +262,10 @@ function saveStoredMax(exerciseName, rm) {
         localStorage.setItem(STORAGE_KEYS.WORKOUT_MAXES, JSON.stringify(maxes));
     }
 }
-
 const roundToNearest5 = num => Math.round(num / 5) * 5;
 
 function calculateRM(weight, reps) {
     if (reps <= 0 || weight <= 0) return 0;
-    
     let rm;
     if (reps <= 10) {
         rm = weight / (1.0278 - (0.0278 * reps));
@@ -280,7 +282,7 @@ function validateWorkoutLog() {
     let hasAtLeastOneSet = false;
     const setRows = document.querySelectorAll('#workoutScreen .set-row');
     setRows.forEach(row => {
-        if(row.dataset.skipped === 'true') return;
+        if (row.dataset.skipped === 'true') return;
         hasAtLeastOneSet = true;
         const repsInput = row.querySelector('input[type="number"][placeholder="Reps"]');
         const weightInput = row.querySelector('input[type="number"][placeholder="Wt"]');
@@ -290,11 +292,16 @@ function validateWorkoutLog() {
     });
     saveBtn.disabled = !allSetsValid || !hasAtLeastOneSet;
 }
-
 const parseSet = setString => {
-    if (!setString || ['Not Logged', 'Skipped'].includes(setString)) return { reps: '', weight: '' };
+    if (!setString || ['Not Logged', 'Skipped'].includes(setString)) return {
+        reps: '',
+        weight: ''
+    };
     const parts = setString.replace(/\s*lbs\s*/, '').split('x');
-    return { reps: parts[0]?.trim() || '', weight: parts[1]?.trim() || '' };
+    return {
+        reps: parts[0] ? .trim() || '',
+        weight: parts[1] ? .trim() || ''
+    };
 };
 
 function createDOMElement(tag, options = {}) {
@@ -316,29 +323,51 @@ function createDOMElement(tag, options = {}) {
 }
 
 function createSetRow(id, label, details, values, isAmrap) {
-    const { reps, weight } = values;
-    const repsInput = createDOMElement('input', { type: 'number', placeholder: 'Reps', value: reps });
-    const weightInput = createDOMElement('input', { type: 'number', placeholder: 'Wt', value: weight });
-    const setRow = createDOMElement('div', { id, className: 'set-row', dataset: { skipped: 'false' } });
+    const {
+        reps,
+        weight
+    } = values;
+    const repsInput = createDOMElement('input', {
+        type: 'number',
+        placeholder: 'Reps',
+        value: reps
+    });
+    const weightInput = createDOMElement('input', {
+        type: 'number',
+        placeholder: 'Wt',
+        value: weight
+    });
+    const setRow = createDOMElement('div', {
+        id,
+        className: 'set-row',
+        dataset: {
+            skipped: 'false'
+        }
+    });
     const deleteButton = createDOMElement('button', {
         className: 'delete-set-btn',
         textContent: 'Delete',
         'aria-label': `Delete ${label}`,
-        listeners: { click: () => deleteSet(setRow) }
+        listeners: {
+            click: () => deleteSet(setRow)
+        }
     });
     const checkbox = createDOMElement('input', {
         type: 'checkbox',
-        dataset: { amrap: isAmrap },
+        dataset: {
+            amrap: isAmrap
+        },
         listeners: {
             change: (e) => handleSetCompletion(e.target, [repsInput, weightInput], isAmrap)
         }
     });
     const setDetails = createDOMElement('div', {
         className: 'set-details',
-        children: [
-            createDOMElement('strong', { textContent: label }),
-            createDOMElement('span', { textContent: ` (${details})` })
-        ]
+        children: [createDOMElement('strong', {
+            textContent: label
+        }), createDOMElement('span', {
+            textContent: ` (${details})`
+        })]
     });
     const setInputs = createDOMElement('div', {
         className: 'set-inputs',
@@ -354,16 +383,21 @@ function createSetRow(id, label, details, values, isAmrap) {
 
 function createExerciseSection(title, exercises) {
     const fragment = document.createDocumentFragment();
-    fragment.appendChild(createDOMElement('h3', { textContent: title }));
+    fragment.appendChild(createDOMElement('h3', {
+        textContent: title
+    }));
     exercises.forEach(ex => {
-        fragment.appendChild(createDOMElement('div', { className: 'exercise-item', children: [
-            createDOMElement('div', { children: [
-                createDOMElement('details', { className: 'exercise-details', children: [
-                    createDOMElement('summary', { textContent: ex.name }),
-                    createDOMElement('div', { className: 'details-content', textContent: ex.desc })
-                ]})
-            ]})
-        ]}));
+        const exerciseNameEl = createDOMElement('span', {
+            className: 'exercise-name',
+            textContent: ex.name,
+            listeners: {
+                click: () => showExerciseDetailModal(ex.name, ex.desc)
+            }
+        });
+        fragment.appendChild(createDOMElement('div', {
+            className: 'exercise-item',
+            children: [exerciseNameEl]
+        }));
     });
     return fragment;
 }
@@ -371,63 +405,100 @@ function createExerciseSection(title, exercises) {
 function loadWorkout(w, logData = null) {
     currentWorkout = w;
     isDirty = false;
-    if(timerInterval) resetTimer();
+    if (timerInterval) resetTimer();
     timerBar.classList.remove(WIDGET_STATE.HIDDEN);
     const maxes = getStoredMaxes();
     const workoutContent = document.getElementById('workoutContent');
     workoutContent.innerHTML = '';
     document.getElementById('mainMenu').classList.add(WIDGET_STATE.HIDDEN);
     document.getElementById('workoutScreen').classList.remove(WIDGET_STATE.HIDDEN);
-
     const fragment = document.createDocumentFragment();
-    fragment.appendChild(createDOMElement('h2', { textContent: `${logData ? 'Edit' : ''} ${w.name}` }));
+    fragment.appendChild(createDOMElement('h2', {
+        textContent: `${logData ? 'Edit' : ''} ${w.name}`
+    }));
     fragment.appendChild(createExerciseSection('Warm-ups (No Load)', w.warmups));
-    
-    fragment.appendChild(createDOMElement('h3', { textContent: 'Compound Lift' }));
+    fragment.appendChild(createDOMElement('h3', {
+        textContent: 'Compound Lift'
+    }));
     const compoundRM = maxes[w.compound.name] || 1;
-    const compoundRmBadge = createDOMElement('span', { className: 'rm-badge', textContent: `${compoundRM} lbs` });
-    fragment.appendChild(createDOMElement('div', { className: 'exercise-item', children: [
-        createDOMElement('details', { className: 'exercise-details', children: [
-            createDOMElement('summary', { className: 'compound-summary', children: [
-                document.createTextNode(w.compound.name),
-                compoundRmBadge
-            ]}),
-            createDOMElement('div', { className: 'details-content', textContent: w.compound.desc })
-        ]})
-    ]}));
-
-    const sets = [
-        { id: 'cSet1', label: 'Set 1', details: '6 reps @ 33%', isAmrap: false, values: logData ? parseSet(logData.compound.s1) : { reps: 6, weight: roundToNearest5(compoundRM * 0.33) } },
-        { id: 'cSet2', label: 'Set 2', details: '6 reps @ 66%', isAmrap: false, values: logData ? parseSet(logData.compound.s2) : { reps: 6, weight: roundToNearest5(compoundRM * 0.66) } },
-        { id: 'cSet3', label: 'Set 3', details: 'AMRAP @ 80%', isAmrap: true, values: logData ? parseSet(logData.compound.s3) : { reps: '', weight: roundToNearest5(compoundRM * 0.80) } }
-    ];
+    const compoundRmBadge = createDOMElement('span', {
+        className: 'rm-badge',
+        textContent: `${compoundRM} lbs`
+    });
+    const compoundNameEl = createDOMElement('span', {
+        className: 'exercise-name compound-summary',
+        textContent: w.compound.name,
+        listeners: {
+            click: () => showExerciseDetailModal(w.compound.name, w.compound.desc)
+        }
+    });
+    fragment.appendChild(createDOMElement('div', {
+        className: 'exercise-item',
+        children: [compoundNameEl, compoundRmBadge]
+    }));
+    const sets = [{
+        id: 'cSet1',
+        label: 'Set 1',
+        details: '6 reps @ 33%',
+        isAmrap: false,
+        values: logData ? parseSet(logData.compound.s1) : {
+            reps: 6,
+            weight: roundToNearest5(compoundRM * 0.33)
+        }
+    }, {
+        id: 'cSet2',
+        label: 'Set 2',
+        details: '6 reps @ 66%',
+        isAmrap: false,
+        values: logData ? parseSet(logData.compound.s2) : {
+            reps: 6,
+            weight: roundToNearest5(compoundRM * 0.66)
+        }
+    }, {
+        id: 'cSet3',
+        label: 'Set 3',
+        details: 'AMRAP @ 80%',
+        isAmrap: true,
+        values: logData ? parseSet(logData.compound.s3) : {
+            reps: '',
+            weight: roundToNearest5(compoundRM * 0.80)
+        }
+    }];
     sets.forEach(s => fragment.appendChild(createSetRow(s.id, s.label, s.details, s.values, s.isAmrap)));
-
-    fragment.appendChild(createDOMElement('h3', { textContent: 'Isolation Lifts (1x AMRAP)' }));
+    fragment.appendChild(createDOMElement('h3', {
+        textContent: 'Isolation Lifts (1x AMRAP)'
+    }));
     w.isolations.forEach((iso, idx) => {
         const isoRM = maxes[iso.name] || 1;
-        const isoRmBadge = createDOMElement('span', { className: 'rm-badge', textContent: `${isoRM} lbs` });
-        fragment.appendChild(createDOMElement('div', { className: 'exercise-item', children: [
-            createDOMElement('details', { className: 'exercise-details', children: [
-                createDOMElement('summary', { className: 'isolation-summary', children: [
-                    document.createTextNode(iso.name),
-                    isoRmBadge
-                ]}),
-                createDOMElement('div', { className: 'details-content', textContent: iso.desc })
-            ]})
-        ]}));
-        const isoSet = logData && logData.isolations[idx] ? parseSet(logData.isolations[idx].log) : { reps: '', weight: '' };
+        const isoRmBadge = createDOMElement('span', {
+            className: 'rm-badge',
+            textContent: `${isoRM} lbs`
+        });
+        const isoNameEl = createDOMElement('span', {
+            className: 'exercise-name isolation-summary',
+            textContent: iso.name,
+            listeners: {
+                click: () => showExerciseDetailModal(iso.name, iso.desc)
+            }
+        });
+        fragment.appendChild(createDOMElement('div', {
+            className: 'exercise-item',
+            children: [isoNameEl, isoRmBadge]
+        }));
+        const isoSet = logData && logData.isolations[idx] ? parseSet(logData.isolations[idx].log) : {
+            reps: '',
+            weight: ''
+        };
         fragment.appendChild(createSetRow(`isoSet${idx}`, `Set 1 for ${iso.name}`, 'AMRAP', isoSet, true));
     });
-    
     fragment.appendChild(createExerciseSection('Cool-downs', w.cooldowns));
-    
     const saveButton = createDOMElement('button', {
         id: 'saveWorkoutBtn',
         textContent: logData ? 'Update Log' : 'Save Workout Log',
-        listeners: { click: () => saveOrUpdateLog(logData) }
+        listeners: {
+            click: () => saveOrUpdateLog(logData)
+        }
     });
-    
     fragment.appendChild(saveButton);
     workoutContent.appendChild(fragment);
     validateWorkoutLog();
@@ -444,72 +515,77 @@ function startSelectedWorkout() {
 function getSetData(setId) {
     const setRow = document.getElementById(setId);
     if (!setRow || setRow.dataset.skipped === 'true') return 'Skipped';
-    
     const reps = setRow.querySelector('input[placeholder="Reps"]').value;
     const weight = setRow.querySelector('input[placeholder="Wt"]').value;
     return (reps && weight && parseFloat(reps) > 0 && parseFloat(weight) > 0) ? `${reps}x${weight} lbs` : 'Not Logged';
 }
 
 function saveOrUpdateLog(existingLog = null) {
-  let history = getHistory();
-  if (existingLog) {
-      const stillExists = history.some(h => h.id === existingLog.id);
-      if (!stillExists) {
-          showNotification("Cannot update: This log has been deleted.", true);
-          goHome(true);
-          return;
-      }
-  }
-
-  const log = {
-    id: existingLog ? existingLog.id : new Date().toISOString(),
-    date: existingLog ? existingLog.date : new Date().toISOString().split('T')[0],
-    routine: currentWorkout.name,
-    compound: { name: currentWorkout.compound.name, s1: getSetData('cSet1'), s2: getSetData('cSet2'), s3: getSetData('cSet3') },
-    isolations: currentWorkout.isolations.map((iso, idx) => ({ name: iso.name, log: getSetData(`isoSet${idx}`) }))
-  };
-
-  const updateRmFromSet = (exerciseName, setData) => {
-    if (setData && setData !== 'Not Logged' && setData !== 'Skipped') {
-        const { reps, weight } = parseSet(setData);
-        if (reps && weight) {
-            const rm = calculateRM(parseFloat(weight), parseFloat(reps));
-            if (rm > 0) {
-                saveStoredMax(exerciseName, rm);
-            }
+    let history = getHistory();
+    if (existingLog) {
+        const stillExists = history.some(h => h.id === existingLog.id);
+        if (!stillExists) {
+            showNotification("Cannot update: This log has been deleted.", true);
+            goHome(true);
+            return;
         }
     }
-  };
-
-  updateRmFromSet(log.compound.name, log.compound.s1);
-  updateRmFromSet(log.compound.name, log.compound.s2);
-  updateRmFromSet(log.compound.name, log.compound.s3);
-  log.isolations.forEach(iso => updateRmFromSet(iso.name, iso.log));
-
-  try {
-    const existingIndex = history.findIndex(h => h.id === log.id);
-
-    if (existingIndex !== -1) {
-        history[existingIndex] = log;
-        showNotification('Workout Updated Successfully!');
-    } else {
-        history.push(log);
-        showNotification('Workout Saved Successfully!');
+    const log = {
+        id: existingLog ? existingLog.id : new Date().toISOString(),
+        date: existingLog ? existingLog.date : new Date().toISOString().split('T')[0],
+        routine: currentWorkout.name,
+        compound: {
+            name: currentWorkout.compound.name,
+            s1: getSetData('cSet1'),
+            s2: getSetData('cSet2'),
+            s3: getSetData('cSet3')
+        },
+        isolations: currentWorkout.isolations.map((iso, idx) => ({
+            name: iso.name,
+            log: getSetData(`isoSet${idx}`)
+        }))
+    };
+    const updateRmFromSet = (exerciseName, setData) => {
+        if (setData && setData !== 'Not Logged' && setData !== 'Skipped') {
+            const {
+                reps,
+                weight
+            } = parseSet(setData);
+            if (reps && weight) {
+                const rm = calculateRM(parseFloat(weight), parseFloat(reps));
+                if (rm > 0) {
+                    saveStoredMax(exerciseName, rm);
+                }
+            }
+        }
+    };
+    updateRmFromSet(log.compound.name, log.compound.s1);
+    updateRmFromSet(log.compound.name, log.compound.s2);
+    updateRmFromSet(log.compound.name, log.compound.s3);
+    log.isolations.forEach(iso => updateRmFromSet(iso.name, iso.log));
+    try {
+        const existingIndex = history.findIndex(h => h.id === log.id);
+        if (existingIndex !== -1) {
+            history[existingIndex] = log;
+            showNotification('Workout Updated Successfully!');
+        } else {
+            history.push(log);
+            showNotification('Workout Saved Successfully!');
+        }
+        history.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id.localeCompare(a.id));
+        localStorage.setItem(STORAGE_KEYS.WORKOUT_LOGS, JSON.stringify(history));
+        isDirty = false;
+        goHome(true);
+    } catch (e) {
+        showNotification("Error: Could not save workout.", true);
+        console.error("Save log error:", e);
     }
-    history.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id.localeCompare(a.id));
-    localStorage.setItem(STORAGE_KEYS.WORKOUT_LOGS, JSON.stringify(history));
-    isDirty = false;
-    goHome(true);
-  } catch (e) {
-    showNotification("Error: Could not save workout.", true);
-    console.error("Save log error:", e);
-  }
 }
 
 function getHistory() {
     try {
         return JSON.parse(localStorage.getItem(STORAGE_KEYS.WORKOUT_LOGS) || '[]');
-    } catch(e) {
+    } catch (e) {
         console.error("Failed to parse workout history:", e);
         return [];
     }
@@ -526,32 +602,43 @@ function viewHistory() {
         historyContent.textContent = 'No workouts logged yet.';
         return;
     }
-
     const fragment = document.createDocumentFragment();
     history.forEach((log, index) => {
-        const card = createDOMElement('div', { className: 'card' });
-        
-        const header = createDOMElement('div', { className: 'card-header' });
-        header.appendChild(createDOMElement('strong', { textContent: `${log.date} - ${log.routine}`, style: 'color:#ffd700;' }));
-        const actions = createDOMElement('div', { className: 'card-actions' });
+        const card = createDOMElement('div', {
+            className: 'card'
+        });
+        const header = createDOMElement('div', {
+            className: 'card-header'
+        });
+        header.appendChild(createDOMElement('strong', {
+            textContent: `${log.date} - ${log.routine}`,
+            style: 'color:#ffd700;'
+        }));
+        const actions = createDOMElement('div', {
+            className: 'card-actions'
+        });
         actions.appendChild(createDOMElement('button', {
             className: 'edit-btn',
             textContent: 'Edit',
-            listeners: { click: () => editLog(index) }
+            listeners: {
+                click: () => editLog(index)
+            }
         }));
         actions.appendChild(createDOMElement('button', {
             className: 'delete-btn',
             textContent: 'Delete',
-            listeners: { click: () => deleteLog(index) }
+            listeners: {
+                click: () => deleteLog(index)
+            }
         }));
         header.appendChild(actions);
-
-        const body = createDOMElement('div', { style: 'margin-top:8px; font-size:0.9rem;' });
+        const body = createDOMElement('div', {
+            style: 'margin-top:8px; font-size:0.9rem;'
+        });
         body.innerHTML = `
             <strong>${log.compound.name}:</strong><br>
             S1: ${log.compound.s1} | S2: ${log.compound.s2} | S3: ${log.compound.s3}<br><br>
             ${log.isolations.map(i => `<strong>${i.name}:</strong> ${i.log}`).join('<br>')}`;
-        
         card.appendChild(header);
         card.appendChild(body);
         fragment.appendChild(card);
@@ -560,7 +647,7 @@ function viewHistory() {
 }
 
 function editLog(logIndex) {
-    if(timerInterval) resetTimer();
+    if (timerInterval) resetTimer();
     const history = getHistory();
     const logToEdit = history[logIndex];
     if (logToEdit) {
@@ -578,7 +665,6 @@ function deleteLog(logIndex) {
     const history = getHistory();
     const log = history[logIndex];
     const confirmationMessage = `Are you sure you want to permanently delete the log for ${log.routine} on ${log.date}? This action cannot be undone.`;
-    
     showConfirmDialog(confirmationMessage, () => {
         history.splice(logIndex, 1);
         localStorage.setItem(STORAGE_KEYS.WORKOUT_LOGS, JSON.stringify(history));
@@ -590,47 +676,54 @@ function deleteLog(logIndex) {
 function exportLogs() {
     const history = getHistory();
     if (history.length === 0) return showNotification("No logs to export.", true);
-    
     const escapeCsvField = (field) => `"${String(field).replace(/"/g, '""')}"`;
     const header = "Date,Exercise,Reps,Weight (lbs)\n";
-    
     const rows = history.flatMap(log => {
         let entryRows = [];
-        const { date, compound, isolations } = log;
-
+        const {
+            date,
+            compound,
+            isolations
+        } = log;
         const createRow = (exerciseName, setData) => {
-            const { reps, weight } = parseSet(setData);
+            const {
+                reps,
+                weight
+            } = parseSet(setData);
             if (reps && weight) {
-                return [
-                    escapeCsvField(date),
-                    escapeCsvField(exerciseName),
-                    reps,
-                    weight
-                ].join(',');
+                return [escapeCsvField(date), escapeCsvField(exerciseName), reps, weight].join(',');
             }
             return null;
         };
-        
-        const sets = [
-            { name: compound.name, data: compound.s1 },
-            { name: compound.name, data: compound.s2 },
-            { name: compound.name, data: compound.s3 },
-            ...isolations.map(iso => ({ name: iso.name, data: iso.log }))
-        ];
-
+        const sets = [{
+            name: compound.name,
+            data: compound.s1
+        }, {
+            name: compound.name,
+            data: compound.s2
+        }, {
+            name: compound.name,
+            data: compound.s3
+        }, ...isolations.map(iso => ({
+            name: iso.name,
+            data: iso.log
+        }))];
         sets.forEach(set => {
             const row = createRow(set.name, set.data);
             if (row) {
                 entryRows.push(row);
             }
         });
-
         return entryRows;
     });
-
     const csvContent = header + rows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = createDOMElement('a', { href: URL.createObjectURL(blob), download: 'fittracker_logs.csv' });
+    const blob = new Blob([csvContent], {
+        type: 'text/csv;charset=utf-8;'
+    });
+    const link = createDOMElement('a', {
+        href: URL.createObjectURL(blob),
+        download: 'fittracker_logs.csv'
+    });
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -639,25 +732,22 @@ function exportLogs() {
 
 function handleSetCompletion(checkbox, inputs, isAmrap) {
     const isChecked = checkbox.checked;
-    
     if (isChecked) {
         const repsInput = inputs.find(input => input.placeholder === 'Reps');
         const weightInput = inputs.find(input => input.placeholder === 'Wt');
-
         if (!repsInput || !weightInput || !repsInput.value || parseFloat(repsInput.value) <= 0 || !weightInput.value || parseFloat(weightInput.value) <= 0) {
             showNotification('Please enter a positive value (>0) for both reps and weight.', true);
             checkbox.checked = false;
             return;
         }
-        
         startTimer();
         showNotification('Rest timer started for 60 seconds.');
-
     } else {
         stopTimer(true);
     }
-    
-    inputs.forEach(input => { if (input) input.disabled = isChecked; });
+    inputs.forEach(input => {
+        if (input) input.disabled = isChecked;
+    });
     validateWorkoutLog();
 }
 
@@ -674,160 +764,9 @@ function deleteSet(setRow) {
         });
     }
 }
-
-function viewCharts() {
-    document.getElementById('mainMenu').classList.add(WIDGET_STATE.HIDDEN);
-    chartScreen.classList.remove(WIDGET_STATE.HIDDEN);
-    const history = getHistory();
-    
-    const allExercises = new Set();
-    history.forEach(log => {
-        if (log.compound && log.compound.name) {
-            allExercises.add(log.compound.name);
-        }
-        if (log.isolations && Array.isArray(log.isolations)) {
-            log.isolations.forEach(iso => {
-                if (iso && iso.name) {
-                    allExercises.add(iso.name);
-                }
-            });
-        }
-    });
-
-    const uniqueExercises = [...allExercises].sort();
-
-    chartExerciseSelect.innerHTML = '<option value="">Select an exercise...</option>';
-
-    if (uniqueExercises.length === 0) {
-        chartExerciseSelect.disabled = true;
-        showNotification("No logged exercises available to chart.", false);
-        return;
-    }
-
-    chartExerciseSelect.disabled = false;
-    uniqueExercises.forEach(name => {
-        chartExerciseSelect.appendChild(new Option(name, name));
-    });
-
-    if (progressChart) {
-        progressChart.destroy();
-        progressChart = null;
-    }
-}
-
-function renderProgressChart(exerciseName) {
-    if (progressChart) {
-        progressChart.destroy();
-        progressChart = null;
-    }
-
-    const history = getHistory();
-    
-    const chartData = history.map(log => {
-        let exerciseSetData = null;
-        let rm = 0;
-
-        if (log.compound && log.compound.name === exerciseName) {
-            exerciseSetData = log.compound.s3;
-        } 
-        else if (log.isolations && Array.isArray(log.isolations)) {
-            const isoLog = log.isolations.find(iso => iso.name === exerciseName);
-            if (isoLog) {
-                exerciseSetData = isoLog.log;
-            }
-        }
-
-        if (!exerciseSetData || ['Not Logged', 'Skipped'].includes(exerciseSetData)) {
-            return null;
-        }
-
-        const { reps, weight } = parseSet(exerciseSetData);
-        if (reps && weight) {
-            rm = calculateRM(parseFloat(weight), parseFloat(reps));
-        }
-
-        if (rm > 0) {
-            return {
-                date: log.date,
-                rm: rm
-            };
-        }
-        
-        return null;
-    }).filter(Boolean)
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    if (chartData.length < 2) {
-        showNotification("At least two data points are needed to create a chart for this exercise.", false);
-        return;
-    }
-
-    const ctx = document.getElementById('progressChart').getContext('2d');
-    
-    const themeColors = {
-        primary: 'rgb(255, 215, 0)',
-        primaryTransparent: 'rgba(255, 215, 0, 0.2)',
-        text: '#e0e0e0',
-        grid: 'rgba(224, 224, 224, 0.2)'
-    };
-
-    progressChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: chartData.map(d => d.date),
-            datasets: [{
-                label: `Estimated 1RM for ${exerciseName} (lbs)`,
-                data: chartData.map(d => d.rm),
-                borderColor: themeColors.primary,
-                backgroundColor: themeColors.primaryTransparent,
-                tension: 0.1,
-                fill: true,
-                pointBackgroundColor: themeColors.primary,
-                pointRadius: 4,
-                pointHoverRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    title: { 
-                        display: true, 
-                        text: 'Estimated 1RM (lbs)',
-                        color: themeColors.text
-                    },
-                    ticks: { color: themeColors.text },
-                    grid: { color: themeColors.grid }
-                },
-                x: {
-                    title: { 
-                        display: true, 
-                        text: 'Date',
-                        color: themeColors.text 
-                    },
-                    ticks: { color: themeColors.text },
-                    grid: { display: false }
-                }
-            },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: themeColors.text,
-                        font: {
-                            size: 14
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
     retryLoadBtn.addEventListener('click', initializeApp);
-
     document.getElementById('viewHistoryBtn').addEventListener('click', viewHistory);
     document.getElementById('backToMenuBtn').addEventListener('click', () => goHome(false));
     document.getElementById('historyBackToMenuBtn').addEventListener('click', () => goHome(true));
@@ -835,15 +774,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('addMinuteBtn').addEventListener('click', addMinute);
     document.getElementById('resetTimerBtn').addEventListener('click', () => resetTimer());
     document.getElementById('exportButton').addEventListener('click', exportLogs);
-
-    document.getElementById('viewChartsBtn').addEventListener('click', viewCharts);
-    document.getElementById('chartsBackToMenuBtn').addEventListener('click', () => goHome(true));
-    chartExerciseSelect.addEventListener('change', (e) => {
-        if (e.target.value) {
-            renderProgressChart(e.target.value);
+    document.getElementById('exerciseDetailClose').addEventListener('click', hideExerciseDetailModal);
+    exerciseDetailModal.addEventListener('click', (e) => {
+        if (e.target.id === 'exerciseDetailModal') {
+            hideExerciseDetailModal();
         }
     });
-
     document.getElementById('confirmModalConfirm').addEventListener('click', () => {
         if (typeof confirmCallback === 'function') {
             confirmCallback();
@@ -851,22 +787,20 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('confirmModal').classList.add(WIDGET_STATE.HIDDEN);
         confirmCallback = null;
     });
-
     document.getElementById('confirmModalCancel').addEventListener('click', () => {
         document.getElementById('confirmModal').classList.add(WIDGET_STATE.HIDDEN);
         confirmCallback = null;
     });
-
     workoutSelect.addEventListener('change', startSelectedWorkout);
-    
     document.body.addEventListener('input', (event) => {
         if (event.target.closest('#workoutScreen')) {
             isDirty = true;
             validateWorkoutLog();
         }
     }, true);
-    
     ['click', 'touchend'].forEach(evt => {
-        document.body.addEventListener(evt, initAudio, { once: true });
+        document.body.addEventListener(evt, initAudio, {
+            once: true
+        });
     });
 });

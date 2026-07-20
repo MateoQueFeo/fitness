@@ -19,7 +19,6 @@
   --delete-set-bg: #600;
   --delete-set-text: #ffcccc;
 }
-
 body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background: var(--background-dark); color: var(--text-color); }
 header { background: var(--background-light); padding: 16px; text-align: center; border-bottom: 2px solid var(--border-strong); color: var(--primary-color); }
 header h1 { margin: 0; font-size: 1.2rem; font-weight: bold; }
@@ -51,13 +50,9 @@ input[type="number"] { background: var(--background-accent); color: white; borde
 .checkbox-row { display: flex; align-items: center; margin-left: 12px; }
 .checkbox-row input[type="checkbox"] { transform: scale(1.5); accent-color: var(--primary-color);}
 .exercise-item { background: var(--background-medium); padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.9rem; }
-.exercise-details summary { cursor: pointer; list-style: none; }
-.exercise-details summary::-webkit-details-marker { display: none; }
-.exercise-details summary:focus { outline: none; }
+.exercise-name { cursor: pointer; text-decoration: underline; text-decoration-color: var(--border-soft); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .compound-summary { color: var(--primary-color); font-size: 1.2rem; font-weight: bold; }
 .isolation-summary { color: var(--text-color); font-size: 1.1rem; font-weight: bold; }
-.details-content { padding-top: 8px; color: var(--text-muted-color); font-size: 0.85rem; }
-.exercise-details { display: inline; }
 .rm-badge { background-color: var(--background-dark); color: var(--primary-color); border: 1px solid var(--border-strong); font-size: 0.75rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-left: 8px; }
 .modal-container { position: fixed; z-index: 2001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; }
 .modal-content { background-color: var(--background-medium); padding: 20px; border: 1px solid var(--border-strong); width: 80%; max-width: 500px; border-radius: 8px; text-align: center; }

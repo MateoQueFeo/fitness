@@ -19,7 +19,6 @@
     }
   </script>
   <script src="./script.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div id="appLoader" class="loader-container">
@@ -37,6 +36,14 @@
         <button id="confirmModalCancel" class="secondary">Cancel</button>
         <button id="confirmModalConfirm">Confirm</button>
       </div>
+    </div>
+  </div>
+
+  <div id="exerciseDetailModal" class="modal-container hidden">
+    <div class="modal-content">
+      <h3 id="exerciseDetailTitle" style="margin-top:0; color: #ffd700;"></h3>
+      <p id="exerciseDetailText" style="text-align: left; white-space: pre-wrap;"></p>
+      <button id="exerciseDetailClose" class="secondary">Close</button>
     </div>
   </div>
 
@@ -60,7 +67,6 @@
       </select>
       <div class="button-group">
         <button class="secondary" id="viewHistoryBtn">View Logs</button>
-        <button class="secondary" id="viewChartsBtn">View Charts</button>
       </div>
     </div>
 
@@ -76,18 +82,6 @@
       </div>
       <h3>Workout Logs</h3>
       <div id="historyContent"></div>
-    </div>
-
-    <div class="container hidden" id="chartScreen">
-      <button class="secondary" id="chartsBackToMenuBtn">← Back to Menu</button>
-      <h3>Progress Charts</h3>
-      <p>Select an exercise to view your estimated 1-Rep Max (1RM) progress over time.</p>
-      <select id="chartExerciseSelect">
-          <option value="">Select an exercise...</option>
-      </select>
-      <div class="card" style="margin-top: 20px;">
-          <canvas id="progressChart"></canvas>
-      </div>
     </div>
   </div>
 </body>
