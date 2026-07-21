@@ -5,6 +5,37 @@ body {
     margin: auto;
     background-color: #000000;
     color: #e0e0e0;
+    padding-top: 80px;
+}
+#timer-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+    z-index: 1500;
+    border-bottom: 1px solid #d4af37;
+}
+#timer-display {
+    font-size: 24px;
+    font-weight: bold;
+    color: #d4af37;
+    margin-right: 20px;
+    min-width: 70px;
+    text-align: center;
+}
+#timer-container button {
+    width: auto;
+    padding: 8px 15px;
+    font-size: 14px;
+    margin: 0 5px;
+    text-transform: none;
+    letter-spacing: 0;
 }
 .card {
     background: #0a0a0a;
@@ -130,4 +161,27 @@ option {
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
+}
+#toast-notification {
+    visibility: hidden;
+    min-width: 250px;
+    margin-left: -125px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 4px;
+    padding: 16px;
+    position: fixed;
+    z-index: 2000;
+    left: 50%;
+    bottom: 30px;
+    font-size: 17px;
+    opacity: 0;
+    transition: visibility 0s 0.5s, opacity 0.5s linear;
+}
+
+#toast-notification.show {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.5s linear;
 }

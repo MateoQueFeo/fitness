@@ -11,6 +11,15 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <div id="timer-container">
+        <span id="timer-display">01:00</span>
+        <button id="start-timer-btn">Start Rest</button>
+        <button id="add-minute-btn" style="display: none;">+1 Min</button>
+        <button id="reset-timer-btn" style="display: none; background-color: #555; color: #fff;">Reset</button>
+    </div>
+
+    <div id="toast-notification"></div>
+
     <div id="exercise-details-modal" class="modal">
         <div class="modal-content">
             <span class="modal-close-button" onclick="closeExerciseDetailsModal()">&times;</span>
@@ -62,13 +71,17 @@
         let db;
         let workoutsData = {};
         let progressChartInstance = null;
+        let toastTimeout;
         const DB_NAME = 'LiftTrackerDB';
         const DB_VERSION = 1;
+
+        let timerInterval = null;
+        let remainingTime = 60;
+        let isTimerRunning = false;
 
         function initDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
-
                 request.onupgradeneeded = event => {
                     const dbInstance = event.target.result;
                     if (!dbInstance.objectStoreNames.contains('workouts')) {
@@ -79,30 +92,24 @@
                         logsStore.createIndex('exercise', 'exercise', { unique: false });
                     }
                 };
-
-                request.onerror = event => {
-                    console.error('Database error:', event.target.errorCode);
-                    reject('Database error: ' + event.target.errorCode);
-                };
-
-                request.onsuccess = event => {
-                    db = event.target.result;
-                    resolve(db);
-                };
+                request.onerror = event => { reject('Database error: ' + event.target.errorCode); };
+                request.onsuccess = event => { db = event.target.result; resolve(db); };
             });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('start-timer-btn').addEventListener('click', () => startTimer(60));
+            document.getElementById('add-minute-btn').addEventListener('click', addMinute);
+            document.getElementById('reset-timer-btn').addEventListener('click', resetTimer);
+            updateTimerDisplay();
+
             initDB().then(() => {
                 const transaction = db.transaction('workouts', 'readonly');
                 const store = transaction.objectStore('workouts');
                 const getAllRequest = store.getAll();
-
                 getAllRequest.onsuccess = () => {
                     if (getAllRequest.result.length > 0) {
-                        getAllRequest.result.forEach(item => {
-                            workoutsData[item.name] = item.data;
-                        });
+                        getAllRequest.result.forEach(item => { workoutsData[item.name] = item.data; });
                         populateRoutines(workoutsData);
                     } else {
                         fetch('workouts.json')
@@ -110,9 +117,7 @@
                             .then(data => {
                                 const writeTransaction = db.transaction('workouts', 'readwrite');
                                 const writeStore = writeTransaction.objectStore('workouts');
-                                for (const key in data) {
-                                    writeStore.put({ name: key, data: data[key] });
-                                }
+                                for (const key in data) { writeStore.put({ name: key, data: data[key] }); }
                                 workoutsData = data;
                                 populateRoutines(data);
                             }).catch(error => console.error(error));
@@ -121,6 +126,59 @@
                 displayLogs();
             });
         });
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+            document.getElementById('timer-display').textContent = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function startTimer(duration) {
+            if (isTimerRunning) return;
+            remainingTime = duration;
+            isTimerRunning = true;
+            document.getElementById('start-timer-btn').style.display = 'none';
+            document.getElementById('add-minute-btn').style.display = 'inline-block';
+            document.getElementById('reset-timer-btn').style.display = 'inline-block';
+            
+            timerInterval = setInterval(() => {
+                remainingTime--;
+                updateTimerDisplay();
+                if (remainingTime <= 0) {
+                    clearInterval(timerInterval);
+                    isTimerRunning = false;
+                    showToast("Rest period is over!");
+                    resetTimer();
+                }
+            }, 1000);
+        }
+
+        function addMinute() {
+            if (!isTimerRunning) return;
+            remainingTime += 60;
+            updateTimerDisplay();
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            remainingTime = 60;
+            updateTimerDisplay();
+            document.getElementById('start-timer-btn').style.display = 'inline-block';
+            document.getElementById('add-minute-btn').style.display = 'none';
+            document.getElementById('reset-timer-btn').style.display = 'none';
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast-notification');
+            toast.textContent = message;
+            toast.className = 'show';
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.className = toast.className.replace('show', '');
+            }, 3000);
+        }
 
         function populateRoutines(data) {
             const routineSelect = document.getElementById('routine-select');
@@ -136,15 +194,9 @@
         function generateRoutineForm() {
             const selectedRoutineName = document.getElementById('routine-select').value;
             const formContainer = document.getElementById('routine-form-container');
-
-            if (!selectedRoutineName) {
-                formContainer.innerHTML = '';
-                return;
-            }
-
+            if (!selectedRoutineName) { formContainer.innerHTML = ''; return; }
             const exercises = workoutsData[selectedRoutineName];
             let formHtml = `<div class="card" id="routine-form"><h2>${selectedRoutineName}</h2>`;
-
             exercises.forEach((exercise, index) => {
                 formHtml += `<div class="log-entry">
                                 <strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${selectedRoutineName}", ${index})'>${exercise.exercise_name}</strong>
@@ -156,7 +208,6 @@
                                 </div>
                              </div>`;
             });
-
             formHtml += `<button onclick="logRoutine()">Log Routine</button></div>`;
             formContainer.innerHTML = formHtml;
         }
@@ -164,66 +215,43 @@
         function showExerciseDetails(routineName, exerciseIndex) {
             const exercise = workoutsData[routineName][exerciseIndex];
             if (!exercise) return;
-
             document.getElementById('details-title').textContent = exercise.exercise_name;
-            
             const contentEl = document.getElementById('details-content');
-            contentEl.innerHTML = `
-                <p><strong>Targets:</strong> ${exercise.targets}</p>
-                <p><strong>Biomechanics:</strong> ${exercise.biomechanics}</p>
-                <p><strong>How To:</strong> ${exercise.how_to}</p>
-            `;
-            
+            contentEl.innerHTML = `<p><strong>Targets:</strong> ${exercise.targets}</p><p><strong>Biomechanics:</strong> ${exercise.biomechanics}</p><p><strong>How To:</strong> ${exercise.how_to}</p>`;
             document.getElementById('exercise-details-modal').style.display = 'block';
         }
 
-        function closeExerciseDetailsModal() {
-            document.getElementById('exercise-details-modal').style.display = 'none';
-        }
-
-        function calculate1RM(weight, reps) {
-            if (reps === 1) return weight;
-            return Math.round(weight * (36 / (37 - reps)));
-        }
+        function closeExerciseDetailsModal() { document.getElementById('exercise-details-modal').style.display = 'none'; }
+        function calculate1RM(weight, reps) { return reps === 1 ? weight : Math.round(weight * (36 / (37 - reps))); }
 
         function logRoutine() {
             const routineForm = document.getElementById('routine-form');
             if (!routineForm) return;
-
             const inputs = routineForm.querySelectorAll('input[data-exercise-name]');
             let setsLogged = 0;
             const transaction = db.transaction('logs', 'readwrite');
             const store = transaction.objectStore('logs');
-
             inputs.forEach(weightInput => {
                 const weight = parseFloat(weightInput.value);
                 const index = weightInput.id.split('-')[1];
                 const repsInput = document.getElementById(`reps-${index}`);
                 const reps = parseInt(repsInput.value);
                 const exerciseName = weightInput.getAttribute('data-exercise-name');
-
                 if (exerciseName && !isNaN(weight) && !isNaN(reps) && weight > 0 && reps > 0) {
-                    const logEntry = {
-                        timestamp: Date.now(),
-                        date: new Date().toLocaleDateString(),
-                        exercise: exerciseName,
-                        weight: weight,
-                        reps: reps,
-                        est1RM: calculate1RM(weight, reps)
-                    };
+                    const logEntry = { timestamp: Date.now(), date: new Date().toLocaleDateString(), exercise: exerciseName, weight: weight, reps: reps, est1RM: calculate1RM(weight, reps) };
                     store.add(logEntry);
                     setsLogged++;
                 }
             });
-
             transaction.oncomplete = () => {
                 if (setsLogged > 0) {
                     document.getElementById('routine-select').value = '';
                     document.getElementById('routine-form-container').innerHTML = '';
                     displayLogs();
-                    alert('Routine logged successfully!');
+                    showToast('Routine logged successfully!');
+                    startTimer(60);
                 } else {
-                    alert("Please fill out at least one set with weight and reps.");
+                    showToast("Please fill out at least one set.");
                 }
             };
         }
@@ -232,7 +260,6 @@
             const transaction = db.transaction('logs', 'readonly');
             const store = transaction.objectStore('logs');
             const getAllRequest = store.getAll();
-
             getAllRequest.onsuccess = () => {
                 const logs = getAllRequest.result.sort((a, b) => b.timestamp - a.timestamp);
                 const container = document.getElementById('logContainer');
@@ -245,8 +272,7 @@
                             <button class="edit-button" onclick="editLog(${log.id})">Edit</button>
                             <button class="delete-button" onclick="deleteLog(${log.id})">Delete</button>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`).join('');
             };
         }
 
@@ -255,16 +281,13 @@
             const transaction = db.transaction('logs', 'readwrite');
             const store = transaction.objectStore('logs');
             store.delete(key);
-            transaction.oncomplete = () => {
-                displayLogs();
-            };
+            transaction.oncomplete = () => { displayLogs(); showToast('Log deleted.'); };
         }
 
         function editLog(key) {
             const transaction = db.transaction('logs', 'readonly');
             const store = transaction.objectStore('logs');
             const getRequest = store.get(key);
-
             getRequest.onsuccess = () => {
                 const log = getRequest.result;
                 document.getElementById('edit-exercise').value = log.exercise;
@@ -276,24 +299,16 @@
             };
         }
 
-        function cancelEdit() {
-            document.getElementById('edit-log-container').style.display = 'none';
-        }
+        function cancelEdit() { document.getElementById('edit-log-container').style.display = 'none'; }
 
         function updateLog() {
             const weight = parseFloat(document.getElementById('edit-weight').value);
             const reps = parseInt(document.getElementById('edit-reps').value);
             const key = parseInt(document.getElementById('edit-key').value, 10);
-
-            if (isNaN(weight) || isNaN(reps) || weight <= 0 || reps <= 0) {
-                alert("Please enter valid weight and reps.");
-                return;
-            }
-
+            if (isNaN(weight) || isNaN(reps) || weight <= 0 || reps <= 0) { showToast("Please enter valid weight and reps."); return; }
             const transaction = db.transaction('logs', 'readwrite');
             const store = transaction.objectStore('logs');
             const getRequest = store.get(key);
-
             getRequest.onsuccess = () => {
                 const logToUpdate = getRequest.result;
                 logToUpdate.weight = weight;
@@ -303,79 +318,38 @@
                 logToUpdate.timestamp = Date.now();
                 store.put(logToUpdate);
             };
-            
-            transaction.oncomplete = () => {
-                displayLogs();
-                cancelEdit();
-            };
+            transaction.oncomplete = () => { displayLogs(); cancelEdit(); showToast('Set updated successfully!'); };
         }
 
         function showProgressChart(exerciseName) {
             const transaction = db.transaction('logs', 'readonly');
             const store = transaction.objectStore('logs');
             const getAllRequest = store.getAll();
-
             getAllRequest.onsuccess = () => {
-                const exerciseLogs = getAllRequest.result
-                    .filter(log => log.exercise === exerciseName)
-                    .sort((a, b) => a.timestamp - b.timestamp);
-
-                if (exerciseLogs.length < 2) {
-                    alert("You need at least two logs for an exercise to see a progress chart.");
-                    return;
-                }
-                
+                const exerciseLogs = getAllRequest.result.filter(log => log.exercise === exerciseName).sort((a, b) => a.timestamp - b.timestamp);
+                if (exerciseLogs.length < 2) { showToast("At least two logs are needed to show a progress chart."); return; }
                 const labels = exerciseLogs.map(log => log.date.split(' ')[0]);
                 const data = exerciseLogs.map(log => log.est1RM);
-
                 const ctx = document.getElementById('progress-chart').getContext('2d');
                 document.getElementById('chart-title').textContent = `${exerciseName} Progress (Est. 1RM)`;
-
-                if (progressChartInstance) {
-                    progressChartInstance.destroy();
-                }
-
+                if (progressChartInstance) { progressChartInstance.destroy(); }
                 progressChartInstance = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: labels,
-                        datasets: [{
-                            label: 'Est. 1RM (lbs)',
-                            data: data,
-                            borderColor: '#d4af37',
-                            backgroundColor: 'rgba(212, 175, 55, 0.2)',
-                            fill: true,
-                            tension: 0.1
-                        }]
+                        datasets: [{ label: 'Est. 1RM (lbs)', data: data, borderColor: '#d4af37', backgroundColor: 'rgba(212, 175, 55, 0.2)', fill: true, tension: 0.1 }]
                     },
                     options: {
-                        scales: {
-                            y: { beginAtZero: false, ticks: { color: '#e0e0e0' }, grid: { color: '#332200' } },
-                            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#332200' } }
-                        },
+                        scales: { y: { beginAtZero: false, ticks: { color: '#e0e0e0' }, grid: { color: '#332200' } }, x: { ticks: { color: '#e0e0e0' }, grid: { color: '#332200' } } },
                         plugins: { legend: { labels: { color: '#e0e0e0' } } }
                     }
                 });
-
                 document.getElementById('progress-modal').style.display = 'block';
             };
         }
 
-        function closeProgressModal() {
-            document.getElementById('progress-modal').style.display = 'none';
-        }
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('ServiceWorker registration failed: ', error);
-                    });
-            });
-        }
+        function closeProgressModal() { document.getElementById('progress-modal').style.display = 'none'; }
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); }); }
     </script>
 </body>
 </html>
