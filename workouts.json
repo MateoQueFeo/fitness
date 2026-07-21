@@ -1,513 +1,59 @@
-[
-    {
-        "day_id": 1,
-        "workout_day": "Side Lunge",
-        "phases": {
-            "warmup": [
-                {
-                    "exercise_name": "Lateral Lunge Weight Shifts",
-                    "targets": "Hip Adductors (origin: pubis; insertion: femur) and Gluteus Medius/Maximus.",
-                    "biomechanics": "Gently shifts weight side-to-side in the frontal plane to lubricate hip joints and safely stretch musculotendinous junctions.",
-                    "how_to": "1. Stand with feet significantly wider than shoulder-width. 2. Push hips back, keeping back flat. 3. Bend right knee, shifting weight to the right foot while left leg stays straight. 4. Push off right foot to center, then shift left.",
-                    "cue": "Imagine sliding side-to-side on a slippery floor."
-                },
-                {
-                    "exercise_name": "Dynamic Leg Swings",
-                    "targets": "Hip Flexors (Iliopsoas, Rectus Femoris) and Hip Extensors (Hamstrings, Gluteus Maximus).",
-                    "biomechanics": "Dynamically warms the femoral head in the acetabulum (hip socket) and stretches the attaching tendons like a pendulum.",
-                    "how_to": "1. Stand sideways to a wall or rack for balance. 2. Keeping the outside leg relatively straight, swing it forward in a controlled arc. 3. Allow gravity to bring the leg back and through into a stretch. 4. Gradually increase ROM.",
-                    "cue": "Feel the stretch at the top of the forward and backward swing."
-                }
-            ],
-            "compound": [
-                {
-                    "exercise_name": "Side Lunge",
-                    "targets": "Gluteus Medius (outer ilium to greater trochanter) and Adductor Magnus (pubis to lower femur).",
-                    "biomechanics": "Frontal-plane unilateral movement that creates a powerful eccentric and concentric contraction in the primary hip stabilizers.",
-                    "how_to": "1. Stand with feet together. 2. Take a large lateral step directly to your right side. 3. As the foot plants, hinge hips back and bend the right knee. 4. Drive forcefully off the right heel and midfoot to return to the start.",
-                    "cue": "Push the floor away with your bent leg to return to center."
-                }
-            ],
-            "isolation": [
-                {
-                    "exercise_name": "Cable Hip Abduction",
-                    "targets": "Gluteus Medius and Minimus (ilium to greater trochanter of the femur).",
-                    "biomechanics": "Provides constant lateral cable resistance to isolate pure hip abduction without relying on momentum.",
-                    "how_to": "1. Attach an ankle cuff to a low pulley around your right ankle. 2. Stand with your left side to the machine. 3. Keeping torso upright, use outer hip muscles to pull your right leg directly out to the side. 4. Squeeze at the peak, then slowly lower.",
-                    "cue": "Squeeze from the outside of your hips."
-                },
-                {
-                    "exercise_name": "Cable Adduction",
-                    "targets": "Adductor Group (pubic bone/ischium inserting along the inner femur).",
-                    "biomechanics": "Provides constant medial cable tension to isolate pure hip adduction against resistance.",
-                    "how_to": "1. Attach cuff to a low pulley around your right ankle. 2. Stand with right side to the machine. 3. Keeping torso stable, engage inner thigh to pull the right leg across the front of your standing leg. 4. Squeeze powerfully, then return.",
-                    "cue": "Imagine squeezing a ball between your thighs."
-                }
-            ],
-            "cooldown": [
-                {
-                    "exercise_name": "Glute Bridge Pulses & Butterfly Stretch",
-                    "targets": "Gluteus Maximus and Adductor complex.",
-                    "biomechanics": "Combines a low-intensity active muscle pump to flush metabolic waste, followed by a passive static stretch to restore adductor resting length.",
-                    "how_to": "1. Perform 15 slow bodyweight glute bridges. 2. Sit on the floor, bring the soles of your feet together. 3. Let your knees fall open wide towards the floor and breathe deeply.",
-                    "cue": "Pulse gently to pump the muscles, then breathe deep and melt into the static stretch."
-                },
-                {
-                    "exercise_name": "Kneeling Quad Stretch",
-                    "targets": "Quadriceps (Rectus Femoris: AIIS of pelvis to patellar tendon) and Hip Flexors.",
-                    "biomechanics": "Passive static hip extension to manually stretch and restore the resting length of the anterior thigh muscles.",
-                    "how_to": "1. Kneel on one knee (use a pad if needed). 2. Reach back and grab the ankle of your back leg. 3. Gently pull the heel toward your glute while keeping your torso upright.",
-                    "cue": "Tuck your tailbone under for a deeper stretch."
-                }
-            ]
-        }
-    },
-    {
-        "day_id": 2,
-        "workout_day": "Incline Chest Press",
-        "phases": {
-            "warmup": [
-                {
-                    "exercise_name": "Arm Circles",
-                    "targets": "Deltoid Complex (clavicle/scapula to deltoid tuberosity).",
-                    "biomechanics": "Dynamic circumduction of the humerus to lubricate the glenohumeral joint and warm synovial fluid.",
-                    "how_to": "1. Stand tall and extend arms straight out to your sides. 2. Make small, controlled forward circles. 3. Gradually increase the size of the circles. 4. Reverse direction after 30 seconds.",
-                    "cue": "Draw perfect circles with your fingertips."
-                },
-                {
-                    "exercise_name": "Prone Y-Raises (Bodyweight)",
-                    "targets": "Lower Trapezius (thoracic vertebrae to scapular spine) and Rotator Cuff.",
-                    "biomechanics": "Active shoulder flexion paired with external rotation to secure the scapula against the ribcage.",
-                    "how_to": "1. Lie face down on the floor or an incline bench. 2. Extend arms in a 'Y' shape with thumbs pointing up to the ceiling. 3. Lift arms by pinching shoulder blades together and down. 4. Lower with control.",
-                    "cue": "Initiate the lift by pulling your shoulder blades down and together."
-                }
-            ],
-            "compound": [
-                {
-                    "exercise_name": "30-Degree Incline DB Press",
-                    "targets": "Clavicular head of Pectoralis Major (clavicle to bicipital groove), Anterior Deltoid, and Triceps.",
-                    "biomechanics": "Pushing from a 30-degree incline shifts the mechanical tension to bias the upper pectoral fibers over the mid/lower chest.",
-                    "how_to": "1. Set bench to 30 degrees. 2. Kick dumbbells up to shoulder height. 3. Press the weights up and slightly inward over your upper chest. 4. Lower under control until dumbbells are near chest level.",
-                    "cue": "Drive your biceps towards each other at the top."
-                }
-            ],
-            "isolation": [
-                {
-                    "exercise_name": "Low-to-High Cable Crossover",
-                    "targets": "Upper chest (Clavicular Pectoralis fibers).",
-                    "biomechanics": "Provides constant upward and inward arc tension that perfectly mirrors the fiber alignment of the upper chest.",
-                    "how_to": "1. Set cables to the lowest position. 2. Grab D-handles and stand slightly forward to create tension. 3. With a slight bend in the elbows, sweep the handles upward and together until they meet at face height. 4. Lower slowly.",
-                    "cue": "Scoop the air up and in."
-                },
-                {
-                    "exercise_name": "Cable Front Raise",
-                    "targets": "Anterior Deltoid (lateral clavicle to deltoid tuberosity).",
-                    "biomechanics": "Applies constant cable tension specifically isolating shoulder flexion in the sagittal plane.",
-                    "how_to": "1. Set a low cable with a straight bar or rope. 2. Stand facing away from the machine, cable running between your legs. 3. Keeping arms straight, raise the handle to eye level. 4. Lower with control.",
-                    "cue": "Lift the weight using the front of your shoulder, keeping arms straight."
-                },
-                {
-                    "exercise_name": "Overhead Cable Triceps Ext.",
-                    "targets": "Triceps Brachii Long Head (infraglenoid tubercle of scapula to olecranon of ulna).",
-                    "biomechanics": "Secures the shoulder in flexion to put the long head of the triceps under a deep mechanical stretch during extension.",
-                    "how_to": "1. Set cable high with a rope attachment. 2. Face away from the machine, hinging forward slightly, hands behind your head. 3. Extend your elbows to press the rope forward and out. 4. Control the eccentric back.",
-                    "cue": "Pin elbows to your head; only move forearms."
-                }
-            ],
-            "cooldown": [
-                {
-                    "exercise_name": "Arm Hug Flutters & Doorway Chest Stretch",
-                    "targets": "Pectoralis Major/Minor and Anterior Deltoids.",
-                    "biomechanics": "Dynamic horizontal adduction to flush lactic acid, followed by passive horizontal abduction to stretch tight pectoral fascia.",
-                    "how_to": "1. Rapidly and gently cross your arms over your chest for 1 minute. 2. Place your forearm against a doorway frame with elbow at 90 degrees. 3. Gently step through the doorway to stretch the chest.",
-                    "cue": "Hug yourself slowly to flush the chest, then lean forward to statically stretch the pecs."
-                },
-                {
-                    "exercise_name": "Overhead Triceps Stretch",
-                    "targets": "Triceps Brachii and Latissimus Dorsi.",
-                    "biomechanics": "Passive elbow flexion paired with extreme shoulder elevation to maximize the stretch on the triceps long head.",
-                    "how_to": "1. Raise one arm straight up, then bend the elbow so your hand drops behind your neck. 2. Use your opposite hand to gently pull the elbow back and down.",
-                    "cue": "Reach your hand down your spine."
-                }
-            ]
-        }
-    },
-    {
-        "day_id": 3,
-        "workout_day": "Walking Lunge",
-        "phases": {
-            "warmup": [
-                {
-                    "exercise_name": "Bodyweight Forward Lunges",
-                    "targets": "Quadriceps and Gluteus Maximus.",
-                    "biomechanics": "Unloaded sagittal plane movement to lubricate the knee and hip joints and groove the exact motor pattern for the workout.",
-                    "how_to": "1. Stand tall. 2. Take a controlled step forward. 3. Lower your hips until both knees are bent at a 90-degree angle. 4. Push off the front foot to return to the start.",
-                    "cue": "Keep front knee aligned with second toe."
-                },
-                {
-                    "exercise_name": "High Knees",
-                    "targets": "Hip Flexors, Core, and Cardiovascular System.",
-                    "biomechanics": "Dynamic unloaded lower-body activation to safely increase heart rate and prepare joints for loaded unilateral work.",
-                    "how_to": "1. Stand tall. 2. Run in place, bringing your knees up to at least hip height. 3. Pump your arms in rhythm with your legs. 4. Keep a brisk pace for 30-60 seconds.",
-                    "cue": "Drive your knees high and land softly on the balls of your feet."
-                }
-            ],
-            "compound": [
-                {
-                    "exercise_name": "Walking Lunge",
-                    "targets": "Quadriceps (femur to tibial tuberosity), Gluteus Maximus, and Hamstrings.",
-                    "biomechanics": "Dynamic, unilateral sagittal plane extension of the hip and knee requiring significant core and pelvic stability.",
-                    "how_to": "1. Hold dumbbells at your sides. 2. Step forward and drop your back knee toward the floor. 3. Push entirely through the front foot to stand up and immediately step into the next rep with the opposite leg.",
-                    "cue": "Fall forward with control."
-                }
-            ],
-            "isolation": [
-                {
-                    "exercise_name": "Seated Leg Curl",
-                    "targets": "Hamstrings (ischial tuberosity to posterior tibia/fibula).",
-                    "biomechanics": "Being seated forces hip flexion, which pre-stretches the biarticular hamstrings, allowing for superior tension during knee flexion.",
-                    "how_to": "1. Sit in the machine with the pad resting just above your Achilles tendons. 2. Lock the thigh pad down tight. 3. Curl the weight down and back as far as possible. 4. Control the weight on the way up.",
-                    "cue": "Squeeze the hamstring to move the weight, controlling the release."
-                },
-                {
-                    "exercise_name": "One-Leg Seated Calf Raise",
-                    "targets": "Soleus (posterior tibia/fibula inserting into the calcaneus/heel).",
-                    "biomechanics": "Sitting with a bent knee puts the larger gastrocnemius in active insufficiency, purely isolating the underlying soleus muscle.",
-                    "how_to": "1. Sit on a bench and place the ball of one foot on a block. 2. Place a heavy dumbbell on that thigh near the knee. 3. Lower the heel to a deep stretch. 4. Press up onto the toes as high as possible.",
-                    "cue": "Push through the ball of your foot."
-                }
-            ],
-            "cooldown": [
-                {
-                    "exercise_name": "Ankle Pumps & Seated Toe Touch",
-                    "targets": "Hamstrings and Calves (Gastrocnemius/Soleus).",
-                    "biomechanics": "Active ankle pumping clears pooled venous blood from the lower extremities, followed by a passive posterior chain stretch.",
-                    "how_to": "1. Sit with legs straight. 2. Actively point and flex your toes 20 times. 3. Hinge forward at the hips, keeping your back relatively straight, and reach for your toes.",
-                    "cue": "Pump the ankles to drain the legs, then melt into the hamstring fold."
-                },
-                {
-                    "exercise_name": "Pigeon Pose",
-                    "targets": "Gluteus Maximus, Medius, and Piriformis.",
-                    "biomechanics": "Deep, passive external rotation and flexion of the hip joint to stretch the thick fascial tissues of the glutes.",
-                    "how_to": "1. From a plank, bring one knee forward and place it behind your wrist, rotating the lower leg inward. 2. Slide the back leg straight back. 3. Sink your hips toward the floor and lower your torso.",
-                    "cue": "Try to square your hips to the front."
-                }
-            ]
-        }
-    },
-    {
-        "day_id": 4,
-        "workout_day": "Bent-Over Row",
-        "phases": {
-            "warmup": [
-                {
-                    "exercise_name": "Cat-Cow",
-                    "targets": "Erector Spinae (spine/sacrum to ribs/vertebrae) and Rectus Abdominis.",
-                    "biomechanics": "Controlled spinal flexion and extension to lubricate intervertebral discs and prime the core.",
-                    "how_to": "1. Get on hands and knees. 2. Inhale and arch your back, dropping your belly and lifting your head. 3. Exhale and round your spine upward, tucking your chin to your chest.",
-                    "cue": "Initiate movement from your tailbone."
-                },
-                {
-                    "exercise_name": "Bent-Over T-Raises (Unweighted)",
-                    "targets": "Rhomboids (thoracic spinous processes to medial scapular border) and Mid-Traps.",
-                    "biomechanics": "Pure, unweighted scapular retraction against gravity to neurologically prime the upper back before heavy pulling.",
-                    "how_to": "1. Hinge at the hips with a flat back. 2. Let arms hang straight down. 3. Keep arms straight and raise them straight out to your sides to form a 'T'. 4. Squeeze shoulder blades, then lower.",
-                    "cue": "Pinch a coin between your shoulder blades at the top."
-                }
-            ],
-            "compound": [
-                {
-                    "exercise_name": "Bent-Over DB Row",
-                    "targets": "Latissimus Dorsi (thoracolumbar fascia to bicipital groove of humerus), Biceps, and Rear Deltoids.",
-                    "biomechanics": "Heavy sagittal/transverse plane pulling requiring intense isometric contraction of the erector spinae and hamstrings to hold the hinge.",
-                    "how_to": "1. Hinge forward at the hips until your torso is nearly parallel to the floor. 2. Let dumbbells hang down. 3. Row the weights up toward your hip crease/ribcage, keeping elbows close to the body. 4. Lower with control.",
-                    "cue": "Pull your elbows into your back pockets."
-                }
-            ],
-            "isolation": [
-                {
-                    "exercise_name": "Unilateral Incline Cable Bicep Curl",
-                    "targets": "Biceps Brachii Long Head (supraglenoid tubercle of scapula to radial tuberosity).",
-                    "biomechanics": "Seated on an incline allows the shoulder to hyperextend behind the torso, putting the long head of the biceps under a massive stretch.",
-                    "how_to": "1. Set an incline bench facing away from a low cable. 2. Sit and grab a D-handle with one hand. 3. Let the arm hang slightly behind your torso. 4. Curl the weight up without moving your upper arm forward.",
-                    "cue": "Keep elbow pinned back to isolate the stretched bicep."
-                },
-                {
-                    "exercise_name": "Cable Rear Delt Fly",
-                    "targets": "Posterior Deltoid (spine of scapula to deltoid tuberosity).",
-                    "biomechanics": "Constant cable tension applied directly against horizontal shoulder abduction.",
-                    "how_to": "1. Stand facing a high dual cable setup. 2. Grab the left cable with your right hand and right cable with your left hand (crossing them). 3. Keep arms slightly bent and pull them apart and backward.",
-                    "cue": "Stretch a giant rubber band across your chest."
-                }
-            ],
-            "cooldown": [
-                {
-                    "exercise_name": "Wall Slide Mimics & Child's Pose",
-                    "targets": "Latissimus Dorsi and Scapular Stabilizers.",
-                    "biomechanics": "Gentle, unloaded active arm elevations flush the mid-back, followed by profound passive spinal decompression.",
-                    "how_to": "1. Stand against a wall and slowly slide the backs of your hands up and down it 10 times. 2. Kneel on the floor, sit back onto your heels, and stretch your arms far forward on the floor.",
-                    "cue": "Flush the upper back with wall slides, then decompress and breathe into Child's Pose."
-                },
-                {
-                    "exercise_name": "Cross-Body Shoulder Stretch",
-                    "targets": "Posterior Deltoid and Rhomboids.",
-                    "biomechanics": "Passive horizontal adduction pulling the humerus across the chest to stretch the posterior shoulder capsule.",
-                    "how_to": "1. Bring one arm straight across your chest. 2. Use your opposite hand/forearm to pull the elbow closer to your body. 3. Keep your shoulder pulled down away from your ear.",
-                    "cue": "Look over the shoulder you are stretching."
-                }
-            ]
-        }
-    },
-    {
-        "day_id": 5,
-        "workout_day": "Curtsy Lunge",
-        "phases": {
-            "warmup": [
-                {
-                    "exercise_name": "Side-Lying Hip Abductions",
-                    "targets": "Gluteus Medius and Minimus.",
-                    "biomechanics": "Direct lateral hip abduction to actively prime and wake up the pelvic lateral stabilizers before offset/curtsy patterns without loading the spine.",
-                    "how_to": "1. Lie on your side with both legs straight and stacked. 2. Keeping your core engaged, lift the top leg straight up without rotating your pelvis backward. 3. Lower with control.",
-                    "cue": "Raise the leg by squeezing the side of your hip."
-                },
-                {
-                    "exercise_name": "Fire Hydrants",
-                    "targets": "Gluteus Medius and Minimus.",
-                    "biomechanics": "Active hip abduction and external rotation in the transverse/frontal planes to prime the lateral hip.",
-                    "how_to": "1. Get on your hands and knees. 2. Keeping your knee bent at 90 degrees, lift one leg straight out to the side. 3. Avoid rotating your lower back or shifting your weight heavily.",
-                    "cue": "Don't spill the glass of water on your lower back."
-                }
-            ],
-            "compound": [
-                {
-                    "exercise_name": "Curtsy Lunge",
-                    "targets": "Gluteus Medius, Gluteus Maximus, and Adductors.",
-                    "biomechanics": "A multi-planar lunge that forces the lateral hip stabilizers (Glute Medius) to work intensely to maintain pelvic alignment while crossing the midline.",
-                    "how_to": "1. Stand tall. 2. Step one foot diagonally behind the other leg as if doing a curtsy. 3. Bend both knees until the front thigh is parallel to the floor. 4. Drive through the front heel to stand back up.",
-                    "cue": "Push off the front foot to return to start."
-                }
-            ],
-            "isolation": [
-                {
-                    "exercise_name": "Cable Hip Abduction",
-                    "targets": "Gluteus Medius.",
-                    "biomechanics": "Constant resistance against pure lateral hip abduction, completely removing quadriceps or hamstring assistance.",
-                    "how_to": "1. Attach an ankle cuff to a low pulley around your right ankle. 2. Stand with your left side to the machine. 3. Keeping torso upright, use outer hip muscles to pull your right leg directly out to the side.",
-                    "cue": "Squeeze from the outside of your hips."
-                },
-                {
-                    "exercise_name": "Cable Adduction",
-                    "targets": "Adductor Group (Magnus, Longus, Brevis).",
-                    "biomechanics": "Constant resistance against pure medial hip adduction, targeting the groin musculature directly.",
-                    "how_to": "1. Attach cuff to a low pulley around your right ankle. 2. Stand with right side to the machine. 3. Keeping torso stable, engage inner thigh to pull the right leg across the front of your standing leg.",
-                    "cue": "Drive your inner thighs together forcefully."
-                }
-            ],
-            "cooldown": [
-                {
-                    "exercise_name": "Quadruped Hip Rocks & Figure-4 Stretch",
-                    "targets": "Gluteus Maximus, Piriformis, and deep hip rotators.",
-                    "biomechanics": "Dynamic rock-backs flush blood into the deep rotators, followed by a targeted static stretch for the piriformis.",
-                    "how_to": "1. On hands and knees, slowly rock your hips back to your heels 10 times. 2. Lie on your back, cross one ankle over the opposite knee, grab the back of the bottom thigh, and pull to your chest.",
-                    "cue": "Rock slowly to flush the hips, then hold the Figure-4 stretch to release the glutes."
-                },
-                {
-                    "exercise_name": "Pigeon Pose",
-                    "targets": "Gluteus Maximus and external rotators.",
-                    "biomechanics": "Deep passive external rotation of the hip joint.",
-                    "how_to": "1. From a plank, bring one knee forward behind your wrist, rotating the lower leg inward. 2. Slide the back leg straight back. 3. Sink your hips toward the floor.",
-                    "cue": "Try to square your hips to the front."
-                }
-            ]
-        }
-    },
-    {
-        "day_id": 6,
-        "workout_day": "Arnold Press",
-        "phases": {
-            "warmup": [
-                {
-                    "exercise_name": "Scapular Wall Push-ups",
-                    "targets": "Serratus Anterior (ribs 1-8 to medial border of scapula).",
-                    "biomechanics": "Unweighted scapular protraction and upward rotation to ensure healthy tracking of the scapula before pressing overhead.",
-                    "how_to": "1. Stand facing a wall, arms straight out with palms flat against it. 2. Keep arms straight and let your chest sink toward the wall (scapulae pinch). 3. Push the wall away, rounding your upper back (scapulae spread).",
-                    "cue": "Push the wall away to hollow out your chest."
-                },
-                {
-                    "exercise_name": "Wall Angels",
-                    "targets": "Rotator Cuff (Infraspinatus, Teres Minor) and Trapezius.",
-                    "biomechanics": "Strict, active upward rotation of the shoulder blades against a fixed vertical plane to improve overhead mobility.",
-                    "how_to": "1. Stand with your back, head, and heels flat against a wall. 2. Bring arms up to a 90-degree goal post position against the wall. 3. Slowly slide your hands up the wall into a 'Y', keeping contact. 4. Pull back down.",
-                    "cue": "Keep lower back flat against the wall."
-                }
-            ],
-            "compound": [
-                {
-                    "exercise_name": "Standing Arnold Press",
-                    "targets": "Anterior Deltoid (front shoulder), Lateral Deltoid, and Triceps.",
-                    "biomechanics": "Combines overhead elbow extension with transverse plane shoulder rotation (supination to pronation), heavily taxing the anterior and lateral deltoid heads.",
-                    "how_to": "1. Hold dumbbells at shoulder height with palms facing your face (supinated). 2. As you press the weights overhead, rotate your hands so your palms face forward at the top (pronated). 3. Reverse the motion on the way down.",
-                    "cue": "Uncork your shoulders as you press."
-                }
-            ],
-            "isolation": [
-                {
-                    "exercise_name": "Leaning Cable Lateral Raise",
-                    "targets": "Lateral Deltoid (acromion to deltoid tuberosity).",
-                    "biomechanics": "Leaning away from the pulley alters the resistance curve, shifting the point of maximum tension to the bottom/mid-range of the lateral raise.",
-                    "how_to": "1. Stand next to a low cable, holding the machine with your inner hand. 2. Lean your body weight away from the machine. 3. With the outer arm, raise the cable handle straight out to the side. 4. Lower with control.",
-                    "cue": "Lead with the elbow and push the weight away from you."
-                },
-                {
-                    "exercise_name": "Cable Triceps Pushdown",
-                    "targets": "Triceps Brachii (Lateral and Medial Heads).",
-                    "biomechanics": "Pure elbow extension isolating the triceps against constant downward cable tension.",
-                    "how_to": "1. Face a high cable with a rope or straight bar. 2. Tuck your elbows tightly against your ribs. 3. Push the attachment straight down toward the floor until arms are fully extended. 4. Control the return to 90 degrees.",
-                    "cue": "Imagine your elbows are nailed to your ribs."
-                }
-            ],
-            "cooldown": [
-                {
-                    "exercise_name": "Shoulder Rolls & Behind-the-Back Stretch",
-                    "targets": "Deltoids, Upper Trapezius, and Pectorals.",
-                    "biomechanics": "Active circumduction flushes metabolic waste from the shoulder girdle, followed by a passive stretch opening the anterior chest fascia.",
-                    "how_to": "1. Slowly roll your shoulders forward in circles for 30 seconds, then backward for 30 seconds. 2. Clasp your hands behind your back, keep arms straight, and gently lift them away from your torso.",
-                    "cue": "Roll the shoulders to clear tension, then clasp hands and open the chest."
-                },
-                {
-                    "exercise_name": "Cross-Body Shoulder Stretch",
-                    "targets": "Posterior and Lateral Deltoids.",
-                    "biomechanics": "Passive horizontal adduction to lengthen the posterior shoulder tissues heavily utilized during the pressing phase.",
-                    "how_to": "1. Bring one arm straight across your chest. 2. Use your opposite arm to gently hook the elbow and pull it tighter to your body.",
-                    "cue": "Look over the shoulder you are stretching."
-                }
-            ]
-        }
-    },
-    {
-        "day_id": 7,
-        "workout_day": "RDL",
-        "phases": {
-            "warmup": [
-                {
-                    "exercise_name": "Bodyweight Good Mornings",
-                    "targets": "Hamstrings and Erector Spinae.",
-                    "biomechanics": "Unloaded hip hinge to actively groove the exact posterior chain mechanics required for heavy deadlifts.",
-                    "how_to": "1. Stand with hands gently behind your head. 2. Keeping a slight bend in your knees and a perfectly flat back, push your hips as far back as possible. 3. Squeeze glutes to stand back up.",
-                    "cue": "Push your butt to the wall behind you."
-                },
-                {
-                    "exercise_name": "Leg Swings (Front-to-Back)",
-                    "targets": "Hamstrings and Hip Flexors.",
-                    "biomechanics": "Dynamic stretching of the hamstring insertion at the ischial tuberosity to safely prepare for heavy eccentric loading.",
-                    "how_to": "1. Stand sideways to a wall for balance. 2. Keep the working leg relatively straight and swing it forward and backward. 3. Gradually increase the height of the swing.",
-                    "cue": "Feel the stretch at the end of each swing."
-                }
-            ],
-            "compound": [
-                {
-                    "exercise_name": "Romanian Deadlift (RDL)",
-                    "targets": "Hamstrings (Primary), Gluteus Maximus (Primary), and Erector Spinae (Secondary).",
-                    "biomechanics": "A heavy, compound hip hinge where the knees remain fixed in a slightly bent position, heavily loading the hamstrings during the eccentric phase.",
-                    "how_to": "1. Hold a barbell or heavy dumbbells with a shoulder-width stance. 2. Keeping legs nearly straight, push your hips straight back. 3. Lower the weight down the front of your legs until you feel a deep hamstring stretch. 4. Drive hips forward to stand.",
-                    "cue": "Scrape your shins with the bar."
-                }
-            ],
-            "isolation": [
-                {
-                    "exercise_name": "Seated Leg Curl",
-                    "targets": "Hamstrings.",
-                    "biomechanics": "The seated position puts the hips in flexion, pre-stretching the hamstrings and isolating pure knee flexion.",
-                    "how_to": "1. Sit in the machine with the pad resting just above your Achilles tendons. 2. Lock the thigh pad down tight. 3. Curl the weight down and back as far as possible. 4. Control the weight on the way up.",
-                    "cue": "Squeeze the hamstring to move the weight, controlling the release."
-                },
-                {
-                    "exercise_name": "One-Leg Standing Calf Raise",
-                    "targets": "Gastrocnemius (femoral condyles to calcaneus via Achilles tendon).",
-                    "biomechanics": "Keeping the knee fully extended (straight) perfectly isolates and optimally loads the biarticular gastrocnemius muscle.",
-                    "how_to": "1. Stand on one foot with the ball of the foot on the edge of a block. 2. Keep the knee locked straight. 3. Drop the heel down for a deep stretch. 4. Press explosively through the ball of the foot to lift the heel high. 5. Lower slowly.",
-                    "cue": "Drive your body straight up to the ceiling."
-                }
-            ],
-            "cooldown": [
-                {
-                    "exercise_name": "Dynamic Hip Rocks & Downward Facing Dog",
-                    "targets": "Posterior Chain (Hamstrings, Glutes, Calves, Erectors).",
-                    "biomechanics": "Gentle active lumbar flushing followed by a global, full-body passive stretch of the entire posterior fascial line.",
-                    "how_to": "1. On all fours, gently rock hips side-to-side and back-to-front for 1 minute. 2. Tuck toes, straighten legs, and push your hips high into the air into an inverted 'V', driving heels toward the floor.",
-                    "cue": "Rock the hips to flush the lower back, then push up into Downward Dog."
-                },
-                {
-                    "exercise_name": "Supine Knee-to-Chest",
-                    "targets": "Gluteus Maximus and Lumbar Erector Spinae.",
-                    "biomechanics": "Passive, deep lumbar spinal flexion to decompress the lower back erectors that were heavily taxed holding the RDL hinge.",
-                    "how_to": "1. Lie flat on your back. 2. Pull both knees into your chest and wrap your arms around your shins. 3. Gently pull the knees tighter, letting your lower back round slightly into the floor.",
-                    "cue": "Keep your tailbone on the floor."
-                }
-            ]
-        }
-    },
-    {
-        "day_id": 8,
-        "workout_day": "Lat Pulldown",
-        "phases": {
-            "warmup": [
-                {
-                    "exercise_name": "Light Scapular Pulldowns",
-                    "targets": "Lower Trapezius and Latissimus Dorsi.",
-                    "biomechanics": "Pure, active scapular depression without elbow flexion to neurologically prime the lats before initiating the full pull.",
-                    "how_to": "1. Grab a pulldown bar with a wide grip and sit down. 2. Keeping your elbows perfectly locked and straight, shrug your shoulders up to your ears. 3. Pull the shoulder blades hard down and together to move the bar just a few inches.",
-                    "cue": "Put your shoulder blades in your back pockets."
-                },
-                {
-                    "exercise_name": "Dead Hang",
-                    "targets": "Latissimus Dorsi and Shoulder Capsule.",
-                    "biomechanics": "Passive vertical suspension to stretch the lats to their full anatomical length and safely decompress the thoracic/lumbar spine.",
-                    "how_to": "1. Grab a pull-up bar with an overhand grip. 2. Let your feet hang free off the floor. 3. Completely relax your shoulders and back, letting gravity pull your body downward. Hold for 15-30 seconds.",
-                    "cue": "Let gravity pull your hips down and stretch your lats."
-                }
-            ],
-            "compound": [
-                {
-                    "exercise_name": "Lat Pulldown",
-                    "targets": "Latissimus Dorsi (Primary), Brachialis, and Biceps Brachii.",
-                    "biomechanics": "A vertical pulling motion combining shoulder adduction and elbow flexion to heavily target the width of the back.",
-                    "how_to": "1. Take a wide grip on the pulldown bar and sit down, locking knees under the pads. 2. Lean back slightly. 3. Pull the bar smoothly down to your upper collarbone. 4. Control the bar back up until arms are fully extended.",
-                    "cue": "Drive your elbows down towards the floor."
-                }
-            ],
-            "isolation": [
-                {
-                    "exercise_name": "Straight Arm Cable Pulldown",
-                    "targets": "Latissimus Dorsi (thoracolumbar fascia to bicipital groove).",
-                    "biomechanics": "Pure shoulder extension against constant tension, entirely removing the biceps from the movement.",
-                    "how_to": "1. Stand facing a high cable with a straight bar. 2. Grab the bar with straight arms, hinge slightly forward. 3. Push the bar in an arc down to your thighs using only your lats. 4. Resist the weight on the way up.",
-                    "cue": "Hinge only at the shoulder."
-                },
-                {
-                    "exercise_name": "Standing Unilateral Cable Hammer Curl",
-                    "targets": "Brachialis (distal half of anterior humerus to ulnar tuberosity) and Brachioradialis.",
-                    "biomechanics": "Utilizing a neutral (hammer) grip functionally disadvantages the biceps brachii, forcing the underlying brachialis to take the load during elbow flexion.",
-                    "how_to": "1. Attach a D-handle to a low cable. 2. Stand facing the machine, holding the handle with a neutral grip (palm facing in). 3. Keeping elbow glued to your ribs, curl the handle up. 4. Lower with control.",
-                    "cue": "Keep your wrist locked in a neutral hammer position."
-                }
-            ],
-            "cooldown": [
-                {
-                    "exercise_name": "Active Hand Flips & Wrist Stretch",
-                    "targets": "Forearm Flexors, Extensors, and Lats.",
-                    "biomechanics": "Rhythmic finger/wrist movement acts as a vascular pump to clear forearm lactic acid, followed by passive wrist extension stretches.",
-                    "how_to": "1. Extend arms straight out and rapidly open/close your fists 20 times. 2. Hold one arm straight out, palm facing up, and use the other hand to gently pull the fingers down toward the floor. Switch sides.",
-                    "cue": "Pump the hands to clear forearm burning, then hold the wrist stretch."
-                },
-                {
-                    "exercise_name": "Overhead Lat Stretch",
-                    "targets": "Latissimus Dorsi.",
-                    "biomechanics": "Passive lateral flexion of the spine combined with shoulder elevation to stretch the entire lateral fascial line.",
-                    "how_to": "1. Stand tall and reach your right arm straight up overhead. 2. Grab your right wrist with your left hand. 3. Gently pull the right arm over to the left side while slightly pushing your right hip out. Switch sides.",
-                    "cue": "Reach up before you reach over."
-                }
-            ]
-        }
-    }
-]
+{
+    "Side Lunge": [
+        {"exercise_name": "Lateral Lunge Weight Shifts","targets": "Hip Adductors (origin: pubis; insertion: femur) and Gluteus Medius/Maximus.","biomechanics": "Gently shifts weight side-to-side in the frontal plane to lubricate hip joints and safely stretch musculotendinous junctions.","how_to": "1. Stand with feet significantly wider than shoulder-width. 2. Push hips back, keeping back flat. 3. Bend right knee, shifting weight to the right foot while left leg stays straight. 4. Push off right foot to center, then shift left.","cue": "Imagine sliding side-to-side on a slippery floor."},
+        {"exercise_name": "Dynamic Leg Swings","targets": "Hip Flexors (Iliopsoas, Rectus Femoris) and Hip Extensors (Hamstrings, Gluteus Maximus).","biomechanics": "Dynamically warms the femoral head in the acetabulum (hip socket) and stretches the attaching tendons like a pendulum.","how_to": "1. Stand sideways to a wall or rack for balance. 2. Keeping the outside leg relatively straight, swing it forward in a controlled arc. 3. Allow gravity to bring the leg back and through into a stretch. 4. Gradually increase ROM.","cue": "Feel the stretch at the top of the forward and backward swing."},
+        {"exercise_name": "Side Lunge","targets": "Gluteus Medius (outer ilium to greater trochanter) and Adductor Magnus (pubis to lower femur).","biomechanics": "Frontal-plane unilateral movement that creates a powerful eccentric and concentric contraction in the primary hip stabilizers.","how_to": "1. Stand with feet together. 2. Take a large lateral step directly to your right side. 3. As the foot plants, hinge hips back and bend the right knee. 4. Drive forcefully off the right heel and midfoot to return to the start.","cue": "Push the floor away with your bent leg to return to center."},
+        {"exercise_name": "Cable Hip Abduction","targets": "Gluteus Medius and Minimus (ilium to greater trochanter of the femur).","biomechanics": "Provides constant lateral cable resistance to isolate pure hip abduction without relying on momentum.","how_to": "1. Attach an ankle cuff to a low pulley around your right ankle. 2. Stand with your left side to the machine. 3. Keeping torso upright, use outer hip muscles to pull your right leg directly out to the side. 4. Squeeze at the peak, then slowly lower.","cue": "Squeeze from the outside of your hips."},
+        {"exercise_name": "Cable Adduction","targets": "Adductor Group (pubic bone/ischium inserting along the inner femur).","biomechanics": "Provides constant medial cable tension to isolate pure hip adduction against resistance.","how_to": "1. Attach cuff to a low pulley around your right ankle. 2. Stand with right side to the machine. 3. Keeping torso stable, engage inner thigh to pull the right leg across the front of your standing leg. 4. Squeeze powerfully, then return.","cue": "Imagine squeezing a ball between your thighs."}
+    ],
+    "Incline Chest Press": [
+        {"exercise_name": "Arm Circles","targets": "Deltoid Complex (clavicle/scapula to deltoid tuberosity).","biomechanics": "Dynamic circumduction of the humerus to lubricate the glenohumeral joint and warm synovial fluid.","how_to": "1. Stand tall and extend arms straight out to your sides. 2. Make small, controlled forward circles. 3. Gradually increase the size of the circles. 4. Reverse direction after 30 seconds.","cue": "Draw perfect circles with your fingertips."},
+        {"exercise_name": "Prone Y-Raises (Bodyweight)","targets": "Lower Trapezius (thoracic vertebrae to scapular spine) and Rotator Cuff.","biomechanics": "Active shoulder flexion paired with external rotation to secure the scapula against the ribcage.","how_to": "1. Lie face down on the floor or an incline bench. 2. Extend arms in a 'Y' shape with thumbs pointing up to the ceiling. 3. Lift arms by pinching shoulder blades together and down. 4. Lower with control.","cue": "Initiate the lift by pulling your shoulder blades down and together."},
+        {"exercise_name": "30-Degree Incline DB Press","targets": "Clavicular head of Pectoralis Major (clavicle to bicipital groove), Anterior Deltoid, and Triceps.","biomechanics": "Pushing from a 30-degree incline shifts the mechanical tension to bias the upper pectoral fibers over the mid/lower chest.","how_to": "1. Set bench to 30 degrees. 2. Kick dumbbells up to shoulder height. 3. Press the weights up and slightly inward over your upper chest. 4. Lower under control until dumbbells are near chest level.","cue": "Drive your biceps towards each other at the top."},
+        {"exercise_name": "Low-to-High Cable Crossover","targets": "Upper chest (Clavicular Pectoralis fibers).","biomechanics": "Provides constant upward and inward arc tension that perfectly mirrors the fiber alignment of the upper chest.","how_to": "1. Set cables to the lowest position. 2. Grab D-handles and stand slightly forward to create tension. 3. With a slight bend in the elbows, sweep the handles upward and together until they meet at face height. 4. Lower slowly.","cue": "Scoop the air up and in."},
+        {"exercise_name": "Cable Front Raise","targets": "Anterior Deltoid (lateral clavicle to deltoid tuberosity).","biomechanics": "Applies constant cable tension specifically isolating shoulder flexion in the sagittal plane.","how_to": "1. Set a low cable with a straight bar or rope. 2. Stand facing away from the machine, cable running between your legs. 3. Keeping arms straight, raise the handle to eye level. 4. Lower with control.","cue": "Lift the weight using the front of your shoulder, keeping arms straight."},
+        {"exercise_name": "Overhead Cable Triceps Ext.","targets": "Triceps Brachii Long Head (infraglenoid tubercle of scapula to olecranon of ulna).","biomechanics": "Secures the shoulder in flexion to put the long head of the triceps under a deep mechanical stretch during extension.","how_to": "1. Set cable high with a rope attachment. 2. Face away from the machine, hinging forward slightly, hands behind your head. 3. Extend your elbows to press the rope forward and out. 4. Control the eccentric back.","cue": "Pin elbows to your head; only move forearms."}
+    ],
+    "Walking Lunge": [
+        {"exercise_name": "Bodyweight Forward Lunges","targets": "Quadriceps and Gluteus Maximus.","biomechanics": "Unloaded sagittal plane movement to lubricate the knee and hip joints and groove the exact motor pattern for the workout.","how_to": "1. Stand tall. 2. Take a controlled step forward. 3. Lower your hips until both knees are bent at a 90-degree angle. 4. Push off the front foot to return to the start.","cue": "Keep front knee aligned with second toe."},
+        {"exercise_name": "High Knees","targets": "Hip Flexors, Core, and Cardiovascular System.","biomechanics": "Dynamic unloaded lower-body activation to safely increase heart rate and prepare joints for loaded unilateral work.","how_to": "1. Stand tall. 2. Run in place, bringing your knees up to at least hip height. 3. Pump your arms in rhythm with your legs. 4. Keep a brisk pace for 30-60 seconds.","cue": "Drive your knees high and land softly on the balls of your feet."},
+        {"exercise_name": "Walking Lunge","targets": "Quadriceps (femur to tibial tuberosity), Gluteus Maximus, and Hamstrings.","biomechanics": "Dynamic, unilateral sagittal plane extension of the hip and knee requiring significant core and pelvic stability.","how_to": "1. Hold dumbbells at your sides. 2. Step forward and drop your back knee toward the floor. 3. Push entirely through the front foot to stand up and immediately step into the next rep with the opposite leg.","cue": "Fall forward with control."},
+        {"exercise_name": "Seated Leg Curl","targets": "Hamstrings (ischial tuberosity to posterior tibia/fibula).","biomechanics": "Being seated forces hip flexion, which pre-stretches the biarticular hamstrings, allowing for superior tension during knee flexion.","how_to": "1. Sit in the machine with the pad resting just above your Achilles tendons. 2. Lock the thigh pad down tight. 3. Curl the weight down and back as far as possible. 4. Control the weight on the way up.","cue": "Squeeze the hamstring to move the weight, controlling the release."},
+        {"exercise_name": "One-Leg Seated Calf Raise","targets": "Soleus (posterior tibia/fibula inserting into the calcaneus/heel).","biomechanics": "Sitting with a bent knee puts the larger gastrocnemius in active insufficiency, purely isolating the underlying soleus muscle.","how_to": "1. Sit on a bench and place the ball of one foot on a block. 2. Place a heavy dumbbell on that thigh near the knee. 3. Lower the heel to a deep stretch. 4. Press up onto the toes as high as possible.","cue": "Push through the ball of your foot."}
+    ],
+    "Bent-Over Row": [
+        {"exercise_name": "Cat-Cow","targets": "Erector Spinae (spine/sacrum to ribs/vertebrae) and Rectus Abdominis.","biomechanics": "Controlled spinal flexion and extension to lubricate intervertebral discs and prime the core.","how_to": "1. Get on hands and knees. 2. Inhale and arch your back, dropping your belly and lifting your head. 3. Exhale and round your spine upward, tucking your chin to your chest.","cue": "Initiate movement from your tailbone."},
+        {"exercise_name": "Bent-Over T-Raises (Unweighted)","targets": "Rhomboids (thoracic spinous processes to medial scapular border) and Mid-Traps.","biomechanics": "Pure, unweighted scapular retraction against gravity to neurologically prime the upper back before heavy pulling.","how_to": "1. Hinge at the hips with a flat back. 2. Let arms hang straight down. 3. Keep arms straight and raise them straight out to your sides to form a 'T'. 4. Squeeze shoulder blades, then lower.","cue": "Pinch a coin between your shoulder blades at the top."},
+        {"exercise_name": "Bent-Over DB Row","targets": "Latissimus Dorsi (thoracolumbar fascia to bicipital groove of humerus), Biceps, and Rear Deltoids.","biomechanics": "Heavy sagittal/transverse plane pulling requiring intense isometric contraction of the erector spinae and hamstrings to hold the hinge.","how_to": "1. Hinge forward at the hips until your torso is nearly parallel to the floor. 2. Let dumbbells hang down. 3. Row the weights up toward your hip crease/ribcage, keeping elbows close to the body. 4. Lower with control.","cue": "Pull your elbows into your back pockets."},
+        {"exercise_name": "Unilateral Incline Cable Bicep Curl","targets": "Biceps Brachii Long Head (supraglenoid tubercle of scapula to radial tuberosity).","biomechanics": "Seated on an incline allows the shoulder to hyperextend behind the torso, putting the long head of the biceps under a massive stretch.","how_to": "1. Set an incline bench facing away from a low cable. 2. Sit and grab a D-handle with one hand. 3. Let the arm hang slightly behind your torso. 4. Curl the weight up without moving your upper arm forward.","cue": "Keep elbow pinned back to isolate the stretched bicep."},
+        {"exercise_name": "Cable Rear Delt Fly","targets": "Posterior Deltoid (spine of scapula to deltoid tuberosity).","biomechanics": "Constant cable tension applied directly against horizontal shoulder abduction.","how_to": "1. Stand facing a high dual cable setup. 2. Grab the left cable with your right hand and right cable with your left hand (crossing them). 3. Keep arms slightly bent and pull them apart and backward.","cue": "Stretch a giant rubber band across your chest."}
+    ],
+    "Curtsy Lunge": [
+        {"exercise_name": "Side-Lying Hip Abductions","targets": "Gluteus Medius and Minimus.","biomechanics": "Direct lateral hip abduction to actively prime and wake up the pelvic lateral stabilizers before offset/curtsy patterns without loading the spine.","how_to": "1. Lie on your side with both legs straight and stacked. 2. Keeping your core engaged, lift the top leg straight up without rotating your pelvis backward. 3. Lower with control.","cue": "Raise the leg by squeezing the side of your hip."},
+        {"exercise_name": "Fire Hydrants","targets": "Gluteus Medius and Minimus.","biomechanics": "Active hip abduction and external rotation in the transverse/frontal planes to prime the lateral hip.","how_to": "1. Get on your hands and knees. 2. Keeping your knee bent at 90 degrees, lift one leg straight out to the side. 3. Avoid rotating your lower back or shifting your weight heavily.","cue": "Don't spill the glass of water on your lower back."},
+        {"exercise_name": "Curtsy Lunge","targets": "Gluteus Medius, Gluteus Maximus, and Adductors.","biomechanics": "A multi-planar lunge that forces the lateral hip stabilizers (Glute Medius) to work intensely to maintain pelvic alignment while crossing the midline.","how_to": "1. Stand tall. 2. Step one foot diagonally behind the other leg as if doing a curtsy. 3. Bend both knees until the front thigh is parallel to the floor. 4. Drive through the front heel to stand back up.","cue": "Push off the front foot to return to start."},
+        {"exercise_name": "Cable Hip Abduction","targets": "Gluteus Medius.","biomechanics": "Constant resistance against pure lateral hip abduction, completely removing quadriceps or hamstring assistance.","how_to": "1. Attach an ankle cuff to a low pulley around your right ankle. 2. Stand with your left side to the machine. 3. Keeping torso upright, use outer hip muscles to pull your right leg directly out to the side.","cue": "Squeeze from the outside of your hips."},
+        {"exercise_name": "Cable Adduction","targets": "Adductor Group (Magnus, Longus, Brevis).","biomechanics": "Constant resistance against pure medial hip adduction, targeting the groin musculature directly.","how_to": "1. Attach cuff to a low pulley around your right ankle. 2. Stand with right side to the machine. 3. Keeping torso stable, engage inner thigh to pull the right leg across the front of your standing leg.","cue": "Drive your inner thighs together forcefully."}
+    ],
+    "Arnold Press": [
+        {"exercise_name": "Scapular Wall Push-ups","targets": "Serratus Anterior (ribs 1-8 to medial border of scapula).","biomechanics": "Unweighted scapular protraction and upward rotation to ensure healthy tracking of the scapula before pressing overhead.","how_to": "1. Stand facing a wall, arms straight out with palms flat against it. 2. Keep arms straight and let your chest sink toward the wall (scapulae pinch). 3. Push the wall away, rounding your upper back (scapulae spread).","cue": "Push the wall away to hollow out your chest."},
+        {"exercise_name": "Wall Angels","targets": "Rotator Cuff (Infraspinatus, Teres Minor) and Trapezius.","biomechanics": "Strict, active upward rotation of the shoulder blades against a fixed vertical plane to improve overhead mobility.","how_to": "1. Stand with your back, head, and heels flat against a wall. 2. Bring arms up to a 90-degree goal post position against the wall. 3. Slowly slide your hands up the wall into a 'Y', keeping contact. 4. Pull back down.","cue": "Keep lower back flat against the wall."},
+        {"exercise_name": "Standing Arnold Press","targets": "Anterior Deltoid (front shoulder), Lateral Deltoid, and Triceps.","biomechanics": "Combines overhead elbow extension with transverse plane shoulder rotation (supination to pronation), heavily taxing the anterior and lateral deltoid heads.","how_to": "1. Hold dumbbells at shoulder height with palms facing your face (supinated). 2. As you press the weights overhead, rotate your hands so your palms face forward at the top (pronated). 3. Reverse the motion on the way down.","cue": "Uncork your shoulders as you press."},
+        {"exercise_name": "Leaning Cable Lateral Raise","targets": "Lateral Deltoid (acromion to deltoid tuberosity).","biomechanics": "Leaning away from the pulley alters the resistance curve, shifting the point of maximum tension to the bottom/mid-range of the lateral raise.","how_to": "1. Stand next to a low cable, holding the machine with your inner hand. 2. Lean your body weight away from the machine. 3. With the outer arm, raise the cable handle straight out to the side. 4. Lower with control.","cue": "Lead with the elbow and push the weight away from you."},
+        {"exercise_name": "Cable Triceps Pushdown","targets": "Triceps Brachii (Lateral and Medial Heads).","biomechanics": "Pure elbow extension isolating the triceps against constant downward cable tension.","how_to": "1. Face a high cable with a rope or straight bar. 2. Tuck your elbows tightly against your ribs. 3. Push the attachment straight down toward the floor until arms are fully extended. 4. Control the return to 90 degrees.","cue": "Imagine your elbows are nailed to your ribs."}
+    ],
+    "RDL": [
+        {"exercise_name": "Bodyweight Good Mornings","targets": "Hamstrings and Erector Spinae.","biomechanics": "Unloaded hip hinge to actively groove the exact posterior chain mechanics required for heavy deadlifts.","how_to": "1. Stand with hands gently behind your head. 2. Keeping a slight bend in your knees and a perfectly flat back, push your hips as far back as possible. 3. Squeeze glutes to stand back up.","cue": "Push your butt to the wall behind you."},
+        {"exercise_name": "Leg Swings (Front-to-Back)","targets": "Hamstrings and Hip Flexors.","biomechanics": "Dynamic stretching of the hamstring insertion at the ischial tuberosity to safely prepare for heavy eccentric loading.","how_to": "1. Stand sideways to a wall for balance. 2. Keep the working leg relatively straight and swing it forward and backward. 3. Gradually increase the height of the swing.","cue": "Feel the stretch at the end of each swing."},
+        {"exercise_name": "Romanian Deadlift (RDL)","targets": "Hamstrings (Primary), Gluteus Maximus (Primary), and Erector Spinae (Secondary).","biomechanics": "A heavy, compound hip hinge where the knees remain fixed in a slightly bent position, heavily loading the hamstrings during the eccentric phase.","how_to": "1. Hold a barbell or heavy dumbbells with a shoulder-width stance. 2. Keeping legs nearly straight, push your hips straight back. 3. Lower the weight down the front of your legs until you feel a deep hamstring stretch. 4. Drive hips forward to stand.","cue": "Scrape your shins with the bar."},
+        {"exercise_name": "Seated Leg Curl","targets": "Hamstrings.","biomechanics": "The seated position puts the hips in flexion, pre-stretching the hamstrings and isolating pure knee flexion.","how_to": "1. Sit in the machine with the pad resting just above your Achilles tendons. 2. Lock the thigh pad down tight. 3. Curl the weight down and back as far as possible. 4. Control the weight on the way up.","cue": "Squeeze the hamstring to move the weight, controlling the release."},
+        {"exercise_name": "One-Leg Standing Calf Raise","targets": "Gastrocnemius (femoral condyles to calcaneus via Achilles tendon).","biomechanics": "Keeping the knee fully extended (straight) perfectly isolates and optimally loads the biarticular gastrocnemius muscle.","how_to": "1. Stand on one foot with the ball of the foot on the edge of a block. 2. Keep the knee locked straight. 3. Drop the heel down for a deep stretch. 4. Press explosively through the ball of the foot to lift the heel high. 5. Lower slowly.","cue": "Drive your body straight up to the ceiling."}
+    ],
+    "Lat Pulldown": [
+        {"exercise_name": "Light Scapular Pulldowns","targets": "Lower Trapezius and Latissimus Dorsi.","biomechanics": "Pure, active scapular depression without elbow flexion to neurologically prime the lats before initiating the full pull.","how_to": "1. Grab a pulldown bar with a wide grip and sit down. 2. Keeping your elbows perfectly locked and straight, shrug your shoulders up to your ears. 3. Pull the shoulder blades hard down and together to move the bar just a few inches.","cue": "Put your shoulder blades in your back pockets."},
+        {"exercise_name": "Dead Hang","targets": "Latissimus Dorsi and Shoulder Capsule.","biomechanics": "Passive vertical suspension to stretch the lats to their full anatomical length and safely decompress the thoracic/lumbar spine.","how_to": "1. Grab a pull-up bar with an overhand grip. 2. Let your feet hang free off the floor. 3. Completely relax your shoulders and back, letting gravity pull your body downward. Hold for 15-30 seconds.","cue": "Let gravity pull your hips down and stretch your lats."},
+        {"exercise_name": "Lat Pulldown","targets": "Latissimus Dorsi (Primary), Brachialis, and Biceps Brachii.","biomechanics": "A vertical pulling motion combining shoulder adduction and elbow flexion to heavily target the width of the back.","how_to": "1. Take a wide grip on the pulldown bar and sit down, locking knees under the pads. 2. Lean back slightly. 3. Pull the bar smoothly down to your upper collarbone. 4. Control the bar back up until arms are fully extended.","cue": "Drive your elbows down towards the floor."},
+        {"exercise_name": "Straight Arm Cable Pulldown","targets": "Latissimus Dorsi (thoracolumbar fascia to bicipital groove).","biomechanics": "Pure shoulder extension against constant tension, entirely removing the biceps from the movement.","how_to": "1. Stand facing a high cable with a straight bar. 2. Grab the bar with straight arms, hinge slightly forward. 3. Push the bar in an arc down to your thighs using only your lats. 4. Resist the weight on the way up.","cue": "Hinge only at the shoulder."},
+        {"exercise_name": "Standing Unilateral Cable Hammer Curl","targets": "Brachialis (distal half of anterior humerus to ulnar tuberosity) and Brachioradialis.","biomechanics": "Utilizing a neutral (hammer) grip functionally disadvantages the biceps brachii, forcing the underlying brachialis to take the load during elbow flexion.","how_to": "1. Attach a D-handle to a low cable. 2. Stand facing the machine, holding the handle with a neutral grip (palm facing in). 3. Keeping elbow glued to your ribs, curl the handle up. 4. Lower with control.","cue": "Keep your wrist locked in a neutral hammer position."}
+    ]
+}
