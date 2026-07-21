@@ -29,9 +29,6 @@ self.addEventListener('fetch', event => {
                         cache.put(event.request, networkResponse.clone());
                     }
                     return networkResponse;
-                }).catch(error => {
-                    console.warn('Fetch failed; returning offline page instead.', error);
-                    return caches.match(event.request);
                 });
                 return response || fetchPromise;
             });

@@ -8,28 +8,72 @@
     <meta name="theme-color" content="#000000">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.8);
+        }
+        .modal-content {
+            background-color: #0a0a0a;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #d4af37;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 8px;
+            position: relative;
+        }
+        .modal-close-button {
+            color: #d4af37;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <div id="exerciseDetailsContainer" class="card" style="display: none;"></div>
+    <div id="progress-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close-button" onclick="closeProgressModal()">&times;</span>
+            <h2 id="chart-title">Exercise Progress</h2>
+            <canvas id="progress-chart"></canvas>
+        </div>
+    </div>
 
-    <div class="card">
-        <h2 id="form-title">Log Set</h2>
+    <div id="edit-log-container" class="card" style="display: none;">
+        <h2>Edit Set</h2>
+        <label for="edit-exercise">Exercise:</label>
+        <input type="text" id="edit-exercise" disabled style="background-color: #333;">
         
-        <label for="exercise">Exercise:</label>
-        <select id="exercise" onchange="displayExerciseDetails()">
-            <option value="">Select Exercise</option>
-        </select>
+        <label for="edit-weight">Weight (lbs):</label>
+        <input type="number" id="edit-weight" step="0.5">
         
-        <label for="weight">Weight (lbs):</label>
-        <input type="number" id="weight" step="0.5">
-        
-        <label for="reps">Reps:</label>
-        <input type="number" id="reps">
+        <label for="edit-reps">Reps:</label>
+        <input type="number" id="edit-reps">
         
         <input type="hidden" id="edit-index">
-        <button id="log-button" onclick="logWorkout()">Log Set</button>
-        <button id="cancel-button" onclick="resetForm()" style="display: none;">Cancel</button>
+        <button onclick="updateLog()">Update Set</button>
+        <button id="cancel-button" onclick="cancelEdit()">Cancel</button>
     </div>
+
+    <div class="card">
+        <h2>Select Routine</h2>
+        <label for="routine-select">Workout Routine:</label>
+        <select id="routine-select" onchange="generateRoutineForm()">
+            <option value="">Select Routine</option>
+        </select>
+    </div>
+
+    <div id="routine-form-container"></div>
 
     <div class="card">
         <h2>Recent Logs</h2>
@@ -38,20 +82,21 @@
 
     <script>
         let workoutsData = {};
+        let progressChartInstance = null;
 
         document.addEventListener('DOMContentLoaded', function() {
             const cachedData = localStorage.getItem('workoutsData');
             
             if (cachedData) {
                 workoutsData = JSON.parse(cachedData);
-                populateExercises(workoutsData);
+                populateRoutines(workoutsData);
             } else {
                 fetch('workouts.json')
                     .then(response => response.json())
                     .then(data => {
                         localStorage.setItem('workoutsData', JSON.stringify(data));
                         workoutsData = data;
-                        populateExercises(data);
+                        populateRoutines(data);
                     })
                     .catch(error => console.error(error));
             }
@@ -59,52 +104,51 @@
             displayLogs();
         });
 
-        function populateExercises(data) {
-            const exerciseSelect = document.getElementById('exercise');
-            for (const category in data) {
-                const optgroup = document.createElement('optgroup');
-                optgroup.label = category;
-                data[category].forEach(exercise => {
-                    const option = document.createElement('option');
-                    option.value = exercise.exercise_name;
-                    option.textContent = exercise.exercise_name;
-                    optgroup.appendChild(option);
-                });
-                exerciseSelect.appendChild(optgroup);
+        function populateRoutines(data) {
+            const routineSelect = document.getElementById('routine-select');
+            for (const routineName in data) {
+                const option = document.createElement('option');
+                option.value = routineName;
+                option.textContent = routineName;
+                routineSelect.appendChild(option);
             }
         }
 
-        function displayExerciseDetails() {
-            const selectedExerciseName = document.getElementById('exercise').value;
-            const detailsContainer = document.getElementById('exerciseDetailsContainer');
+        function generateRoutineForm() {
+            const selectedRoutineName = document.getElementById('routine-select').value;
+            const formContainer = document.getElementById('routine-form-container');
 
-            if (!selectedExerciseName) {
-                detailsContainer.style.display = 'none';
+            if (!selectedRoutineName) {
+                formContainer.innerHTML = '';
                 return;
             }
 
-            let exerciseDetails = null;
-            for (const category in workoutsData) {
-                const found = workoutsData[category].find(ex => ex.exercise_name === selectedExerciseName);
-                if (found) {
-                    exerciseDetails = found;
-                    break;
-                }
-            }
+            const exercises = workoutsData[selectedRoutineName];
+            let formHtml = `<div class="card" id="routine-form"><h2>${selectedRoutineName}</h2>`;
 
-            if (exerciseDetails) {
-                let html = `<button class="close-button" onclick="document.getElementById('exerciseDetailsContainer').style.display='none'">&times;</button>`;
-                html += `<h2>${exerciseDetails.exercise_name}</h2>`;
-                if (exerciseDetails.targets) html += `<p><strong>Targets:</strong> ${exerciseDetails.targets}</p>`;
-                if (exerciseDetails.biomechanics) html += `<p><strong>Biomechanics:</strong> ${exerciseDetails.biomechanics}</p>`;
-                if (exerciseDetails.how_to) html += `<p><strong>How-To:</strong> ${exerciseDetails.how_to}</p>`;
-                if (exerciseDetails.cue) html += `<p><strong>Cue:</strong> "${exerciseDetails.cue}"</p>`;
+            exercises.forEach((exercise, index) => {
+                const isMainLift = exercise.exercise_name.toLowerCase().includes(selectedRoutineName.toLowerCase().split(' ')[0]);
+
+                formHtml += `<div class="log-entry">`;
+                formHtml += `<strong>${exercise.exercise_name}</strong>`;
                 
-                detailsContainer.innerHTML = html;
-                detailsContainer.style.display = 'block';
-            } else {
-                detailsContainer.style.display = 'none';
-            }
+                if (isMainLift) {
+                    formHtml += `
+                        <div class="lift-inputs">
+                            <label for="weight-${index}">Weight (lbs):</label>
+                            <input type="number" id="weight-${index}" data-exercise-name="${exercise.exercise_name}" step="0.5" placeholder="Weight">
+                            <label for="reps-${index}">Reps:</label>
+                            <input type="number" id="reps-${index}" placeholder="Reps">
+                        </div>
+                    `;
+                } else {
+                     formHtml += `<p style="font-size: 0.9em; color: #aaa;">${exercise.how_to}</p>`;
+                }
+                formHtml += `</div>`;
+            });
+
+            formHtml += `<button onclick="logRoutine()">Log Routine</button></div>`;
+            formContainer.innerHTML = formHtml;
         }
 
         function calculate1RM(weight, reps) {
@@ -112,79 +156,62 @@
             return Math.round(weight * (36 / (37 - reps)));
         }
 
-        function logWorkout() {
-            const exercise = document.getElementById('exercise').value;
-            const weight = parseFloat(document.getElementById('weight').value);
-            const reps = parseInt(document.getElementById('reps').value);
-            const editIndex = document.getElementById('edit-index').value;
+        function logRoutine() {
+            const routineForm = document.getElementById('routine-form');
+            if (!routineForm) return;
 
-            if (!exercise || isNaN(weight) || isNaN(reps)) {
-                alert("Please fill all fields");
+            const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+            const inputs = routineForm.querySelectorAll('input[data-exercise-name]');
+            const date = new Date().toLocaleDateString();
+            let setsLogged = 0;
+
+            inputs.forEach(weightInput => {
+                const weight = parseFloat(weightInput.value);
+                const index = weightInput.id.split('-')[1];
+                const repsInput = document.getElementById(`reps-${index}`);
+                const reps = parseInt(repsInput.value);
+                const exerciseName = weightInput.getAttribute('data-exercise-name');
+
+                if (exerciseName && !isNaN(weight) && !isNaN(reps) && weight > 0 && reps > 0) {
+                    const est1RM = calculate1RM(weight, reps);
+                    const logEntry = {
+                        date: date,
+                        exercise: exerciseName,
+                        weight: weight,
+                        reps: reps,
+                        est1RM: est1RM
+                    };
+                    logs.unshift(logEntry);
+                    setsLogged++;
+                }
+            });
+
+            if (setsLogged === 0) {
+                alert("Please fill out at least one set with weight and reps.");
                 return;
             }
 
-            const est1RM = calculate1RM(weight, reps);
-            const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
-
-            if (editIndex !== "") {
-                const logToUpdate = logs[editIndex];
-                logToUpdate.exercise = exercise;
-                logToUpdate.weight = weight;
-                logToUpdate.reps = reps;
-                logToUpdate.est1RM = est1RM;
-            } else {
-                 const logEntry = {
-                    date: new Date().toLocaleDateString(),
-                    exercise: exercise,
-                    weight: weight,
-                    reps: reps,
-                    est1RM: est1RM
-                };
-                logs.unshift(logEntry);
-            }
-
             localStorage.setItem('workoutLogs', JSON.stringify(logs));
-            resetForm();
+            document.getElementById('routine-select').value = '';
+            document.getElementById('routine-form-container').innerHTML = '';
             displayLogs();
+            alert('Routine logged successfully!');
         }
 
         function displayLogs() {
             const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
             const container = document.getElementById('logContainer');
-            let html = '';
-
-            logs.forEach((log, index) => {
-                html += `
-                    <div class="log-entry">
-                        <strong>${log.date} - <span style="color: #d4af37;">${log.exercise}</span></strong><br>
-                        Lifted: ${log.weight} x ${log.reps} reps <br>
-                        <span class="rm-highlight">Est. 1RM: ${log.est1RM}</span>
-                        <div class="log-actions">
-                            <button class="edit-button" onclick="editLog(${index})">Edit</button>
-                            <button class="delete-button" onclick="deleteLog(${index})">Delete</button>
-                        </div>
+            container.innerHTML = logs.map((log, index) => `
+                <div class="log-entry">
+                    <strong>${log.date} - <span style="color: #d4af37; cursor: pointer;" onclick="showProgressChart('${log.exercise}')">${log.exercise}</span></strong><br>
+                    Lifted: ${log.weight} x ${log.reps} reps <br>
+                    <span class="rm-highlight">Est. 1RM: ${log.est1RM}</span>
+                    <div class="log-actions">
+                        <button class="edit-button" onclick="editLog(${index})">Edit</button>
+                        <button class="delete-button" onclick="deleteLog(${index})">Delete</button>
                     </div>
-                `;
-            });
-
-            container.innerHTML = html;
-        }
-
-        function editLog(index) {
-            const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
-            const log = logs[index];
-
-            document.getElementById('exercise').value = log.exercise;
-            document.getElementById('weight').value = log.weight;
-            document.getElementById('reps').value = log.reps;
-            document.getElementById('edit-index').value = index;
-
-            document.getElementById('form-title').textContent = 'Edit Set';
-            const logButton = document.getElementById('log-button');
-            logButton.textContent = 'Update Set';
-            logButton.classList.add('is-editing');
-            document.getElementById('cancel-button').style.display = 'block';
-            window.scrollTo(0, 0);
+                </div>
+            `).join('');
         }
 
         function deleteLog(index) {
@@ -195,18 +222,107 @@
             displayLogs();
         }
 
-        function resetForm() {
-            document.getElementById('exercise').value = '';
-            document.getElementById('weight').value = '';
-            document.getElementById('reps').value = '';
-            document.getElementById('edit-index').value = '';
-
-            document.getElementById('form-title').textContent = 'Log Set';
-            const logButton = document.getElementById('log-button');
-            logButton.textContent = 'Log Set';
-            logButton.classList.remove('is-editing');
-            document.getElementById('cancel-button').style.display = 'none';
+        function editLog(index) {
+            const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+            const log = logs[index];
+            
+            document.getElementById('edit-exercise').value = log.exercise;
+            document.getElementById('edit-weight').value = log.weight;
+            document.getElementById('edit-reps').value = log.reps;
+            document.getElementById('edit-index').value = index;
+            
+            document.getElementById('edit-log-container').style.display = 'block';
+            window.scrollTo(0, 0);
         }
+
+        function cancelEdit() {
+            document.getElementById('edit-log-container').style.display = 'none';
+        }
+
+        function updateLog() {
+            const weight = parseFloat(document.getElementById('edit-weight').value);
+            const reps = parseInt(document.getElementById('edit-reps').value);
+            const index = document.getElementById('edit-index').value;
+
+            if (isNaN(weight) || isNaN(reps) || weight <= 0 || reps <= 0) {
+                alert("Please enter valid weight and reps.");
+                return;
+            }
+
+            const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+            const logToUpdate = logs[index];
+
+            logToUpdate.weight = weight;
+            logToUpdate.reps = reps;
+            logToUpdate.est1RM = calculate1RM(weight, reps);
+            logToUpdate.date = new Date().toLocaleDateString() + " (edited)";
+
+            localStorage.setItem('workoutLogs', JSON.stringify(logs));
+            displayLogs();
+            cancelEdit();
+        }
+
+        function showProgressChart(exerciseName) {
+            const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+            const exerciseLogs = logs
+                .filter(log => log.exercise === exerciseName)
+                .sort((a, b) => new Date(a.date.split(' ')[0]) - new Date(b.date.split(' ')[0]));
+
+            if (exerciseLogs.length < 2) {
+                alert("You need at least two logs for an exercise to see a progress chart.");
+                return;
+            }
+
+            const labels = exerciseLogs.map(log => log.date.split(' ')[0]);
+            const data = exerciseLogs.map(log => log.est1RM);
+
+            const ctx = document.getElementById('progress-chart').getContext('2d');
+            document.getElementById('chart-title').textContent = `${exerciseName} Progress (Est. 1RM)`;
+
+            if (progressChartInstance) {
+                progressChartInstance.destroy();
+            }
+
+            progressChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Est. 1RM (lbs)',
+                        data: data,
+                        borderColor: '#d4af37',
+                        backgroundColor: 'rgba(212, 175, 55, 0.2)',
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: { color: '#e0e0e0' },
+                            grid: { color: '#332200' }
+                        },
+                        x: {
+                            ticks: { color: '#e0e0e0' },
+                            grid: { color: '#332200' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e0e0e0' }
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('progress-modal').style.display = 'block';
+        }
+
+        function closeProgressModal() {
+            document.getElementById('progress-modal').style.display = 'none';
+        }
+
     </script>
     <script>
         if ('serviceWorker' in navigator) {
