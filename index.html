@@ -11,6 +11,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <div id="exercise-details-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close-button" onclick="closeExerciseDetailsModal()">&times;</span>
+            <h2 id="details-title"></h2>
+            <div id="details-content"></div>
+        </div>
+    </div>
+
     <div id="progress-modal" class="modal">
         <div class="modal-content">
             <span class="modal-close-button" onclick="closeProgressModal()">&times;</span>
@@ -138,19 +146,39 @@
             let formHtml = `<div class="card" id="routine-form"><h2>${selectedRoutineName}</h2>`;
 
             exercises.forEach((exercise, index) => {
-                formHtml += `<div class="log-entry"><strong>${exercise.exercise_name}</strong>`;
-                formHtml += `
-                    <div class="lift-inputs">
-                        <label for="weight-${index}">Weight (lbs):</label>
-                        <input type="number" id="weight-${index}" data-exercise-name="${exercise.exercise_name}" step="0.5" placeholder="Weight">
-                        <label for="reps-${index}">Reps:</label>
-                        <input type="number" id="reps-${index}" placeholder="Reps">
-                    </div>`;
-                formHtml += `</div>`;
+                formHtml += `<div class="log-entry">
+                                <strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${selectedRoutineName}", ${index})'>${exercise.exercise_name}</strong>
+                                <div class="lift-inputs">
+                                    <label for="weight-${index}">Weight (lbs):</label>
+                                    <input type="number" id="weight-${index}" data-exercise-name="${exercise.exercise_name}" step="0.5" placeholder="Weight">
+                                    <label for="reps-${index}">Reps:</label>
+                                    <input type="number" id="reps-${index}" placeholder="Reps">
+                                </div>
+                             </div>`;
             });
 
             formHtml += `<button onclick="logRoutine()">Log Routine</button></div>`;
             formContainer.innerHTML = formHtml;
+        }
+        
+        function showExerciseDetails(routineName, exerciseIndex) {
+            const exercise = workoutsData[routineName][exerciseIndex];
+            if (!exercise) return;
+
+            document.getElementById('details-title').textContent = exercise.exercise_name;
+            
+            const contentEl = document.getElementById('details-content');
+            contentEl.innerHTML = `
+                <p><strong>Targets:</strong> ${exercise.targets}</p>
+                <p><strong>Biomechanics:</strong> ${exercise.biomechanics}</p>
+                <p><strong>How To:</strong> ${exercise.how_to}</p>
+            `;
+            
+            document.getElementById('exercise-details-modal').style.display = 'block';
+        }
+
+        function closeExerciseDetailsModal() {
+            document.getElementById('exercise-details-modal').style.display = 'none';
         }
 
         function calculate1RM(weight, reps) {
