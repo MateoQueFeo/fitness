@@ -138,19 +138,14 @@
             let formHtml = `<div class="card" id="routine-form"><h2>${selectedRoutineName}</h2>`;
 
             exercises.forEach((exercise, index) => {
-                const isMainLift = exercise.exercise_name.toLowerCase().includes(selectedRoutineName.toLowerCase().split(' ')[0]);
                 formHtml += `<div class="log-entry"><strong>${exercise.exercise_name}</strong>`;
-                if (isMainLift) {
-                    formHtml += `
-                        <div class="lift-inputs">
-                            <label for="weight-${index}">Weight (lbs):</label>
-                            <input type="number" id="weight-${index}" data-exercise-name="${exercise.exercise_name}" step="0.5" placeholder="Weight">
-                            <label for="reps-${index}">Reps:</label>
-                            <input type="number" id="reps-${index}" placeholder="Reps">
-                        </div>`;
-                } else {
-                     formHtml += `<p style="font-size: 0.9em; color: #aaa;">${exercise.how_to}</p>`;
-                }
+                formHtml += `
+                    <div class="lift-inputs">
+                        <label for="weight-${index}">Weight (lbs):</label>
+                        <input type="number" id="weight-${index}" data-exercise-name="${exercise.exercise_name}" step="0.5" placeholder="Weight">
+                        <label for="reps-${index}">Reps:</label>
+                        <input type="number" id="reps-${index}" placeholder="Reps">
+                    </div>`;
                 formHtml += `</div>`;
             });
 
