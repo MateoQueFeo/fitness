@@ -185,6 +185,20 @@
             }, 3000);
         }
 
+        function toggleSection(contentId) {
+            const content = document.getElementById(contentId);
+            const header = content.previousElementSibling;
+            const icon = header.querySelector('.toggle-icon');
+
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.textContent = '▼';
+            } else {
+                content.style.display = 'none';
+                icon.textContent = '▶';
+            }
+        }
+
         function populateRoutines(data) {
             const routineSelect = document.getElementById('routine-select');
             routineSelect.innerHTML = '<option value="">Select Routine</option>';
@@ -204,49 +218,45 @@
             const exercises = workoutsData[selectedRoutineName];
             let formHtml = `<div class="card" id="routine-form"><h2>${selectedRoutineName}</h2>`;
 
-            // Warm-ups
-            formHtml += `<h3 class="routine-section-header">Warm-up</h3>`;
-            exercises.slice(0, 2).forEach((exercise, index) => {
-                formHtml += `<div class="warmup-entry">
-                                <strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${selectedRoutineName}", ${index})'>${exercise.exercise_name}</strong>
-                             </div>`;
-            });
+            const hasEnoughExercises = exercises.length >= 4;
 
-            // Main Lift
-            if (exercises.length > 2) {
-                formHtml += `<h3 class="routine-section-header">Main Lift</h3>`;
-                const mainLift = exercises[2];
-                const mainLiftIndex = 2;
-                const sanitizedMainLiftName = mainLift.exercise_name.replace(/'/g, "\\'");
-                formHtml += `<div class="log-entry">
-                                <strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${selectedRoutineName}", ${mainLiftIndex})'>${mainLift.exercise_name}</strong>
-                                <div class="lift-inputs">
-                                    <label for="weight-${mainLiftIndex}">Weight (lbs):</label>
-                                    <input type="number" id="weight-${mainLiftIndex}" step="0.5" placeholder="Weight">
-                                    <label for="reps-${mainLiftIndex}">Reps:</label>
-                                    <input type="number" id="reps-${mainLiftIndex}" placeholder="Reps">
-                                </div>
-                                <button onclick="logSet(${mainLiftIndex}, '${sanitizedMainLiftName}')">Log Set</button>
-                             </div>`;
-            }
+            if (hasEnoughExercises) {
+                formHtml += `<h3 class="routine-section-header" onclick="toggleSection('warmup-content')">
+                                <span>Warm-up</span><span class="toggle-icon">▼</span>
+                             </h3>
+                             <div id="warmup-content" class="collapsible-content">`;
+                exercises.slice(0, 2).forEach((exercise, index) => {
+                    formHtml += `<div class="warmup-entry"><strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${selectedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
+                });
+                formHtml += `</div>`;
 
-            // Accessory Lifts / Cool-down
-            if (exercises.length > 3) {
-                formHtml += `<h3 class="routine-section-header">Accessory Lifts / Cool-down</h3>`;
-                exercises.slice(3).forEach((exercise, i) => {
-                    const accessoryIndex = i + 3;
-                    const sanitizedAccessoryName = exercise.exercise_name.replace(/'/g, "\\'");
+                formHtml += `<h3 class="routine-section-header">Working Sets</h3>`;
+                const workingSets = exercises.slice(2, exercises.length - 1);
+                workingSets.forEach((exercise, i) => {
+                    const exerciseIndex = i + 2;
+                    const sanitizedExerciseName = exercise.exercise_name.replace(/'/g, "\\'");
                     formHtml += `<div class="log-entry">
-                                    <strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${selectedRoutineName}", ${accessoryIndex})'>${exercise.exercise_name}</strong>
+                                    <strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${selectedRoutineName}", ${exerciseIndex})'>${exercise.exercise_name}</strong>
                                     <div class="lift-inputs">
-                                        <label for="weight-${accessoryIndex}">Weight (lbs):</label>
-                                        <input type="number" id="weight-${accessoryIndex}" step="0.5" placeholder="Weight">
-                                        <label for="reps-${accessoryIndex}">Reps:</label>
-                                        <input type="number" id="reps-${accessoryIndex}" placeholder="Reps">
+                                        <label for="weight-${exerciseIndex}">Weight (lbs):</label>
+                                        <input type="number" id="weight-${exerciseIndex}" step="0.5" placeholder="Weight">
+                                        <label for="reps-${exerciseIndex}">Reps:</label>
+                                        <input type="number" id="reps-${exerciseIndex}" placeholder="Reps">
                                     </div>
-                                    <button onclick="logSet(${accessoryIndex}, '${sanitizedAccessoryName}')">Log Set</button>
+                                    <button onclick="logSet(${exerciseIndex}, '${sanitizedExerciseName}')">Log Set</button>
                                  </div>`;
                 });
+
+                const coolDownIndex = exercises.length - 1;
+                const coolDownExercise = exercises[coolDownIndex];
+                formHtml += `<h3 class="routine-section-header" onclick="toggleSection('cooldown-content')">
+                                <span>Cool-down</span><span class="toggle-icon">▶</span>
+                             </h3>
+                             <div id="cooldown-content" class="collapsible-content" style="display: none;">
+                                <div class="warmup-entry"><strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${selectedRoutineName}", ${coolDownIndex})'>${coolDownExercise.exercise_name}</strong></div>
+                             </div>`;
+            } else {
+                formHtml += `<p>This routine is not structured for the standard Warm-up/Working/Cool-down format.</p>`;
             }
 
             formHtml += `</div>`;

@@ -49,13 +49,21 @@ h2 {
     color: #d4af37;
     margin-top: 0;
 }
-h3.routine-section-header {
+.routine-section-header {
     color: #d4af37;
     margin-top: 25px;
     margin-bottom: 10px;
     border-bottom: 1px solid #554400;
     padding-bottom: 5px;
     font-size: 1.1em;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.collapsible-content {
+    padding-left: 10px;
+    border-left: 2px solid #332200;
 }
 label {
     font-weight: bold;
@@ -111,6 +119,9 @@ button:hover {
 .warmup-entry {
     padding: 8px 0;
     border-bottom: 1px solid #332200;
+}
+.warmup-entry:last-child {
+    border-bottom: none;
 }
 .rm-highlight {
     color: #ffd700;
