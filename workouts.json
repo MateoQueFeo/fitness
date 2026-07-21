@@ -145,11 +145,11 @@
                     "cue": "Keep front knee aligned with second toe."
                 },
                 {
-                    "exercise_name": "Bodyweight Clamshells",
-                    "targets": "Gluteus Medius and deep external rotators.",
-                    "biomechanics": "Direct lateral hip external rotation to actively prime the pelvic stabilizers and prevent knee valgus (caving inward) under load.",
-                    "how_to": "1. Lie on your side with hips and knees bent. 2. Keep your feet glued together. 3. Lift your top knee as high as you can without rolling your pelvis backward. 4. Lower slowly.",
-                    "cue": "Imagine hips stacked against a wall; open knee using only the side glute."
+                    "exercise_name": "High Knees",
+                    "targets": "Hip Flexors, Core, and Cardiovascular System.",
+                    "biomechanics": "Dynamic unloaded lower-body activation to safely increase heart rate and prepare joints for loaded unilateral work.",
+                    "how_to": "1. Stand tall. 2. Run in place, bringing your knees up to at least hip height. 3. Pump your arms in rhythm with your legs. 4. Keep a brisk pace for 30-60 seconds.",
+                    "cue": "Drive your knees high and land softly on the balls of your feet."
                 }
             ],
             "compound": [
@@ -226,13 +226,6 @@
             ],
             "isolation": [
                 {
-                    "exercise_name": "Straight Arm Cable Pulldown",
-                    "targets": "Latissimus Dorsi.",
-                    "biomechanics": "Utilizes constant cable tension to isolate pure shoulder extension without biceps involvement (since the elbow remains locked).",
-                    "how_to": "1. Stand facing a high cable with a straight bar. 2. Grab the bar with straight arms, hinge slightly forward. 3. Push the bar in an arc down to your thighs using only your lats. 4. Resist the weight on the way up.",
-                    "cue": "Act as a human protractor, hinge only at the shoulder."
-                },
-                {
                     "exercise_name": "Unilateral Incline Cable Bicep Curl",
                     "targets": "Biceps Brachii Long Head (supraglenoid tubercle of scapula to radial tuberosity).",
                     "biomechanics": "Seated on an incline allows the shoulder to hyperextend behind the torso, putting the long head of the biceps under a massive stretch.",
@@ -271,11 +264,11 @@
         "phases": {
             "warmup": [
                 {
-                    "exercise_name": "Glute Bridges",
-                    "targets": "Gluteus Maximus.",
-                    "biomechanics": "Pure, unloaded bilateral hip extension to activate the primary hip extensors without loading the spine.",
-                    "how_to": "1. Lie on your back with knees bent and feet flat on the floor. 2. Squeeze your glutes and drive your hips up toward the ceiling until your body forms a straight line. 3. Lower with control.",
-                    "cue": "Drive through your heels."
+                    "exercise_name": "Side-Lying Hip Abductions",
+                    "targets": "Gluteus Medius and Minimus.",
+                    "biomechanics": "Direct lateral hip abduction to actively prime and wake up the pelvic lateral stabilizers before offset/curtsy patterns without loading the spine.",
+                    "how_to": "1. Lie on your side with both legs straight and stacked. 2. Keeping your core engaged, lift the top leg straight up without rotating your pelvis backward. 3. Lower with control.",
+                    "cue": "Raise the leg by squeezing the side of your hip."
                 },
                 {
                     "exercise_name": "Fire Hydrants",
@@ -358,13 +351,6 @@
                 }
             ],
             "isolation": [
-                {
-                    "exercise_name": "Cable Front Raise",
-                    "targets": "Anterior Deltoid.",
-                    "biomechanics": "Isolates shoulder flexion in the sagittal plane with constant tension provided by the low cable.",
-                    "how_to": "1. Stand facing away from a low cable machine. 2. Grab a straight bar attachment between your legs. 3. Keeping arms straight but not locked, raise the bar straight up to eye level. 4. Lower slowly.",
-                    "cue": "Lift with the front of the shoulder, not momentum."
-                },
                 {
                     "exercise_name": "Leaning Cable Lateral Raise",
                     "targets": "Lateral Deltoid (acromion to deltoid tuberosity).",
@@ -504,13 +490,6 @@
                     "biomechanics": "Utilizing a neutral (hammer) grip functionally disadvantages the biceps brachii, forcing the underlying brachialis to take the load during elbow flexion.",
                     "how_to": "1. Attach a D-handle to a low cable. 2. Stand facing the machine, holding the handle with a neutral grip (palm facing in). 3. Keeping elbow glued to your ribs, curl the handle up. 4. Lower with control.",
                     "cue": "Keep your wrist locked in a neutral hammer position."
-                },
-                {
-                    "exercise_name": "Unilateral Incline Cable Bicep Curl",
-                    "targets": "Biceps Brachii Long Head.",
-                    "biomechanics": "Sitting on an incline allows the upper arm to extend behind the torso, maximizing the anatomical stretch on the long head of the biceps.",
-                    "how_to": "1. Set an incline bench facing away from a low cable. 2. Sit and grab a D-handle with one hand. 3. Let the arm hang slightly behind your torso. 4. Curl the weight up without moving your upper arm forward.",
-                    "cue": "Keep elbow pinned back to isolate the stretched bicep."
                 }
             ],
             "cooldown": [

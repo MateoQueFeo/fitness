@@ -1,88 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Log your strength and mobility routines with FitTracker.">
-  <title>FitTracker</title>
-  <meta name="theme-color" content="#ffd700">
-  <link rel="stylesheet" href="./style.css">
-  <link rel="manifest" href="./manifest.json">
-  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => {
-          console.error('Service Worker registration failed:', err);
-        });
-      });
-    }
-  </script>
-  <script src="./script.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lift Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="favicon-32x32.png" type="image/png">
+    <style>
+        body { font-family: system-ui, sans-serif; padding: 20px; max-width: 500px; margin: auto; background-color: #000000; color: #e0e0e0; }
+        .card { background: #0a0a0a; padding: 20px; border-radius: 8px; border: 1px solid #d4af37; box-shadow: 0 4px 6px rgba(212, 175, 55, 0.1); margin-bottom: 20px; }
+        h2 { color: #d4af37; margin-top: 0; }
+        label { font-weight: bold; display: block; margin-top: 10px; color: #d4af37; }
+        select, input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #554400; border-radius: 4px; box-sizing: border-box; background-color: #111111; color: #ffffff; }
+        select:focus, input:focus { outline: none; border-color: #d4af37; box-shadow: 0 0 5px rgba(212, 175, 55, 0.5); }
+        button { width: 100%; padding: 12px; background-color: #d4af37; color: #000000; border: none; border-radius: 4px; margin-top: 15px; cursor: pointer; font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        button:hover { background-color: #ffd700; }
+        .log-entry { border-bottom: 1px solid #332200; padding: 12px 0; }
+        .log-entry:last-child { border-bottom: none; }
+        .rm-highlight { color: #ffd700; font-weight: bold; }
+        optgroup { font-weight: bold; font-style: normal; color: #d4af37; background-color: #0a0a0a; }
+        option { color: #ffffff; background-color: #111111; }
+    </style>
 </head>
 <body>
-  <div id="appLoader" class="loader-container">
-    <div class="loader"></div>
-    <p id="loaderErrorText" class="hidden" style="color: #ffd700; text-align: center;"></p>
-    <button id="retryLoadBtn" class="hidden" style="width: auto; padding: 10px 20px; margin-top: 20px;">Retry</button>
-  </div>
 
-  <div id="notification" class="notification hidden"></div>
+    <div class="card">
+        <h2>Log a Set</h2>
+        <label for="exercise">Exercise:</label>
+        <select id="exercise">
+        </select>
 
-  <div id="confirmModal" class="modal-container hidden">
-    <div class="modal-content">
-      <p id="confirmModalText"></p>
-      <div class="button-group">
-        <button id="confirmModalCancel" class="secondary">Cancel</button>
-        <button id="confirmModalConfirm">Confirm</button>
-      </div>
-    </div>
-  </div>
+        <label for="weight">Weight (lbs/kg):</label>
+        <input type="number" id="weight" placeholder="e.g. 135">
 
-  <div id="exerciseDetailModal" class="modal-container hidden">
-    <div class="modal-content">
-      <h3 id="exerciseDetailTitle" style="margin-top:0; color: #ffd700;"></h3>
-      <p id="exerciseDetailText" style="text-align: left; white-space: pre-wrap;"></p>
-      <button id="exerciseDetailClose" class="secondary">Close</button>
-    </div>
-  </div>
+        <label for="reps">Reps Completed:</label>
+        <input type="number" id="reps" placeholder="e.g. 8">
 
-  <div id="appContainer" class="hidden">
-    <div id="timerBar" class="hidden">
-      <span id="timerDisplay">01:00</span>
-      <div class="timer-controls">
-        <button id="metronomeToggle">Metronome</button>
-        <button id="addMinuteBtn" aria-label="Add one minute to timer">+1 Min</button>
-        <button id="resetTimerBtn" aria-label="Reset timer">Reset</button>
-      </div>
-    </div>
-    <header>
-      <h1>FitTracker</h1>
-    </header>
-    
-    <div class="container" id="mainMenu">
-      <h3>Select a Routine</h3>
-      <select id="workoutSelect">
-        <option value="">Select a Routine...</option>
-      </select>
-      <div class="button-group">
-        <button class="secondary" id="viewHistoryBtn">View Logs</button>
-      </div>
+        <button onclick="logSet()">Log Workout</button>
     </div>
 
-    <div class="container hidden" id="workoutScreen">
-      <button class="secondary" id="backToMenuBtn">← Back to Menu</button>
-      <div class="card" id="workoutContent"></div>
+    <div class="card" id="history">
+        <h2>Recent Logs & Estimated 1RM</h2>
+        <div id="logContainer"></div>
     </div>
 
-    <div class="container hidden" id="historyScreen">
-      <div class="button-group">
-        <button class="secondary" id="historyBackToMenuBtn">← Back to Menu</button>
-        <button class="secondary" id="exportButton">Export All as CSV</button>
-      </div>
-      <h3>Workout Logs</h3>
-      <div id="historyContent"></div>
-    </div>
-  </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('workouts.json')
+                .then(response => response.json())
+                .then(data => {
+                    const exerciseSelect = document.getElementById('exercise');
+                    
+                    const compoundExercises = new Set();
+                    const isolationExercises = new Set();
+
+                    data.forEach(day => {
+                        day.phases.compound.forEach(ex => compoundExercises.add(ex.exercise_name));
+                        day.phases.isolation.forEach(ex => isolationExercises.add(ex.exercise_name));
+                    });
+
+                    const compoundOptgroup = document.createElement('optgroup');
+                    compoundOptgroup.label = 'Compound Lifts';
+                    Array.from(compoundExercises).sort().forEach(name => {
+                        const option = document.createElement('option');
+                        option.value = name;
+                        option.textContent = name;
+                        compoundOptgroup.appendChild(option);
+                    });
+
+                    const isolationOptgroup = document.createElement('optgroup');
+                    isolationOptgroup.label = 'Isolation Lifts';
+                    Array.from(isolationExercises).sort().forEach(name => {
+                        const option = document.createElement('option');
+                        option.value = name;
+                        option.textContent = name;
+                        isolationOptgroup.appendChild(option);
+                    });
+                    
+                    exerciseSelect.appendChild(compoundOptgroup);
+                    exerciseSelect.appendChild(isolationOptgroup);
+                })
+                .catch(error => console.error('Error loading workouts:', error));
+        });
+
+        function calculate1RM(weight, reps) {
+            if (reps === 1) {
+                return weight;
+            } else if (reps >= 2 && reps <= 5) {
+                return Math.round(weight * (36 / (37 - reps)));
+            } else if (reps > 12) {
+                return Math.round(weight * (1 + (reps * 0.025)));
+            } else {
+                return Math.round(weight * (1 + (reps / 30)));
+            }
+        }
+
+        function logSet() {
+            const ex = document.getElementById('exercise').value;
+            const wt = parseFloat(document.getElementById('weight').value);
+            const rp = parseInt(document.getElementById('reps').value);
+
+            if (!ex || !wt || !rp) {
+                alert("Please select an exercise and enter both weight and reps.");
+                return;
+            }
+
+            const oneRM = calculate1RM(wt, rp);
+            const entry = { date: new Date().toLocaleDateString(), exercise: ex, weight: wt, reps: rp, est1RM: oneRM };
+            
+            let logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+            logs.unshift(entry);
+            localStorage.setItem('workoutLogs', JSON.stringify(logs));
+
+            document.getElementById('weight').value = '';
+            document.getElementById('reps').value = '';
+            displayLogs();
+        }
+
+        function displayLogs() {
+            const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+            const container = document.getElementById('logContainer');
+            container.innerHTML = '';
+            
+            logs.slice(0, 15).forEach(log => {
+                container.innerHTML += `
+                    <div class="log-entry">
+                        <strong>${log.date} - <span style="color: #d4af37;">${log.exercise}</span></strong><br>
+                        Lifted: ${log.weight} x ${log.reps} reps <br>
+                        <span class="rm-highlight">Est. 1RM: ${log.est1RM}</span>
+                    </div>
+                `;
+            });
+        }
+
+        displayLogs();
+    </script>
 </body>
 </html>
