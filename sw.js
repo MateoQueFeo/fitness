@@ -8,7 +8,8 @@ const urlsToCache = [
     './icon-192.png',
     './icon-512.png',
     './icon-512-maskable.png',
-    './favicon-32x32.png'
+    './favicon-32x32.png',
+    'https://cdn.jsdelivr.net/npm/chart.js'
 ];
 
 self.addEventListener('install', event => {
