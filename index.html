@@ -9,36 +9,6 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 1000; 
-            left: 0;
-            top: 0;
-            width: 100%; 
-            height: 100%; 
-            overflow: auto; 
-            background-color: rgba(0,0,0,0.8);
-        }
-        .modal-content {
-            background-color: #0a0a0a;
-            margin: 10% auto;
-            padding: 20px;
-            border: 1px solid #d4af37;
-            width: 90%;
-            max-width: 600px;
-            border-radius: 8px;
-            position: relative;
-        }
-        .modal-close-button {
-            color: #d4af37;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-    </style>
 </head>
 <body>
     <div id="progress-modal" class="modal">
@@ -60,7 +30,7 @@
         <label for="edit-reps">Reps:</label>
         <input type="number" id="edit-reps">
         
-        <input type="hidden" id="edit-index">
+        <input type="hidden" id="edit-key">
         <button onclick="updateLog()">Update Set</button>
         <button id="cancel-button" onclick="cancelEdit()">Cancel</button>
     </div>
@@ -81,31 +51,72 @@
     </div>
 
     <script>
+        let db;
         let workoutsData = {};
         let progressChartInstance = null;
+        const DB_NAME = 'LiftTrackerDB';
+        const DB_VERSION = 1;
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const cachedData = localStorage.getItem('workoutsData');
-            
-            if (cachedData) {
-                workoutsData = JSON.parse(cachedData);
-                populateRoutines(workoutsData);
-            } else {
-                fetch('workouts.json')
-                    .then(response => response.json())
-                    .then(data => {
-                        localStorage.setItem('workoutsData', JSON.stringify(data));
-                        workoutsData = data;
-                        populateRoutines(data);
-                    })
-                    .catch(error => console.error(error));
-            }
-            
-            displayLogs();
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onupgradeneeded = event => {
+                    const dbInstance = event.target.result;
+                    if (!dbInstance.objectStoreNames.contains('workouts')) {
+                        dbInstance.createObjectStore('workouts', { keyPath: 'name' });
+                    }
+                    if (!dbInstance.objectStoreNames.contains('logs')) {
+                        const logsStore = dbInstance.createObjectStore('logs', { keyPath: 'id', autoIncrement: true });
+                        logsStore.createIndex('exercise', 'exercise', { unique: false });
+                    }
+                };
+
+                request.onerror = event => {
+                    console.error('Database error:', event.target.errorCode);
+                    reject('Database error: ' + event.target.errorCode);
+                };
+
+                request.onsuccess = event => {
+                    db = event.target.result;
+                    resolve(db);
+                };
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initDB().then(() => {
+                const transaction = db.transaction('workouts', 'readonly');
+                const store = transaction.objectStore('workouts');
+                const getAllRequest = store.getAll();
+
+                getAllRequest.onsuccess = () => {
+                    if (getAllRequest.result.length > 0) {
+                        getAllRequest.result.forEach(item => {
+                            workoutsData[item.name] = item.data;
+                        });
+                        populateRoutines(workoutsData);
+                    } else {
+                        fetch('workouts.json')
+                            .then(response => response.json())
+                            .then(data => {
+                                const writeTransaction = db.transaction('workouts', 'readwrite');
+                                const writeStore = writeTransaction.objectStore('workouts');
+                                for (const key in data) {
+                                    writeStore.put({ name: key, data: data[key] });
+                                }
+                                workoutsData = data;
+                                populateRoutines(data);
+                            }).catch(error => console.error(error));
+                    }
+                };
+                displayLogs();
+            });
         });
 
         function populateRoutines(data) {
             const routineSelect = document.getElementById('routine-select');
+            routineSelect.innerHTML = '<option value="">Select Routine</option>';
             for (const routineName in data) {
                 const option = document.createElement('option');
                 option.value = routineName;
@@ -128,10 +139,7 @@
 
             exercises.forEach((exercise, index) => {
                 const isMainLift = exercise.exercise_name.toLowerCase().includes(selectedRoutineName.toLowerCase().split(' ')[0]);
-
-                formHtml += `<div class="log-entry">`;
-                formHtml += `<strong>${exercise.exercise_name}</strong>`;
-                
+                formHtml += `<div class="log-entry"><strong>${exercise.exercise_name}</strong>`;
                 if (isMainLift) {
                     formHtml += `
                         <div class="lift-inputs">
@@ -139,8 +147,7 @@
                             <input type="number" id="weight-${index}" data-exercise-name="${exercise.exercise_name}" step="0.5" placeholder="Weight">
                             <label for="reps-${index}">Reps:</label>
                             <input type="number" id="reps-${index}" placeholder="Reps">
-                        </div>
-                    `;
+                        </div>`;
                 } else {
                      formHtml += `<p style="font-size: 0.9em; color: #aaa;">${exercise.how_to}</p>`;
                 }
@@ -160,10 +167,10 @@
             const routineForm = document.getElementById('routine-form');
             if (!routineForm) return;
 
-            const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
             const inputs = routineForm.querySelectorAll('input[data-exercise-name]');
-            const date = new Date().toLocaleDateString();
             let setsLogged = 0;
+            const transaction = db.transaction('logs', 'readwrite');
+            const store = transaction.objectStore('logs');
 
             inputs.forEach(weightInput => {
                 const weight = parseFloat(weightInput.value);
@@ -173,66 +180,77 @@
                 const exerciseName = weightInput.getAttribute('data-exercise-name');
 
                 if (exerciseName && !isNaN(weight) && !isNaN(reps) && weight > 0 && reps > 0) {
-                    const est1RM = calculate1RM(weight, reps);
                     const logEntry = {
-                        date: date,
+                        timestamp: Date.now(),
+                        date: new Date().toLocaleDateString(),
                         exercise: exerciseName,
                         weight: weight,
                         reps: reps,
-                        est1RM: est1RM
+                        est1RM: calculate1RM(weight, reps)
                     };
-                    logs.unshift(logEntry);
+                    store.add(logEntry);
                     setsLogged++;
                 }
             });
 
-            if (setsLogged === 0) {
-                alert("Please fill out at least one set with weight and reps.");
-                return;
-            }
-
-            localStorage.setItem('workoutLogs', JSON.stringify(logs));
-            document.getElementById('routine-select').value = '';
-            document.getElementById('routine-form-container').innerHTML = '';
-            displayLogs();
-            alert('Routine logged successfully!');
+            transaction.oncomplete = () => {
+                if (setsLogged > 0) {
+                    document.getElementById('routine-select').value = '';
+                    document.getElementById('routine-form-container').innerHTML = '';
+                    displayLogs();
+                    alert('Routine logged successfully!');
+                } else {
+                    alert("Please fill out at least one set with weight and reps.");
+                }
+            };
         }
 
         function displayLogs() {
-            const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
-            const container = document.getElementById('logContainer');
-            container.innerHTML = logs.map((log, index) => `
-                <div class="log-entry">
-                    <strong>${log.date} - <span style="color: #d4af37; cursor: pointer;" onclick="showProgressChart('${log.exercise}')">${log.exercise}</span></strong><br>
-                    Lifted: ${log.weight} x ${log.reps} reps <br>
-                    <span class="rm-highlight">Est. 1RM: ${log.est1RM}</span>
-                    <div class="log-actions">
-                        <button class="edit-button" onclick="editLog(${index})">Edit</button>
-                        <button class="delete-button" onclick="deleteLog(${index})">Delete</button>
+            const transaction = db.transaction('logs', 'readonly');
+            const store = transaction.objectStore('logs');
+            const getAllRequest = store.getAll();
+
+            getAllRequest.onsuccess = () => {
+                const logs = getAllRequest.result.sort((a, b) => b.timestamp - a.timestamp);
+                const container = document.getElementById('logContainer');
+                container.innerHTML = logs.map(log => `
+                    <div class="log-entry">
+                        <strong>${log.date} - <span style="color: #d4af37; cursor: pointer;" onclick="showProgressChart('${log.exercise}')">${log.exercise}</span></strong><br>
+                        Lifted: ${log.weight} x ${log.reps} reps <br>
+                        <span class="rm-highlight">Est. 1RM: ${log.est1RM}</span>
+                        <div class="log-actions">
+                            <button class="edit-button" onclick="editLog(${log.id})">Edit</button>
+                            <button class="delete-button" onclick="deleteLog(${log.id})">Delete</button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            };
         }
 
-        function deleteLog(index) {
+        function deleteLog(key) {
             if (!confirm('Are you sure you want to delete this log?')) return;
-            const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
-            logs.splice(index, 1);
-            localStorage.setItem('workoutLogs', JSON.stringify(logs));
-            displayLogs();
+            const transaction = db.transaction('logs', 'readwrite');
+            const store = transaction.objectStore('logs');
+            store.delete(key);
+            transaction.oncomplete = () => {
+                displayLogs();
+            };
         }
 
-        function editLog(index) {
-            const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
-            const log = logs[index];
-            
-            document.getElementById('edit-exercise').value = log.exercise;
-            document.getElementById('edit-weight').value = log.weight;
-            document.getElementById('edit-reps').value = log.reps;
-            document.getElementById('edit-index').value = index;
-            
-            document.getElementById('edit-log-container').style.display = 'block';
-            window.scrollTo(0, 0);
+        function editLog(key) {
+            const transaction = db.transaction('logs', 'readonly');
+            const store = transaction.objectStore('logs');
+            const getRequest = store.get(key);
+
+            getRequest.onsuccess = () => {
+                const log = getRequest.result;
+                document.getElementById('edit-exercise').value = log.exercise;
+                document.getElementById('edit-weight').value = log.weight;
+                document.getElementById('edit-reps').value = log.reps;
+                document.getElementById('edit-key').value = log.id;
+                document.getElementById('edit-log-container').style.display = 'block';
+                window.scrollTo(0, 0);
+            };
         }
 
         function cancelEdit() {
@@ -242,89 +260,88 @@
         function updateLog() {
             const weight = parseFloat(document.getElementById('edit-weight').value);
             const reps = parseInt(document.getElementById('edit-reps').value);
-            const index = document.getElementById('edit-index').value;
+            const key = parseInt(document.getElementById('edit-key').value, 10);
 
             if (isNaN(weight) || isNaN(reps) || weight <= 0 || reps <= 0) {
                 alert("Please enter valid weight and reps.");
                 return;
             }
 
-            const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
-            const logToUpdate = logs[index];
+            const transaction = db.transaction('logs', 'readwrite');
+            const store = transaction.objectStore('logs');
+            const getRequest = store.get(key);
 
-            logToUpdate.weight = weight;
-            logToUpdate.reps = reps;
-            logToUpdate.est1RM = calculate1RM(weight, reps);
-            logToUpdate.date = new Date().toLocaleDateString() + " (edited)";
-
-            localStorage.setItem('workoutLogs', JSON.stringify(logs));
-            displayLogs();
-            cancelEdit();
+            getRequest.onsuccess = () => {
+                const logToUpdate = getRequest.result;
+                logToUpdate.weight = weight;
+                logToUpdate.reps = reps;
+                logToUpdate.est1RM = calculate1RM(weight, reps);
+                logToUpdate.date = new Date().toLocaleDateString() + " (edited)";
+                logToUpdate.timestamp = Date.now();
+                store.put(logToUpdate);
+            };
+            
+            transaction.oncomplete = () => {
+                displayLogs();
+                cancelEdit();
+            };
         }
 
         function showProgressChart(exerciseName) {
-            const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
-            const exerciseLogs = logs
-                .filter(log => log.exercise === exerciseName)
-                .sort((a, b) => new Date(a.date.split(' ')[0]) - new Date(b.date.split(' ')[0]));
+            const transaction = db.transaction('logs', 'readonly');
+            const store = transaction.objectStore('logs');
+            const getAllRequest = store.getAll();
 
-            if (exerciseLogs.length < 2) {
-                alert("You need at least two logs for an exercise to see a progress chart.");
-                return;
-            }
+            getAllRequest.onsuccess = () => {
+                const exerciseLogs = getAllRequest.result
+                    .filter(log => log.exercise === exerciseName)
+                    .sort((a, b) => a.timestamp - b.timestamp);
 
-            const labels = exerciseLogs.map(log => log.date.split(' ')[0]);
-            const data = exerciseLogs.map(log => log.est1RM);
-
-            const ctx = document.getElementById('progress-chart').getContext('2d');
-            document.getElementById('chart-title').textContent = `${exerciseName} Progress (Est. 1RM)`;
-
-            if (progressChartInstance) {
-                progressChartInstance.destroy();
-            }
-
-            progressChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Est. 1RM (lbs)',
-                        data: data,
-                        borderColor: '#d4af37',
-                        backgroundColor: 'rgba(212, 175, 55, 0.2)',
-                        fill: true,
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            ticks: { color: '#e0e0e0' },
-                            grid: { color: '#332200' }
-                        },
-                        x: {
-                            ticks: { color: '#e0e0e0' },
-                            grid: { color: '#332200' }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: { color: '#e0e0e0' }
-                        }
-                    }
+                if (exerciseLogs.length < 2) {
+                    alert("You need at least two logs for an exercise to see a progress chart.");
+                    return;
                 }
-            });
+                
+                const labels = exerciseLogs.map(log => log.date.split(' ')[0]);
+                const data = exerciseLogs.map(log => log.est1RM);
 
-            document.getElementById('progress-modal').style.display = 'block';
+                const ctx = document.getElementById('progress-chart').getContext('2d');
+                document.getElementById('chart-title').textContent = `${exerciseName} Progress (Est. 1RM)`;
+
+                if (progressChartInstance) {
+                    progressChartInstance.destroy();
+                }
+
+                progressChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Est. 1RM (lbs)',
+                            data: data,
+                            borderColor: '#d4af37',
+                            backgroundColor: 'rgba(212, 175, 55, 0.2)',
+                            fill: true,
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: { beginAtZero: false, ticks: { color: '#e0e0e0' }, grid: { color: '#332200' } },
+                            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#332200' } }
+                        },
+                        plugins: { legend: { labels: { color: '#e0e0e0' } } }
+                    }
+                });
+
+                document.getElementById('progress-modal').style.display = 'block';
+            };
         }
 
         function closeProgressModal() {
             document.getElementById('progress-modal').style.display = 'none';
         }
 
-    </script>
-    <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
