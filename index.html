@@ -231,13 +231,17 @@
         function populateRoutines(data) {
             const routineSelect = document.getElementById('routine-select');
             if (!routineSelect) return;
+            
             routineSelect.innerHTML = '<option value="">Select Routine</option>';
-            for (const routineName in data) {
+            
+            const routineKeys = Object.keys(data);
+            
+            routineKeys.forEach(routineName => {
                 const option = document.createElement('option');
                 option.value = routineName;
                 option.textContent = routineName;
                 routineSelect.appendChild(option);
-            }
+            });
         }
 
         function generateRoutineForm() {
