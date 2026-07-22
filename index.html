@@ -27,6 +27,14 @@
         </div>
     </div>
 
+    <div id="progress-summary-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close-button" onclick="closeProgressSummaryModal()">&times;</span>
+            <h2 id="summary-title"></h2>
+            <div id="summary-content"></div>
+        </div>
+    </div>
+
     <div id="edit-log-container" class="card" style="display: none;">
         <h2>Edit Set</h2>
         <label for="edit-exercise">Exercise:</label>
@@ -291,7 +299,7 @@
             formContainer.innerHTML = formHtml;
         }
         
-        function logSet(exerciseIndex, setIndex, exerciseName) {
+        async function logSet(exerciseIndex, setIndex, exerciseName) {
             const weightInput = document.getElementById(`weight-${exerciseIndex}-${setIndex}`);
             const repsInput = document.getElementById(`reps-${exerciseIndex}-${setIndex}`);
             if (!weightInput || !repsInput) return;
@@ -304,31 +312,54 @@
                 return;
             }
 
+            const est1RM = calculate1RM(weight, reps);
             const logEntry = {
                 timestamp: Date.now(),
                 date: new Date().toLocaleDateString(),
                 exercise: exerciseName,
                 weight: weight,
                 reps: reps,
-                est1RM: calculate1RM(weight, reps)
+                est1RM: est1RM,
+                isPR: false 
             };
-
+            
             const transaction = db.transaction('logs', 'readwrite');
             const store = transaction.objectStore('logs');
-            store.add(logEntry);
+            const index = store.index('exercise');
+            const getAllRequest = index.getAll(exerciseName);
 
-            transaction.oncomplete = () => {
-                displayLogs();
-                showToast(`Set ${setIndex + 1} logged successfully!`);
-                startTimer(90);
-                weightInput.disabled = true;
-                repsInput.disabled = true;
-                weightInput.style.backgroundColor = "#222";
-                repsInput.style.backgroundColor = "#222";
+            getAllRequest.onsuccess = () => {
+                const allPreviousLogs = getAllRequest.result;
+                const maxEst1RM = allPreviousLogs.length > 0 
+                    ? Math.max(...allPreviousLogs.map(log => log.est1RM))
+                    : 0;
+
+                if (est1RM > maxEst1RM) {
+                    logEntry.isPR = true;
+                }
+
+                const addRequest = store.add(logEntry);
+                addRequest.onsuccess = () => {
+                    displayLogs();
+                    let toastMessage = `Set ${setIndex + 1} logged!`;
+                    if (logEntry.isPR) {
+                        toastMessage += " ✨ New PR!";
+                    }
+                    showToast(toastMessage);
+                    startTimer(90);
+                    weightInput.disabled = true;
+                    repsInput.disabled = true;
+                    weightInput.style.backgroundColor = "#222";
+                    repsInput.style.backgroundColor = "#222";
+                };
+                addRequest.onerror = () => {
+                     showToast('Error logging set.');
+                };
             };
 
-            transaction.onerror = () => {
-                showToast('Error logging set.');
+            getAllRequest.onerror = () => {
+                showToast('Could not verify PR status, but logging set.');
+                store.add(logEntry);
             };
         }
         
@@ -353,15 +384,36 @@
             const transaction = db.transaction('logs', 'readonly');
             const store = transaction.objectStore('logs');
             const getAllRequest = store.getAll();
+
             getAllRequest.onsuccess = () => {
-                const logs = getAllRequest.result.sort((a, b) => b.timestamp - a.timestamp);
+                const allLogs = getAllRequest.result;
                 const container = document.getElementById('logContainer');
-                container.innerHTML = logs.slice(0, 50).map(log => {
+
+                if (allLogs.length === 0) {
+                    container.innerHTML = "No sets logged yet.";
+                    return;
+                }
+
+                const exerciseMax1RM = {};
+                for (const log of allLogs) {
+                    if (!exerciseMax1RM[log.exercise] || log.est1RM > exerciseMax1RM[log.exercise]) {
+                        exerciseMax1RM[log.exercise] = log.est1RM;
+                    }
+                }
+
+                const sortedLogs = allLogs.sort((a, b) => b.timestamp - a.timestamp);
+                
+                container.innerHTML = sortedLogs.slice(0, 50).map(log => {
+                    const safeExerciseName = log.exercise.replace(/'/g, "\\'");
+                    
+                    const isAllTimePR = log.isPR && log.est1RM === exerciseMax1RM[log.exercise];
+                    const prBadge = isAllTimePR ? `<span class="pr-badge">✨ All-Time PR!</span>` : '';
+
                     return `
                     <div class="log-entry">
-                        <strong>${log.date} - <span style="color: #d4af37;">${log.exercise}</span></strong><br>
+                        <strong>${log.date} - <span style="color: #d4af37; cursor: pointer;" onclick="showProgressSummary('${safeExerciseName}')">${log.exercise}</span></strong><br>
                         Lifted: ${log.weight} x ${log.reps} reps <br>
-                        <span class="rm-highlight">Est. 1RM: ${log.est1RM}</span>
+                        <span class="rm-highlight">Est. 1RM: ${log.est1RM}</span> ${prBadge}
                         <div class="log-actions">
                             <button class="edit-button" onclick="editLog(${log.id})">Edit</button>
                             <button class="delete-button" onclick="deleteLog(${log.id})">Delete</button>
@@ -411,12 +463,63 @@
                 logToUpdate.est1RM = calculate1RM(weight, reps);
                 logToUpdate.date = new Date().toLocaleDateString() + " (edited)";
                 logToUpdate.timestamp = Date.now();
+                
+                logToUpdate.isPR = false;
+
                 store.put(logToUpdate);
             };
             transaction.oncomplete = () => { displayLogs(); cancelEdit(); showToast('Set updated successfully!'); };
         }
+
+        function showProgressSummary(exerciseName) {
+            const transaction = db.transaction('logs', 'readonly');
+            const store = transaction.objectStore('logs');
+            const index = store.index('exercise');
+            const getAllRequest = index.getAll(exerciseName);
+
+            getAllRequest.onsuccess = () => {
+                const logs = getAllRequest.result;
+                if (logs.length < 1) { showToast("No data available for this exercise."); return; }
+
+                logs.sort((a, b) => a.timestamp - b.timestamp);
+
+                const bestSet = logs.reduce((prev, current) => (prev.est1RM > current.est1RM) ? prev : current);
+                const firstSet = logs[0];
+                const latestSet = logs[logs.length - 1];
+
+                const improvement = firstSet.est1RM > 0 
+                    ? ((bestSet.est1RM - firstSet.est1RM) / firstSet.est1RM * 100).toFixed(1)
+                    : 0;
+
+                document.getElementById('summary-title').textContent = `${exerciseName} Progress`;
+                const contentEl = document.getElementById('summary-content');
+                contentEl.innerHTML = `
+                    <div class="summary-section">
+                        <strong>Best vs. Latest (Est. 1RM)</strong><br>
+                        All-Time Best: <span class="rm-highlight">${bestSet.est1RM}</span><br>
+                        Most Recent: <span class="rm-highlight">${latestSet.est1RM}</span>
+                    </div>
+                    <div class="summary-section">
+                        <strong>Set Details</strong><br>
+                        <small>Best: ${bestSet.weight} lbs x ${bestSet.reps} reps (on ${bestSet.date})</small><br>
+                        <small>Latest: ${latestSet.weight} lbs x ${latestSet.reps} reps (on ${latestSet.date})</small>
+                    </div>
+                     <div class="summary-section">
+                        <strong>Journey</strong><br>
+                        <small>Started at: ${firstSet.est1RM} (on ${firstSet.date})</small><br>
+                        <strong>Total Improvement:</strong> ${improvement >= 0 ? `+${improvement}` : improvement}%
+                    </div>
+                `;
+                document.getElementById('progress-summary-modal').style.display = 'block';
+            };
+            getAllRequest.onerror = () => {
+                showToast("Could not retrieve progress data.");
+            }
+        }
+
+        function closeProgressSummaryModal() { document.getElementById('progress-summary-modal').style.display = 'none'; }
         
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); }); }
+        if ('serviceWorker' in navigator) { window.addEventListener('load', => { navigator.serviceWorker.register('./sw.js'); }); }
     </script>
 </body>
 </html>

@@ -144,6 +144,16 @@ button:hover {
     color: #ffd700;
     font-weight: bold;
 }
+.pr-badge {
+    color: #000;
+    background-color: #ffd700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-left: 8px;
+    display: inline-block;
+}
 optgroup {
     font-weight: bold;
     font-style: normal;
@@ -204,6 +214,20 @@ option {
 .modal-content p {
     white-space: pre-line;
 }
+#summary-content {
+    line-height: 1.6;
+}
+#summary-content strong {
+    color: #d4af37;
+}
+#summary-content .summary-section {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #332200;
+}
+#summary-content .summary-section:last-child {
+    border-bottom: none;
+}
 .modal-close-button {
     color: #d4af37;
     float: right;
@@ -228,7 +252,6 @@ option {
     opacity: 0;
     transition: visibility 0s 0.5s, opacity 0.5s linear;
 }
-
 #toast-notification.show {
     visibility: visible;
     opacity: 1;
