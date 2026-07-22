@@ -35,9 +35,16 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    if (event.request.mode === 'navigate') {
+    if (event.request.url.includes('workouts.json')) {
         event.respondWith(
-            fetch(event.request).catch(() => caches.match('./index.html'))
+            caches.open(CACHE_NAME).then(cache => {
+                return fetch(event.request).then(fetchedResponse => {
+                    cache.put(event.request, fetchedResponse.clone());
+                    return fetchedResponse;
+                }).catch(() => {
+                    return cache.match(event.request);
+                });
+            })
         );
         return;
     }
@@ -45,16 +52,12 @@ self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request).then(cachedResponse => {
             const fetchPromise = fetch(event.request).then(networkResponse => {
-                if (networkResponse && networkResponse.status === 200) {
+                if (networkResponse) {
                     caches.open(CACHE_NAME).then(cache => {
                         cache.put(event.request, networkResponse.clone());
                     });
                 }
                 return networkResponse;
-            }).catch(err => {
-                if (cachedResponse) {
-                    return cachedResponse;
-                }
             });
             return cachedResponse || fetchPromise;
         })
