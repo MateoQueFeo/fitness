@@ -1,7 +1,6 @@
 const CACHE_NAME = 'lift-tracker-cache-v2';
 const STATIC_ASSETS = [
-    './',
-    './index.html',
+    './index.html', // Explicitly list start_url
     './style.css',
     './manifest.json',
     './workouts.json',
@@ -35,31 +34,38 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+    // Use a Network-first strategy for dynamic data that changes frequently.
     if (event.request.url.includes('workouts.json')) {
         event.respondWith(
-            caches.open(CACHE_NAME).then(cache => {
-                return fetch(event.request).then(fetchedResponse => {
+            fetch(event.request).then(fetchedResponse => {
+                return caches.open(CACHE_NAME).then(cache => {
                     cache.put(event.request, fetchedResponse.clone());
                     return fetchedResponse;
-                }).catch(() => {
-                    return cache.match(event.request);
                 });
+            }).catch(() => {
+                // If the network fails, serve from cache.
+                return caches.match(event.request);
             })
         );
         return;
     }
 
+    // Use a Cache-first strategy for all other static assets.
     event.respondWith(
         caches.match(event.request).then(cachedResponse => {
-            const fetchPromise = fetch(event.request).then(networkResponse => {
-                if (networkResponse) {
-                    caches.open(CACHE_NAME).then(cache => {
-                        cache.put(event.request, networkResponse.clone());
-                    });
-                }
-                return networkResponse;
+            // If the resource is in the cache, return it.
+            if (cachedResponse) {
+                return cachedResponse;
+            }
+            // If not in cache, fetch it from the network, cache it, and return it.
+            return fetch(event.request).then(networkResponse => {
+                return caches.open(CACHE_NAME).then(cache => {
+                    if (networkResponse && networkResponse.status === 200) {
+                       cache.put(event.request, networkResponse.clone());
+                    }
+                    return networkResponse;
+                });
             });
-            return cachedResponse || fetchPromise;
         })
     );
 });

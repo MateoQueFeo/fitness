@@ -54,8 +54,8 @@
     <div class="card">
         <h2>Select Routine</h2>
         <label for="routine-select">Workout Routine:</label>
-        <select id="routine-select" onchange="generateRoutineForm()">
-            <option value="">Select Routine</option>
+        <select id="routine-select" onchange="generateRoutineForm()" disabled>
+            <option value="loading">Loading routines...</option>
         </select>
         <div id="data-fetch-error" style="color: #ff4d4d; margin-top: 10px; display: none;"></div>
     </div>
@@ -232,6 +232,8 @@
                 option.textContent = routineName;
                 routineSelect.appendChild(option);
             });
+
+            routineSelect.disabled = false;
         }
 
         function generateRoutineForm() {
@@ -264,7 +266,7 @@
                         liftHtml += `<div class="lift-form-row">
                                         <input type="number" id="weight-${index}-${i}" step="0.5" placeholder="Weight (lbs)">
                                         <input type="number" id="reps-${index}-${i}" placeholder="Reps">
-                                        <button onclick="logSet(${index}, ${i}, '${sanitizedExerciseName}')">Log Set ${numSets > 1 ? i + 1 : ''}</button>
+                                        <button class="checkmark-btn" aria-label="Log Set" onclick="logSet(${index}, ${i}, '${sanitizedExerciseName}')">&#10004;</button>
                                      </div>`;
                     }
                     liftHtml += `</div>`;

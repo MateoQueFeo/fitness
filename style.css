@@ -234,15 +234,11 @@ option {
     opacity: 1;
     transition: opacity 0.5s linear;
 }
-
-/* New Routine Section Styles */
 .warmup-section, .lifts-section, .cooldown-section {
     padding: 20px;
     border-radius: 8px;
     margin-bottom: 20px;
 }
-
-/* Reddish Theme for Warm-up */
 .warmup-section {
     background: #1a0505;
     border: 1px solid #8B0000;
@@ -258,8 +254,6 @@ option {
 .warmup-entry:last-child {
     border-bottom: none;
 }
-
-/* Purplish Theme for Lifts */
 .lifts-section {
     background: #13051a;
     border: 1px solid #6a0dad;
@@ -285,8 +279,6 @@ option {
 .lifts-section .lift-form-row button:hover {
     background-color: #9932CC;
 }
-
-/* Blueish Theme for Cool-down */
 .cooldown-section {
     background: #050f1a;
     border: 1px solid #005f99;
@@ -295,6 +287,11 @@ option {
     color: #6bb2ff;
     cursor: pointer;
 }
-.cooldown-section .warmup-entry { /* Reusing warmup-entry style */
+.cooldown-section .warmup-entry {
     border-bottom-color: #003366;
+}
+.checkmark-btn {
+    font-size: 18px;
+    line-height: 1;
+    padding: 8px 12px;
 }
