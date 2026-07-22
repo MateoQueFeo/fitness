@@ -252,13 +252,15 @@
                     warmupHtml += `<div class="warmup-entry"><strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
                 } else if (exercise.category === 'Lift') {
                     liftHtml += `<div class="log-entry">
-                                    <strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong>
-                                    <div class="lift-form-row">
-                                        <input type="number" id="weight-${index}" step="0.5" placeholder="Weight (lbs)">
-                                        <input type="number" id="reps-${index}" placeholder="Reps">
-                                        <button onclick="logSet(${index}, '${sanitizedExerciseName}')">Log Set</button>
-                                    </div>
-                                 </div>`;
+                                    <strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong>`;
+                    for (let i = 0; i < 3; i++) {
+                        liftHtml += `<div class="lift-form-row">
+                                        <input type="number" id="weight-${index}-${i}" step="0.5" placeholder="Weight (lbs)">
+                                        <input type="number" id="reps-${index}-${i}" placeholder="Reps">
+                                        <button onclick="logSet(${index}, ${i}, '${sanitizedExerciseName}')">Log Set ${i + 1}</button>
+                                     </div>`;
+                    }
+                    liftHtml += `</div>`;
                 } else if (exercise.category === 'Cool-down') {
                     cooldownHtml += `<div class="warmup-entry"><strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
                 }
@@ -289,10 +291,11 @@
             formContainer.innerHTML = formHtml;
         }
         
-        function logSet(index, exerciseName) {
-            const weightInput = document.getElementById(`weight-${index}`);
-            const repsInput = document.getElementById(`reps-${index}`);
+        function logSet(exerciseIndex, setIndex, exerciseName) {
+            const weightInput = document.getElementById(`weight-${exerciseIndex}-${setIndex}`);
+            const repsInput = document.getElementById(`reps-${exerciseIndex}-${setIndex}`);
             if (!weightInput || !repsInput) return;
+
             const weight = parseFloat(weightInput.value);
             const reps = parseInt(repsInput.value);
 
@@ -316,10 +319,12 @@
 
             transaction.oncomplete = () => {
                 displayLogs();
-                showToast('Set logged successfully!');
+                showToast(`Set ${setIndex + 1} logged successfully!`);
                 startTimer(90);
-                weightInput.value = '';
-                repsInput.value = '';
+                weightInput.disabled = true;
+                repsInput.disabled = true;
+                weightInput.style.backgroundColor = "#222";
+                repsInput.style.backgroundColor = "#222";
             };
 
             transaction.onerror = () => {

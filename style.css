@@ -116,6 +116,9 @@ button:hover {
     gap: 8px;
     margin-top: 8px;
 }
+.lift-form-row:not(:first-of-type) {
+    margin-top: 12px;
+}
 .lift-form-row input {
     flex: 1;
     margin-top: 0;
