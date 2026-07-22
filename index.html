@@ -69,7 +69,8 @@
 
     <script>
         let db;
-        let workoutsData = {};
+        let workoutsData = [];
+        let workoutDataMap = new Map();
         let toastTimeout;
         const DB_NAME = 'LiftTrackerDB';
         const DB_VERSION = 3;
@@ -83,12 +84,11 @@
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
                 request.onupgradeneeded = event => {
                     const dbInstance = event.target.result;
-                    if (event.oldVersion < 2 && dbInstance.objectStoreNames.contains('workouts')) {
+                    if (dbInstance.objectStoreNames.contains('workouts')) {
                         dbInstance.deleteObjectStore('workouts');
                     }
-                    if (!dbInstance.objectStoreNames.contains('workouts')) {
-                        dbInstance.createObjectStore('workouts', { keyPath: 'name' });
-                    }
+                    dbInstance.createObjectStore('workouts', { keyPath: 'routine_name' });
+                    
                     if (!dbInstance.objectStoreNames.contains('logs')) {
                         const logsStore = dbInstance.createObjectStore('logs', { keyPath: 'id', autoIncrement: true });
                         logsStore.createIndex('exercise', 'exercise', { unique: false });
@@ -100,6 +100,20 @@
                 request.onerror = event => { reject('Database error: ' + event.target.errorCode); };
                 request.onsuccess = event => { db = event.target.result; resolve(db); };
             });
+        }
+
+        function processAndStoreWorkouts(data) {
+            workoutsData = data; 
+            workoutDataMap.clear();
+            const writeTransaction = db.transaction('workouts', 'readwrite');
+            const writeStore = writeTransaction.objectStore('workouts');
+            workoutsData.forEach(routine => {
+                workoutDataMap.set(routine.routine_name, routine.exercises);
+                writeStore.put(routine);
+            });
+            writeTransaction.oncomplete = () => {
+                populateRoutines(workoutsData);
+            };
         }
         
         function fetchAndStoreWorkouts() {
@@ -113,16 +127,7 @@
                     return response.json();
                 })
                 .then(data => {
-                    const writeTransaction = db.transaction('workouts', 'readwrite');
-                    const writeStore = writeTransaction.objectStore('workouts');
-                    const keys = Object.keys(data);
-                    keys.forEach(key => {
-                        writeStore.put({ name: key, data: data[key] });
-                    });
-                    writeTransaction.oncomplete = () => {
-                        workoutsData = data;
-                        populateRoutines(data);
-                    };
+                    processAndStoreWorkouts(data);
                 })
                 .catch(error => {
                     console.error('Failed to fetch or store workouts:', error);
@@ -141,22 +146,20 @@
             initDB().then(() => {
                 const transaction = db.transaction('workouts', 'readonly');
                 const store = transaction.objectStore('workouts');
-                const countRequest = store.count();
-                countRequest.onsuccess = () => {
-                    if (countRequest.result > 0) {
-                        const getAllRequest = store.getAll();
-                        getAllRequest.onsuccess = () => {
-                            getAllRequest.result.forEach(item => { workoutsData[item.name] = item.data; });
-                            populateRoutines(workoutsData);
-                        };
+                const getAllRequest = store.getAll();
+                
+                getAllRequest.onsuccess = () => {
+                    if (getAllRequest.result && getAllRequest.result.length > 0) {
+                        processAndStoreWorkouts(getAllRequest.result);
                     } else {
                         fetchAndStoreWorkouts();
                     }
                 };
+                getAllRequest.onerror = () => fetchAndStoreWorkouts(); 
                 displayLogs();
             }).catch(error => {
                 console.error('Failed to initialize database:', error);
-                errorDiv.textContent = 'Critical Error: Application database could not be opened. The app will not function correctly. Please try clearing site data and refreshing.';
+                errorDiv.textContent = 'Critical Error: Application database could not be opened. Please try clearing site data.';
                 errorDiv.style.display = 'block';
                 document.getElementById('routine-select').disabled = true;
             });
@@ -224,12 +227,10 @@
             
             routineSelect.innerHTML = '<option value="">Select Routine</option>';
             
-            const routineKeys = Object.keys(data);
-            
-            routineKeys.forEach(routineName => {
+            data.forEach(routine => {
                 const option = document.createElement('option');
-                option.value = routineName;
-                option.textContent = routineName;
+                option.value = routine.routine_name;
+                option.textContent = routine.routine_name;
                 routineSelect.appendChild(option);
             });
 
@@ -243,9 +244,12 @@
                 formContainer.innerHTML = '';
                 return;
             }
-            
-            const exercises = workoutsData[selectedRoutineName];
-            let fullHtml = `<div class="card" id="routine-form"><h2>${selectedRoutineName}</h2></div>`;
+
+            const exercises = workoutDataMap.get(selectedRoutineName);
+            if (!exercises) {
+                formContainer.innerHTML = '';
+                return;
+            }
             
             let warmupHtml = '';
             let liftHtml = '';
@@ -256,8 +260,10 @@
                 const sanitizedExerciseName = exercise.exercise_name.replace(/'/g, "\\'");
                 
                 if (exercise.category === 'Warm-up') {
+                    if (!warmupHtml) warmupHtml = '<div class="warmup-section">';
                     warmupHtml += `<div class="warmup-entry"><strong onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
                 } else if (exercise.category === 'Lift') {
+                    if (!liftHtml) liftHtml = '<div class="lifts-section">';
                     liftHtml += `<div class="log-entry">
                                     <strong onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong>`;
                     
@@ -271,22 +277,16 @@
                     }
                     liftHtml += `</div>`;
                 } else if (exercise.category === 'Cool-down') {
+                    if (!cooldownHtml) cooldownHtml = '<div class="cooldown-section">';
                     cooldownHtml += `<div class="warmup-entry"><strong onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
                 }
             });
 
-            let finalFormHtml = '';
-            if (warmupHtml) {
-                finalFormHtml += `<div class="warmup-section">${warmupHtml}</div>`;
-            }
-            if (liftHtml) {
-                finalFormHtml += `<div class="lifts-section">${liftHtml}</div>`;
-            }
-            if (cooldownHtml) {
-                finalFormHtml += `<div class="cooldown-section">${cooldownHtml}</div>`;
-            }
+            if (warmupHtml) warmupHtml += '</div>';
+            if (liftHtml) liftHtml += '</div>';
+            if (cooldownHtml) cooldownHtml += '</div>';
 
-            formContainer.innerHTML = finalFormHtml;
+            formContainer.innerHTML = warmupHtml + liftHtml + cooldownHtml;
         }
         
         async function logSet(exerciseIndex, setIndex, exerciseName) {
@@ -331,9 +331,7 @@
                 addRequest.onsuccess = () => {
                     displayLogs();
                     let toastMessage = `Set logged!`;
-                    if (isNewPR) {
-                        toastMessage += " ✨ New PR!";
-                    }
+                    if (isNewPR) toastMessage += " ✨ New PR!";
                     showToast(toastMessage);
                     startTimer(90);
                     weightInput.disabled = true;
@@ -341,9 +339,7 @@
                     weightInput.style.backgroundColor = "#222";
                     repsInput.style.backgroundColor = "#222";
                 };
-                addRequest.onerror = () => {
-                    showToast('Error logging set.');
-                };
+                addRequest.onerror = () => showToast('Error logging set.');
             };
 
             prRequest.onerror = () => {
@@ -354,7 +350,8 @@
         }
         
         function showExerciseDetails(routineName, exerciseIndex) {
-            const exercise = workoutsData[routineName][exerciseIndex];
+            const exercises = workoutDataMap.get(routineName);
+            const exercise = exercises ? exercises[exerciseIndex] : null;
             if (!exercise) return;
             document.getElementById('details-title').textContent = exercise.exercise_name;
             const contentEl = document.getElementById('details-content');
@@ -388,9 +385,7 @@
                 
                 container.innerHTML = sortedLogs.slice(0, 50).map(log => {
                     const safeExerciseName = log.exercise.replace(/'/g, "\\'");
-                    
                     const prBadge = log.isPR ? `<span class="pr-badge">✨ PR!</span>` : '';
-
                     return `
                     <div class="log-entry">
                         <strong>${log.date} - <span style="color: #d4af37; cursor: pointer;" onclick="showProgressSummary('${safeExerciseName}')">${log.exercise}</span></strong><br>
