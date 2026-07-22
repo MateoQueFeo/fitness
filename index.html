@@ -58,6 +58,7 @@
         <select id="routine-select" onchange="generateRoutineForm()">
             <option value="">Select Routine</option>
         </select>
+        <div id="data-fetch-error" style="color: #ff4d4d; margin-top: 10px; display: none;"></div>
     </div>
 
     <div id="routine-form-container"></div>
@@ -73,7 +74,7 @@
         let progressChartInstance = null;
         let toastTimeout;
         const DB_NAME = 'LiftTrackerDB';
-        const DB_VERSION = 1;
+        const DB_VERSION = 2; // Bumped version to force DB update for new JSON structure
 
         let timerInterval = null;
         let remainingTime = 60;
@@ -85,6 +86,12 @@
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
                 request.onupgradeneeded = event => {
                     const dbInstance = event.target.result;
+                    
+                    // Clear out old workouts cache if upgrading to v2, forces a fresh JSON fetch
+                    if (event.oldVersion < 2 && dbInstance.objectStoreNames.contains('workouts')) {
+                        dbInstance.deleteObjectStore('workouts');
+                    }
+
                     if (!dbInstance.objectStoreNames.contains('workouts')) {
                         dbInstance.createObjectStore('workouts', { keyPath: 'name' });
                     }
@@ -97,6 +104,35 @@
                 request.onsuccess = event => { db = event.target.result; resolve(db); };
             });
         }
+        
+        function fetchAndStoreWorkouts() {
+            const errorDiv = document.getElementById('data-fetch-error');
+            errorDiv.style.display = 'none';
+            fetch('workouts.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const writeTransaction = db.transaction('workouts', 'readwrite');
+                    const writeStore = writeTransaction.objectStore('workouts');
+                    const keys = Object.keys(data);
+                    keys.forEach(key => {
+                        writeStore.put({ name: key, data: data[key] });
+                    });
+                    writeTransaction.oncomplete = () => {
+                        workoutsData = data;
+                        populateRoutines(data);
+                    };
+                })
+                .catch(error => {
+                    console.error('Failed to fetch or store workouts:', error);
+                    errorDiv.textContent = 'Error: Could not load workout routines. Please check your connection and refresh.';
+                    errorDiv.style.display = 'block';
+                });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('start-timer-btn').addEventListener('click', () => startTimer(60));
@@ -107,24 +143,24 @@
             initDB().then(() => {
                 const transaction = db.transaction('workouts', 'readonly');
                 const store = transaction.objectStore('workouts');
-                const getAllRequest = store.getAll();
-                getAllRequest.onsuccess = () => {
-                    if (getAllRequest.result.length > 0) {
-                        getAllRequest.result.forEach(item => { workoutsData[item.name] = item.data; });
-                        populateRoutines(workoutsData);
+                const countRequest = store.count();
+                countRequest.onsuccess = () => {
+                    if (countRequest.result > 0) {
+                        const getAllRequest = store.getAll();
+                        getAllRequest.onsuccess = () => {
+                            getAllRequest.result.forEach(item => { workoutsData[item.name] = item.data; });
+                            populateRoutines(workoutsData);
+                        };
                     } else {
-                        fetch('workouts.json')
-                            .then(response => response.json())
-                            .then(data => {
-                                const writeTransaction = db.transaction('workouts', 'readwrite');
-                                const writeStore = writeTransaction.objectStore('workouts');
-                                for (const key in data) { writeStore.put({ name: key, data: data[key] }); }
-                                workoutsData = data;
-                                populateRoutines(data);
-                            }).catch(error => console.error(error));
+                        fetchAndStoreWorkouts();
                     }
                 };
                 displayLogs();
+            }).catch(error => {
+                console.error('Failed to initialize database:', error);
+                const errorDiv = document.getElementById('data-fetch-error');
+                errorDiv.textContent = 'Error: Application database could not be opened. App may not function correctly.';
+                errorDiv.style.display = 'block';
             });
         });
 
@@ -152,7 +188,7 @@
                 if (remainingTime <= 0) {
                     clearInterval(timerInterval);
                     isTimerRunning = false;
-                    notificationSound.play();
+                    notificationSound.play().catch(e => console.error("Audio play failed:", e));
                     showToast("Rest period is over!");
                     resetTimer();
                 }
@@ -190,7 +226,7 @@
             const header = content.previousElementSibling;
             const icon = header.querySelector('.toggle-icon');
 
-            if (content.style.display === 'none') {
+            if (content.style.display === 'none' || content.style.display === '') {
                 content.style.display = 'block';
                 icon.textContent = '▼';
             } else {
@@ -201,6 +237,7 @@
 
         function populateRoutines(data) {
             const routineSelect = document.getElementById('routine-select');
+            if (!routineSelect) return;
             routineSelect.innerHTML = '<option value="">Select Routine</option>';
             for (const routineName in data) {
                 const option = document.createElement('option');
@@ -218,45 +255,51 @@
             const exercises = workoutsData[selectedRoutineName];
             let formHtml = `<div class="card" id="routine-form"><h2>${selectedRoutineName}</h2>`;
 
-            const hasEnoughExercises = exercises.length >= 4;
+            let warmupHtml = '';
+            let liftHtml = '';
+            let cooldownHtml = '';
 
-            if (hasEnoughExercises) {
+            exercises.forEach((exercise, index) => {
+                const sanitizedRoutineName = selectedRoutineName.replace(/'/g, "\\'");
+                const sanitizedExerciseName = exercise.exercise_name.replace(/'/g, "\\'");
+                
+                if (exercise.category === 'Warm-up') {
+                    warmupHtml += `<div class="warmup-entry"><strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
+                } else if (exercise.category === 'Lift') {
+                    liftHtml += `<div class="log-entry">
+                                    <strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong>
+                                    <div class="lift-inputs">
+                                        <label for="weight-${index}">Weight (lbs):</label>
+                                        <input type="number" id="weight-${index}" step="0.5" placeholder="Weight">
+                                        <label for="reps-${index}">Reps:</label>
+                                        <input type="number" id="reps-${index}" placeholder="Reps">
+                                    </div>
+                                    <button onclick="logSet(${index}, '${sanitizedExerciseName}')">Log Set</button>
+                                 </div>`;
+                } else if (exercise.category === 'Cool-down') {
+                    cooldownHtml += `<div class="warmup-entry"><strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
+                }
+            });
+
+            if (warmupHtml) {
                 formHtml += `<h3 class="routine-section-header" onclick="toggleSection('warmup-content')">
                                 <span>Warm-up</span><span class="toggle-icon">▼</span>
                              </h3>
-                             <div id="warmup-content" class="collapsible-content">`;
-                exercises.slice(0, 2).forEach((exercise, index) => {
-                    formHtml += `<div class="warmup-entry"><strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${selectedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
-                });
-                formHtml += `</div>`;
+                             <div id="warmup-content" class="collapsible-content">${warmupHtml}</div>`;
+            }
 
-                formHtml += `<h3 class="routine-section-header">Working Sets</h3>`;
-                const workingSets = exercises.slice(2, exercises.length - 1);
-                workingSets.forEach((exercise, i) => {
-                    const exerciseIndex = i + 2;
-                    const sanitizedExerciseName = exercise.exercise_name.replace(/'/g, "\\'");
-                    formHtml += `<div class="log-entry">
-                                    <strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${selectedRoutineName}", ${exerciseIndex})'>${exercise.exercise_name}</strong>
-                                    <div class="lift-inputs">
-                                        <label for="weight-${exerciseIndex}">Weight (lbs):</label>
-                                        <input type="number" id="weight-${exerciseIndex}" step="0.5" placeholder="Weight">
-                                        <label for="reps-${exerciseIndex}">Reps:</label>
-                                        <input type="number" id="reps-${exerciseIndex}" placeholder="Reps">
-                                    </div>
-                                    <button onclick="logSet(${exerciseIndex}, '${sanitizedExerciseName}')">Log Set</button>
-                                 </div>`;
-                });
+            if (liftHtml) {
+                formHtml += `<h3 class="routine-section-header" onclick="toggleSection('working-sets-content')">
+                                <span>Working Sets</span><span class="toggle-icon">▼</span>
+                             </h3>
+                             <div id="working-sets-content" class="collapsible-content">${liftHtml}</div>`;
+            }
 
-                const coolDownIndex = exercises.length - 1;
-                const coolDownExercise = exercises[coolDownIndex];
+            if (cooldownHtml) {
                 formHtml += `<h3 class="routine-section-header" onclick="toggleSection('cooldown-content')">
                                 <span>Cool-down</span><span class="toggle-icon">▶</span>
                              </h3>
-                             <div id="cooldown-content" class="collapsible-content" style="display: none;">
-                                <div class="warmup-entry"><strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${selectedRoutineName}", ${coolDownIndex})'>${coolDownExercise.exercise_name}</strong></div>
-                             </div>`;
-            } else {
-                formHtml += `<p>This routine is not structured for the standard Warm-up/Working/Cool-down format.</p>`;
+                             <div id="cooldown-content" class="collapsible-content" style="display: none;">${cooldownHtml}</div>`;
             }
 
             formHtml += `</div>`;
@@ -266,6 +309,7 @@
         function logSet(index, exerciseName) {
             const weightInput = document.getElementById(`weight-${index}`);
             const repsInput = document.getElementById(`reps-${index}`);
+            if (!weightInput || !repsInput) return;
             const weight = parseFloat(weightInput.value);
             const reps = parseInt(repsInput.value);
 
@@ -290,7 +334,7 @@
             transaction.oncomplete = () => {
                 displayLogs();
                 showToast('Set logged successfully!');
-                startTimer(60);
+                startTimer(90);
                 weightInput.value = '';
                 repsInput.value = '';
             };
@@ -305,12 +349,17 @@
             if (!exercise) return;
             document.getElementById('details-title').textContent = exercise.exercise_name;
             const contentEl = document.getElementById('details-content');
-            contentEl.innerHTML = `<p><strong>Targets:</strong> ${exercise.targets}</p><p><strong>Biomechanics:</strong> ${exercise.biomechanics}</p><p><strong>How To:</strong> ${exercise.how_to}</p>`;
+            contentEl.innerHTML = `
+                <p><strong>Category:</strong> ${exercise.category}</p>
+                <p><strong>Targets:</strong> ${exercise.targets}</p>
+                <p><strong>Biomechanics:</strong> ${exercise.biomechanics}</p>
+                <p><strong>How To:</strong> ${exercise.how_to}</p>
+            `;
             document.getElementById('exercise-details-modal').style.display = 'block';
         }
 
         function closeExerciseDetailsModal() { document.getElementById('exercise-details-modal').style.display = 'none'; }
-        function calculate1RM(weight, reps) { return reps === 1 ? weight : Math.round(weight * (36 / (37 - reps))); }
+        function calculate1RM(weight, reps) { return reps === 1 ? weight : Math.round(weight * (1 + reps / 30)); }
 
         function displayLogs() {
             const transaction = db.transaction('logs', 'readonly');
@@ -319,16 +368,19 @@
             getAllRequest.onsuccess = () => {
                 const logs = getAllRequest.result.sort((a, b) => b.timestamp - a.timestamp);
                 const container = document.getElementById('logContainer');
-                container.innerHTML = logs.map(log => `
+                container.innerHTML = logs.slice(0, 50).map(log => {
+                    const safeExerciseName = log.exercise.replace(/'/g, "\\'");
+                    return `
                     <div class="log-entry">
-                        <strong>${log.date} - <span style="color: #d4af37; cursor: pointer;" onclick="showProgressChart('${log.exercise.replace(/'/g, "\\'")}')">${log.exercise}</span></strong><br>
+                        <strong>${log.date} - <span style="color: #d4af37; cursor: pointer;" onclick="showProgressChart('${safeExerciseName}')">${log.exercise}</span></strong><br>
                         Lifted: ${log.weight} x ${log.reps} reps <br>
                         <span class="rm-highlight">Est. 1RM: ${log.est1RM}</span>
                         <div class="log-actions">
                             <button class="edit-button" onclick="editLog(${log.id})">Edit</button>
                             <button class="delete-button" onclick="deleteLog(${log.id})">Delete</button>
                         </div>
-                    </div>`).join('');
+                    </div>`;
+                }).join('');
             };
         }
 
@@ -380,9 +432,11 @@
         function showProgressChart(exerciseName) {
             const transaction = db.transaction('logs', 'readonly');
             const store = transaction.objectStore('logs');
-            const getAllRequest = store.getAll();
+            const index = store.index('exercise');
+            const getAllRequest = index.getAll(exerciseName);
+
             getAllRequest.onsuccess = () => {
-                const exerciseLogs = getAllRequest.result.filter(log => log.exercise === exerciseName).sort((a, b) => a.timestamp - b.timestamp);
+                const exerciseLogs = getAllRequest.result.sort((a, b) => a.timestamp - b.timestamp);
                 if (exerciseLogs.length < 2) { showToast("At least two logs are needed to show a progress chart."); return; }
                 const labels = exerciseLogs.map(log => log.date.split(' ')[0]);
                 const data = exerciseLogs.map(log => log.est1RM);
@@ -402,6 +456,9 @@
                 });
                 document.getElementById('progress-modal').style.display = 'block';
             };
+            getAllRequest.onerror = () => {
+                showToast("Could not retrieve progress data.");
+            }
         }
 
         function closeProgressModal() { document.getElementById('progress-modal').style.display = 'none'; }
