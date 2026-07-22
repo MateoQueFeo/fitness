@@ -214,20 +214,6 @@
             }, 3000);
         }
 
-        function toggleSection(contentId) {
-            const content = document.getElementById(contentId);
-            const header = content.previousElementSibling;
-            const icon = header.querySelector('.toggle-icon');
-
-            if (content.style.display === 'none' || content.style.display === '') {
-                content.style.display = 'block';
-                icon.textContent = '▼';
-            } else {
-                content.style.display = 'none';
-                icon.textContent = '▶';
-            }
-        }
-
         function populateRoutines(data) {
             const routineSelect = document.getElementById('routine-select');
             if (!routineSelect) return;
@@ -247,11 +233,14 @@
         function generateRoutineForm() {
             const selectedRoutineName = document.getElementById('routine-select').value;
             const formContainer = document.getElementById('routine-form-container');
-            if (!selectedRoutineName) { formContainer.innerHTML = ''; return; }
+            if (!selectedRoutineName) {
+                formContainer.innerHTML = '';
+                return;
+            }
             
             const exercises = workoutsData[selectedRoutineName];
-            let formHtml = `<div class="card" id="routine-form"><h2>${selectedRoutineName}</h2>`;
-
+            let fullHtml = `<div class="card" id="routine-form"><h2>${selectedRoutineName}</h2></div>`;
+            
             let warmupHtml = '';
             let liftHtml = '';
             let cooldownHtml = '';
@@ -261,13 +250,12 @@
                 const sanitizedExerciseName = exercise.exercise_name.replace(/'/g, "\\'");
                 
                 if (exercise.category === 'Warm-up') {
-                    warmupHtml += `<div class="warmup-entry"><strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
+                    warmupHtml += `<div class="warmup-entry"><strong onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
                 } else if (exercise.category === 'Lift') {
                     liftHtml += `<div class="log-entry">
-                                    <strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong>`;
+                                    <strong onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong>`;
                     
                     const numSets = exercise.lift_type === 'Main Lift' ? 3 : 1;
-
                     for (let i = 0; i < numSets; i++) {
                         liftHtml += `<div class="lift-form-row">
                                         <input type="number" id="weight-${index}-${i}" step="0.5" placeholder="Weight (lbs)">
@@ -277,33 +265,22 @@
                     }
                     liftHtml += `</div>`;
                 } else if (exercise.category === 'Cool-down') {
-                    cooldownHtml += `<div class="warmup-entry"><strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
+                    cooldownHtml += `<div class="warmup-entry"><strong onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
                 }
             });
 
+            let finalFormHtml = '';
             if (warmupHtml) {
-                formHtml += `<h3 class="routine-section-header" onclick="toggleSection('warmup-content')">
-                                <span>Warm-up</span><span class="toggle-icon">▼</span>
-                             </h3>
-                             <div id="warmup-content" class="collapsible-content">${warmupHtml}</div>`;
+                finalFormHtml += `<div class="warmup-section">${warmupHtml}</div>`;
             }
-
             if (liftHtml) {
-                formHtml += `<h3 class="routine-section-header" onclick="toggleSection('working-sets-content')">
-                                <span>Working Sets</span><span class="toggle-icon">▼</span>
-                             </h3>
-                             <div id="working-sets-content" class="collapsible-content">${liftHtml}</div>`;
+                finalFormHtml += `<div class="lifts-section">${liftHtml}</div>`;
             }
-
             if (cooldownHtml) {
-                formHtml += `<h3 class="routine-section-header" onclick="toggleSection('cooldown-content')">
-                                <span>Cool-down</span><span class="toggle-icon">▶</span>
-                             </h3>
-                             <div id="cooldown-content" class="collapsible-content" style="display: none;">${cooldownHtml}</div>`;
+                finalFormHtml += `<div class="cooldown-section">${cooldownHtml}</div>`;
             }
 
-            formHtml += `</div>`;
-            formContainer.innerHTML = formHtml;
+            formContainer.innerHTML = finalFormHtml;
         }
         
         async function logSet(exerciseIndex, setIndex, exerciseName) {

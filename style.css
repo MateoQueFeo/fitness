@@ -49,22 +49,6 @@ h2 {
     color: #d4af37;
     margin-top: 0;
 }
-.routine-section-header {
-    color: #d4af37;
-    margin-top: 25px;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #554400;
-    padding-bottom: 5px;
-    font-size: 1.1em;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.collapsible-content {
-    padding-left: 10px;
-    border-left: 2px solid #332200;
-}
 label {
     font-weight: bold;
     display: block;
@@ -132,13 +116,6 @@ button:hover {
     font-size: 14px;
     text-transform: none;
     letter-spacing: 0;
-}
-.warmup-entry {
-    padding: 8px 0;
-    border-bottom: 1px solid #332200;
-}
-.warmup-entry:last-child {
-    border-bottom: none;
 }
 .rm-highlight {
     color: #ffd700;
@@ -256,4 +233,68 @@ option {
     visibility: visible;
     opacity: 1;
     transition: opacity 0.5s linear;
+}
+
+/* New Routine Section Styles */
+.warmup-section, .lifts-section, .cooldown-section {
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+/* Reddish Theme for Warm-up */
+.warmup-section {
+    background: #1a0505;
+    border: 1px solid #8B0000;
+}
+.warmup-section strong {
+    color: #ff6b6b;
+    cursor: pointer;
+}
+.warmup-entry {
+    padding: 8px 0;
+    border-bottom: 1px solid #4d0000;
+}
+.warmup-entry:last-child {
+    border-bottom: none;
+}
+
+/* Purplish Theme for Lifts */
+.lifts-section {
+    background: #13051a;
+    border: 1px solid #6a0dad;
+}
+.lifts-section .log-entry {
+    border-bottom: 1px solid #4b0082;
+}
+.lifts-section strong {
+    color: #c48eff;
+    cursor: pointer;
+}
+.lifts-section .lift-form-row input {
+    border-color: #4b0082;
+}
+.lifts-section .lift-form-row input:focus {
+    border-color: #9370DB;
+    box-shadow: 0 0 5px rgba(147, 112, 219, 0.5);
+}
+.lifts-section .lift-form-row button {
+    background-color: #800080;
+    color: #fff;
+}
+.lifts-section .lift-form-row button:hover {
+    background-color: #9932CC;
+}
+
+/* Blueish Theme for Cool-down */
+.cooldown-section {
+    background: #050f1a;
+    border: 1px solid #005f99;
+}
+.cooldown-section strong {
+    color: #6bb2ff;
+    cursor: pointer;
+}
+.cooldown-section .warmup-entry { /* Reusing warmup-entry style */
+    border-bottom-color: #003366;
 }
