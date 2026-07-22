@@ -8,7 +8,6 @@
     <meta name="theme-color" content="#000000">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div id="timer-container">
@@ -25,14 +24,6 @@
             <span class="modal-close-button" onclick="closeExerciseDetailsModal()">&times;</span>
             <h2 id="details-title"></h2>
             <div id="details-content"></div>
-        </div>
-    </div>
-
-    <div id="progress-modal" class="modal">
-        <div class="modal-content">
-            <span class="modal-close-button" onclick="closeProgressModal()">&times;</span>
-            <h2 id="chart-title">Exercise Progress</h2>
-            <canvas id="progress-chart"></canvas>
         </div>
     </div>
 
@@ -71,27 +62,22 @@
     <script>
         let db;
         let workoutsData = {};
-        let progressChartInstance = null;
         let toastTimeout;
         const DB_NAME = 'LiftTrackerDB';
-        const DB_VERSION = 2; // Bumped version to force DB update for new JSON structure
+        const DB_VERSION = 2;
 
         let timerInterval = null;
         let remainingTime = 60;
         let isTimerRunning = false;
-        const notificationSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU5vT19DAAAAAgAsY3VlRAAAAAQAAABvT19SAAAAAgAAAGxzbHQAAAAIAAAAb09fU4aVoQAAAAAAAABmYWN0BAAAAKygoQAAAAAAAABwbGF5AAAAAQAAAExJU1QRAAAAYWR0bGsAAABFcwAAAGFzc29j/2Rp/2Rkc2RzY2RzY3JzY3Bkc2NzY3JjcmNjcmNzY3JjcmNjcmNzY3JjcmNwY3NjcmRzZGtzY2RzY2RzY2NzY3JjcmNzY3JjcmNwY3NjcmRzZGtzY2RzY2RzY2NzY3JjcmNzY3JjcmNwY3NjcmRzZGtzY2RzY2RzY2NzY3JjcmNzY3JjcmNwY3NjcmRzZGtzY2RzY2RzY2NzY3JjcmNzY3JjcmNwY3NjcmRzZGtzY2RzY2RzY2NzY3JjcmNzY3JjcmNwY3NjcmRzZGtzY2RzY2RzY2NzY3JjcmNzY3JjcmNwY3NjcmRzZGtzY2RzY2RzY2NzY3JjcmNzY3JjcmNwY3NjcmRzZGtzY2RzY2RzY250bAAA");
 
         function initDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
                 request.onupgradeneeded = event => {
                     const dbInstance = event.target.result;
-                    
-                    // Clear out old workouts cache if upgrading to v2, forces a fresh JSON fetch
                     if (event.oldVersion < 2 && dbInstance.objectStoreNames.contains('workouts')) {
                         dbInstance.deleteObjectStore('workouts');
                     }
-
                     if (!dbInstance.objectStoreNames.contains('workouts')) {
                         dbInstance.createObjectStore('workouts', { keyPath: 'name' });
                     }
@@ -188,7 +174,6 @@
                 if (remainingTime <= 0) {
                     clearInterval(timerInterval);
                     isTimerRunning = false;
-                    notificationSound.play().catch(e => console.error("Audio play failed:", e));
                     showToast("Rest period is over!");
                     resetTimer();
                 }
@@ -268,13 +253,11 @@
                 } else if (exercise.category === 'Lift') {
                     liftHtml += `<div class="log-entry">
                                     <strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong>
-                                    <div class="lift-inputs">
-                                        <label for="weight-${index}">Weight (lbs):</label>
-                                        <input type="number" id="weight-${index}" step="0.5" placeholder="Weight">
-                                        <label for="reps-${index}">Reps:</label>
+                                    <div class="lift-form-row">
+                                        <input type="number" id="weight-${index}" step="0.5" placeholder="Weight (lbs)">
                                         <input type="number" id="reps-${index}" placeholder="Reps">
+                                        <button onclick="logSet(${index}, '${sanitizedExerciseName}')">Log Set</button>
                                     </div>
-                                    <button onclick="logSet(${index}, '${sanitizedExerciseName}')">Log Set</button>
                                  </div>`;
                 } else if (exercise.category === 'Cool-down') {
                     cooldownHtml += `<div class="warmup-entry"><strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
@@ -369,10 +352,9 @@
                 const logs = getAllRequest.result.sort((a, b) => b.timestamp - a.timestamp);
                 const container = document.getElementById('logContainer');
                 container.innerHTML = logs.slice(0, 50).map(log => {
-                    const safeExerciseName = log.exercise.replace(/'/g, "\\'");
                     return `
                     <div class="log-entry">
-                        <strong>${log.date} - <span style="color: #d4af37; cursor: pointer;" onclick="showProgressChart('${safeExerciseName}')">${log.exercise}</span></strong><br>
+                        <strong>${log.date} - <span style="color: #d4af37;">${log.exercise}</span></strong><br>
                         Lifted: ${log.weight} x ${log.reps} reps <br>
                         <span class="rm-highlight">Est. 1RM: ${log.est1RM}</span>
                         <div class="log-actions">
@@ -428,40 +410,7 @@
             };
             transaction.oncomplete = () => { displayLogs(); cancelEdit(); showToast('Set updated successfully!'); };
         }
-
-        function showProgressChart(exerciseName) {
-            const transaction = db.transaction('logs', 'readonly');
-            const store = transaction.objectStore('logs');
-            const index = store.index('exercise');
-            const getAllRequest = index.getAll(exerciseName);
-
-            getAllRequest.onsuccess = () => {
-                const exerciseLogs = getAllRequest.result.sort((a, b) => a.timestamp - b.timestamp);
-                if (exerciseLogs.length < 2) { showToast("At least two logs are needed to show a progress chart."); return; }
-                const labels = exerciseLogs.map(log => log.date.split(' ')[0]);
-                const data = exerciseLogs.map(log => log.est1RM);
-                const ctx = document.getElementById('progress-chart').getContext('2d');
-                document.getElementById('chart-title').textContent = `${exerciseName} Progress (Est. 1RM)`;
-                if (progressChartInstance) { progressChartInstance.destroy(); }
-                progressChartInstance = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{ label: 'Est. 1RM (lbs)', data: data, borderColor: '#d4af37', backgroundColor: 'rgba(212, 175, 55, 0.2)', fill: true, tension: 0.1 }]
-                    },
-                    options: {
-                        scales: { y: { beginAtZero: false, ticks: { color: '#e0e0e0' }, grid: { color: '#332200' } }, x: { ticks: { color: '#e0e0e0' }, grid: { color: '#332200' } } },
-                        plugins: { legend: { labels: { color: '#e0e0e0' } } }
-                    }
-                });
-                document.getElementById('progress-modal').style.display = 'block';
-            };
-            getAllRequest.onerror = () => {
-                showToast("Could not retrieve progress data.");
-            }
-        }
-
-        function closeProgressModal() { document.getElementById('progress-modal').style.display = 'none'; }
+        
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); }); }
     </script>
 </body>

@@ -110,9 +110,23 @@ button:hover {
 .log-entry:last-child {
     border-bottom: none;
 }
-.log-entry button {
+.lift-form-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+.lift-form-row input {
+    flex: 1;
+    margin-top: 0;
+    min-width: 60px;
+}
+.lift-form-row button {
+    flex-shrink: 0;
+    width: auto;
+    padding: 10px 15px;
+    margin-top: 0;
     font-size: 14px;
-    padding: 10px;
     text-transform: none;
     letter-spacing: 0;
 }
@@ -183,6 +197,9 @@ option {
     max-width: 600px;
     border-radius: 8px;
     position: relative;
+}
+.modal-content p {
+    white-space: pre-line;
 }
 .modal-close-button {
     color: #d4af37;
