@@ -261,11 +261,14 @@
                 } else if (exercise.category === 'Lift') {
                     liftHtml += `<div class="log-entry">
                                     <strong style="color: #d4af37; cursor: pointer;" onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong>`;
-                    for (let i = 0; i < 3; i++) {
+                    
+                    const numSets = exercise.lift_type === 'Main Lift' ? 3 : 1;
+
+                    for (let i = 0; i < numSets; i++) {
                         liftHtml += `<div class="lift-form-row">
                                         <input type="number" id="weight-${index}-${i}" step="0.5" placeholder="Weight (lbs)">
                                         <input type="number" id="reps-${index}-${i}" placeholder="Reps">
-                                        <button onclick="logSet(${index}, ${i}, '${sanitizedExerciseName}')">Log Set ${i + 1}</button>
+                                        <button onclick="logSet(${index}, ${i}, '${sanitizedExerciseName}')">Log Set ${numSets > 1 ? i + 1 : ''}</button>
                                      </div>`;
                     }
                     liftHtml += `</div>`;
@@ -341,7 +344,7 @@
                 const addRequest = store.add(logEntry);
                 addRequest.onsuccess = () => {
                     displayLogs();
-                    let toastMessage = `Set ${setIndex + 1} logged!`;
+                    let toastMessage = `Set logged!`;
                     if (logEntry.isPR) {
                         toastMessage += " ✨ New PR!";
                     }
@@ -519,7 +522,7 @@
 
         function closeProgressSummaryModal() { document.getElementById('progress-summary-modal').style.display = 'none'; }
         
-        if ('serviceWorker' in navigator) { window.addEventListener('load', => { navigator.serviceWorker.register('./sw.js'); }); }
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); }); }
     </script>
 </body>
 </html>
