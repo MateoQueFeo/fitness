@@ -87,6 +87,14 @@ button {
 button:hover {
     background-color: #ffd700;
 }
+#metronome-btn {
+    background-color: #555;
+    color: #fff;
+}
+#metronome-btn.metronome-on {
+    background-color: #d4af37;
+    color: #000;
+}
 .log-entry {
     border-bottom: 1px solid #332200;
     padding: 12px 0;

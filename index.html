@@ -14,6 +14,7 @@
         <button id="start-timer-btn">Start Rest</button>
         <button id="add-minute-btn" style="display: none;">+1 Min</button>
         <button id="reset-timer-btn" style="display: none; background-color: #555; color: #fff;">Reset</button>
+        <button id="metronome-btn">Metronome</button>
     </div>
 
     <div id="toast-notification"></div>
@@ -81,6 +82,10 @@
         let timerInterval = null;
         let remainingTime = 60;
         let isTimerRunning = false;
+
+        let audioContext;
+        let isMetronomeOn = false;
+        let metronomeInterval = null;
 
         function initDB() {
             return new Promise((resolve, reject) => {
@@ -165,6 +170,7 @@
             document.getElementById('start-timer-btn').addEventListener('click', () => startTimer(60));
             document.getElementById('add-minute-btn').addEventListener('click', addMinute);
             document.getElementById('reset-timer-btn').addEventListener('click', resetTimer);
+            document.getElementById('metronome-btn').addEventListener('click', toggleMetronome);
             document.getElementById('routine-select').addEventListener('change', generateRoutineForm);
             document.getElementById('cancel-button').addEventListener('click', cancelEdit);
             document.getElementById('edit-form').addEventListener('submit', (event) => {
@@ -201,6 +207,41 @@
                 }
             });
         });
+
+        function playMetronomeTick() {
+            if (!audioContext) return;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.05);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.05);
+        }
+
+        function toggleMetronome() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            isMetronomeOn = !isMetronomeOn;
+            const metronomeBtn = document.getElementById('metronome-btn');
+
+            if (isMetronomeOn) {
+                metronomeBtn.classList.add('metronome-on');
+                playMetronomeTick(); 
+                metronomeInterval = setInterval(playMetronomeTick, 1000); 
+            } else {
+                metronomeBtn.classList.remove('metronome-on');
+                clearInterval(metronomeInterval);
+                metronomeInterval = null;
+            }
+        }
 
         function updateTimerDisplay() {
             const minutes = Math.floor(remainingTime / 60);
