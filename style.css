@@ -90,6 +90,13 @@ button:hover {
 #metronome-btn {
     background-color: #555;
     color: #fff;
+    padding: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 20px;
+    line-height: 36px;
+    text-align: center;
 }
 #metronome-btn.metronome-on {
     background-color: #d4af37;
@@ -186,10 +193,12 @@ option {
     overflow: auto;
     background-color: rgba(0,0,0,0.85);
     backdrop-filter: blur(3px);
+    padding-top: 70px;
+    box-sizing: border-box;
 }
 .modal-content {
     background-color: #0c0c0c;
-    margin: 5% auto;
+    margin: 0 auto;
     padding: 20px;
     border: 1px solid #d4af37;
     width: 95%;
