@@ -320,7 +320,27 @@
             routineSelect.disabled = false;
         }
 
-        function generateRoutineForm() {
+        function getMostRecent1RM(exerciseName) {
+            return new Promise((resolve) => {
+                const transaction = db.transaction('logs', 'readonly');
+                const store = transaction.objectStore('logs');
+                const index = store.index('exercise');
+                const request = index.getAll(exerciseName);
+
+                request.onsuccess = () => {
+                    const logs = request.result;
+                    if (logs && logs.length > 0) {
+                        logs.sort((a, b) => b.timestamp - a.timestamp);
+                        resolve(logs[0].est1RM);
+                    } else {
+                        resolve(null);
+                    }
+                };
+                request.onerror = () => resolve(null);
+            });
+        }
+
+        async function generateRoutineForm() {
             const selectedRoutineName = document.getElementById('routine-select').value;
             const formContainer = document.getElementById('routine-form-container');
             formContainer.innerHTML = '';
@@ -331,14 +351,25 @@
 
             const sections = { 'Warm-up': '', 'Lifts': '', 'Cool-down': '' };
 
-            exercises.forEach((exercise, index) => {
+            for (let index = 0; index < exercises.length; index++) {
+                const exercise = exercises[index];
                 const sanitizedExerciseName = exercise.exercise_name.replace(/'/g, "\\'");
                 const detailsAttr = `data-action="showDetails" data-routine="${selectedRoutineName}" data-exercise-index="${index}"`;
                 
+                let recent1RMHtml = '';
+                if (exercise.category === 'Main Lift' || exercise.category === 'Isolation Lift') {
+                    const recent1RM = await getMostRecent1RM(exercise.exercise_name);
+                    if (recent1RM) {
+                        recent1RMHtml = `<span id="recent-1rm-${index}" class="recent-1rm-badge">Recent 1RM: ${recent1RM}</span>`;
+                    } else {
+                        recent1RMHtml = `<span id="recent-1rm-${index}" class="recent-1rm-badge" style="display:none;"></span>`;
+                    }
+                }
+
                 if (exercise.category === 'Warm-up') {
                     sections['Warm-up'] += `<div class="warmup-entry"><strong ${detailsAttr}>${exercise.exercise_name}</strong></div>`;
                 } else if (exercise.category === 'Main Lift' || exercise.category === 'Isolation Lift') {
-                    let liftHtml = `<div class="log-entry"><strong ${detailsAttr}>${exercise.exercise_name}</strong>`;
+                    let liftHtml = `<div class="log-entry"><strong ${detailsAttr}>${exercise.exercise_name}</strong>${recent1RMHtml}`;
                     const numSets = exercise.category === 'Main Lift' ? 3 : 1;
 
                     for (let i = 0; i < numSets; i++) {
@@ -354,7 +385,7 @@
                 } else if (exercise.category === 'Cool-down') {
                     sections['Cool-down'] += `<div class="warmup-entry"><strong ${detailsAttr}>${exercise.exercise_name}</strong></div>`;
                 }
-            });
+            }
 
             let finalHtml = '';
             if (sections['Warm-up']) finalHtml += `<div class="warmup-section">${sections['Warm-up']}</div>`;
@@ -404,6 +435,13 @@
                     weightInput.style.backgroundColor = "#222";
                     repsInput.style.backgroundColor = "#222";
                     buttonElement.disabled = true;
+
+                    // Update the badge dynamically without reloading the whole form
+                    const badge = document.getElementById(`recent-1rm-${exerciseIndex}`);
+                    if (badge) {
+                        badge.textContent = `Recent 1RM: ${est1RM}`;
+                        badge.style.display = 'inline-block';
+                    }
                 };
                 addRequest.onerror = () => showToast('Error logging set.');
             };
