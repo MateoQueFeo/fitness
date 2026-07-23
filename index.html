@@ -68,6 +68,11 @@
 
     <div class="card">
         <h2>Recent Logs</h2>
+        <div id="log-management-actions">
+            <button id="import-csv-btn">Import CSV</button>
+            <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+            <button id="export-csv-btn">Export CSV</button>
+        </div>
         <div id="logContainer"></div>
     </div>
 
@@ -173,6 +178,10 @@
             document.getElementById('metronome-btn').addEventListener('click', toggleMetronome);
             document.getElementById('routine-select').addEventListener('change', generateRoutineForm);
             document.getElementById('cancel-button').addEventListener('click', cancelEdit);
+            document.getElementById('export-csv-btn').addEventListener('click', exportLogsToCSV);
+            document.getElementById('import-csv-btn').addEventListener('click', () => document.getElementById('csv-file-input').click());
+            document.getElementById('csv-file-input').addEventListener('change', importLogsFromCSV);
+
             document.getElementById('edit-form').addEventListener('submit', (event) => {
                 event.preventDefault();
                 updateLog();
@@ -646,6 +655,89 @@
 
         function closeProgressSummaryModal() { document.getElementById('progress-summary-modal').style.display = 'none'; }
         
+        function exportLogsToCSV() {
+            const transaction = db.transaction('logs', 'readonly');
+            const store = transaction.objectStore('logs');
+            const getAllRequest = store.getAll();
+
+            getAllRequest.onsuccess = () => {
+                const logs = getAllRequest.result;
+                if (logs.length === 0) {
+                    showToast("No logs to export.");
+                    return;
+                }
+
+                const headers = ['timestamp', 'date', 'exercise', 'weight', 'reps', 'est1RM', 'isPR'];
+                const csvRows = [headers.join(',')];
+                
+                logs.forEach(log => {
+                    const values = headers.map(header => {
+                        const escaped = ('' + log[header]).replace(/"/g, '\\"');
+                        return `"${escaped}"`;
+                    });
+                    csvRows.push(values.join(','));
+                });
+
+                const csvString = csvRows.join('\n');
+                const blob = new Blob([csvString], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.setAttribute('href', url);
+                a.setAttribute('download', `lift-tracker-logs-${new Date().toISOString().slice(0, 10)}.csv`);
+                a.click();
+                showToast("Logs exported successfully.");
+            };
+            getAllRequest.onerror = () => showToast("Error exporting logs.");
+        }
+
+        function importLogsFromCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                const rows = text.split('\n').slice(1);
+                if (rows.length === 0) {
+                    showToast("CSV file is empty or invalid.");
+                    return;
+                }
+
+                const transaction = db.transaction(['logs', 'prs'], 'readwrite');
+                const logsStore = transaction.objectStore('logs');
+                let importedCount = 0;
+
+                rows.forEach(row => {
+                    if (row.trim() === '') return;
+                    const values = row.split(',').map(v => v.trim().replace(/"/g, ''));
+                    const log = {
+                        timestamp: parseInt(values[0], 10),
+                        date: values[1],
+                        exercise: values[2],
+                        weight: parseFloat(values[3]),
+                        reps: parseInt(values[4], 10),
+                        est1RM: parseInt(values[5], 10),
+                        isPR: values[6] === 'true'
+                    };
+
+                    if (!isNaN(log.timestamp) && log.exercise && !isNaN(log.weight) && !isNaN(log.reps)) {
+                        logsStore.add(log);
+                        importedCount++;
+                    }
+                });
+
+                transaction.oncomplete = () => {
+                    showToast(`${importedCount} logs imported successfully!`);
+                    displayLogs();
+                    const allExerciseNames = [...new Set(rows.map(row => row.split(',')[2].trim().replace(/"/g, '')))];
+                    allExerciseNames.forEach(recalculatePRs);
+                };
+                transaction.onerror = () => showToast("Error importing logs.");
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); }); }
     </script>
 </body>

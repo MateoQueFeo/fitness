@@ -159,6 +159,15 @@ option {
 .log-actions {
     margin-top: 10px;
 }
+#log-management-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+#log-management-actions button {
+    flex: 1;
+    margin-top: 0;
+}
 .edit-button, .delete-button {
     width: auto;
     padding: 5px 15px;
