@@ -167,7 +167,7 @@ option {
 #log-management-actions {
     display: flex;
     gap: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 #log-management-actions button {
     flex: 1;
@@ -273,6 +273,26 @@ option {
 }
 .modal-section-content li {
     margin-bottom: 8px;
+}
+.history-date-group {
+    margin-bottom: 25px;
+    border-bottom: 2px solid #d4af37;
+    padding-bottom: 15px;
+}
+.history-date-group:last-child {
+    border-bottom: none;
+}
+.history-date-group h3 {
+    margin: 0 0 15px 0;
+    color: #d4af37;
+    font-size: 20px;
+}
+.history-log-entry {
+    padding: 8px 5px;
+    border-bottom: 1px solid #332200;
+}
+.history-log-entry:last-child {
+    border-bottom: none;
 }
 #summary-content .summary-section {
     margin-bottom: 15px;

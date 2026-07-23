@@ -35,6 +35,14 @@
         </div>
     </div>
 
+    <div id="history-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close-button">&times;</span>
+            <h2 class="modal-title">Workout History</h2>
+            <div id="history-content"></div>
+        </div>
+    </div>
+
     <div id="edit-log-container" class="card" style="display: none;">
         <h2>Edit Set</h2>
         <form id="edit-form">
@@ -65,12 +73,13 @@
     <div id="routine-form-container"></div>
 
     <div class="card">
-        <h2>Recent Logs</h2>
+        <h2>Recent Logs & Data</h2>
         <div id="log-management-actions">
             <button id="import-csv-btn">Import CSV</button>
             <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
             <button id="export-csv-btn">Export CSV</button>
         </div>
+         <button id="view-history-btn">View Full History</button>
         <div id="logContainer"></div>
     </div>
 
@@ -169,7 +178,7 @@
             });
             
             updateTimerDisplay();
-
+            
             document.getElementById('add-minute-timer-btn').addEventListener('click', addMinuteToTimer);
             document.getElementById('metronome-btn').addEventListener('click', toggleMetronome);
             document.getElementById('routine-select').addEventListener('change', generateRoutineForm);
@@ -177,20 +186,16 @@
             document.getElementById('export-csv-btn').addEventListener('click', exportLogsToCSV);
             document.getElementById('import-csv-btn').addEventListener('click', () => document.getElementById('csv-file-input').click());
             document.getElementById('csv-file-input').addEventListener('change', importLogsFromCSV);
+            document.getElementById('view-history-btn').addEventListener('click', showHistory);
 
             document.getElementById('edit-form').addEventListener('submit', (event) => {
                 event.preventDefault();
                 updateLog();
             });
-            document.getElementById('exercise-details-modal').addEventListener('click', (event) => {
-                if (event.target.classList.contains('modal-close-button')) {
-                    closeExerciseDetailsModal();
-                }
-            });
-            document.getElementById('progress-summary-modal').addEventListener('click', (event) => {
-                if (event.target.classList.contains('modal-close-button')) {
-                    closeProgressSummaryModal();
-                }
+             document.querySelectorAll('.modal .modal-close-button').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    event.target.closest('.modal').style.display = 'none';
+                });
             });
             document.getElementById('routine-form-container').addEventListener('click', (event) => {
                 const target = event.target;
@@ -455,8 +460,7 @@
                 }
             };
         }
-
-        function closeExerciseDetailsModal() { document.getElementById('exercise-details-modal').style.display = 'none'; }
+        
         function calculate1RM(weight, reps) { return reps === 1 ? weight : Math.round(weight * (1 + reps / 30)); }
 
         function displayLogs() {
@@ -475,7 +479,7 @@
 
                 const sortedLogs = allLogs.sort((a, b) => b.timestamp - a.timestamp);
                 
-                container.innerHTML = sortedLogs.slice(0, 50).map(log => {
+                container.innerHTML = sortedLogs.slice(0, 10).map(log => {
                     const safeExerciseName = log.exercise.replace(/'/g, "\\'");
                     const prBadge = log.isPR ? `<span class="pr-badge">✨ PR!</span>` : '';
                     return `
@@ -611,12 +615,7 @@
                 logs.sort((a, b) => a.timestamp - b.timestamp);
 
                 const bestSet = logs.reduce((prev, current) => (prev.est1RM > current.est1RM) ? prev : current);
-                const firstSet = logs[0];
                 const latestSet = logs[logs.length - 1];
-
-                const improvement = firstSet.est1RM > 0 
-                    ? ((bestSet.est1RM - firstSet.est1RM) / firstSet.est1RM * 100).toFixed(1)
-                    : 0;
 
                 document.getElementById('summary-title').textContent = `${exerciseName} Progress`;
                 const contentEl = document.getElementById('summary-content');
@@ -630,21 +629,56 @@
                         <strong>Set Details</strong><br>
                         <small>Best: ${bestSet.weight} lbs x ${bestSet.reps} reps (on ${bestSet.date})</small><br>
                         <small>Latest: ${latestSet.weight} lbs x ${latestSet.reps} reps (on ${latestSet.date})</small>
-                    </div>
-                     <div class="summary-section">
-                        <strong>Journey</strong><br>
-                        <small>Started at: ${firstSet.est1RM} (on ${firstSet.date})</small><br>
-                        <strong>Total Improvement:</strong> ${improvement >= 0 ? `+${improvement}` : improvement}%
-                    </div>
-                `;
+                    </div>`;
                 document.getElementById('progress-summary-modal').style.display = 'block';
             };
             getAllRequest.onerror = () => {
                 showToast("Could not retrieve progress data.");
             }
         }
+        
+        function showHistory() {
+            const transaction = db.transaction('logs', 'readonly');
+            const store = transaction.objectStore('logs');
+            const getAllRequest = store.getAll();
 
-        function closeProgressSummaryModal() { document.getElementById('progress-summary-modal').style.display = 'none'; }
+            getAllRequest.onsuccess = () => {
+                const logs = getAllRequest.result.sort((a, b) => b.timestamp - a.timestamp);
+                const historyContent = document.getElementById('history-content');
+                
+                if (logs.length === 0) {
+                    historyContent.innerHTML = "No history to display.";
+                    document.getElementById('history-modal').style.display = 'block';
+                    return;
+                }
+
+                const groupedByDate = logs.reduce((acc, log) => {
+                    (acc[log.date] = acc[log.date] || []).push(log);
+                    return acc;
+                }, {});
+
+                let historyHtml = '';
+                for (const date in groupedByDate) {
+                    historyHtml += `<div class="history-date-group">
+                                        <h3>${date}</h3>`;
+                    
+                    const logsForDate = groupedByDate[date];
+                    historyHtml += logsForDate.map(log => {
+                        const prBadge = log.isPR ? `<span class="pr-badge">✨ PR!</span>` : '';
+                        return `<div class="history-log-entry">
+                                    <strong>${log.exercise}</strong>: ${log.weight} lbs x ${log.reps} reps 
+                                    <span class="rm-highlight">(Est. 1RM: ${log.est1RM})</span> ${prBadge}
+                                </div>`;
+                    }).join('');
+
+                    historyHtml += `</div>`;
+                }
+
+                historyContent.innerHTML = historyHtml;
+                document.getElementById('history-modal').style.display = 'block';
+            };
+            getAllRequest.onerror = () => showToast("Could not retrieve workout history.");
+        }
         
         function exportLogsToCSV() {
             const transaction = db.transaction('logs', 'readonly');
