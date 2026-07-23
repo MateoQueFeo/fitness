@@ -79,7 +79,10 @@
             <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
             <button id="export-csv-btn">Export CSV</button>
         </div>
-         <button id="view-history-btn">View Full History</button>
+        <div id="log-management-actions-secondary">
+             <button id="view-history-btn">View Full History</button>
+             <button id="delete-all-btn">Delete All Logs</button>
+        </div>
         <div id="logContainer"></div>
     </div>
 
@@ -187,6 +190,7 @@
             document.getElementById('import-csv-btn').addEventListener('click', () => document.getElementById('csv-file-input').click());
             document.getElementById('csv-file-input').addEventListener('change', importLogsFromCSV);
             document.getElementById('view-history-btn').addEventListener('click', showHistory);
+            document.getElementById('delete-all-btn').addEventListener('click', deleteAllLogs);
 
             document.getElementById('edit-form').addEventListener('submit', (event) => {
                 event.preventDefault();
@@ -436,7 +440,6 @@
                     repsInput.style.backgroundColor = "#222";
                     buttonElement.disabled = true;
 
-                    // Update the badge dynamically without reloading the whole form
                     const badge = document.getElementById(`recent-1rm-${exerciseIndex}`);
                     if (badge) {
                         badge.textContent = `Recent 1RM: ${est1RM}`;
@@ -552,6 +555,26 @@
                         });
                     };
                 }
+            };
+        }
+
+        function deleteAllLogs() {
+            if (!confirm('Are you ABSOLUTELY sure you want to delete ALL of your workout logs? This action cannot be undone.')) return;
+            
+            const transaction = db.transaction(['logs', 'prs'], 'readwrite');
+            const logsStore = transaction.objectStore('logs');
+            const prsStore = transaction.objectStore('prs');
+
+            logsStore.clear();
+            prsStore.clear();
+
+            transaction.oncomplete = () => {
+                displayLogs();
+                showToast('All logs and PRs have been permanently deleted.');
+            };
+
+            transaction.onerror = () => {
+                showToast('Error deleting all logs.');
             };
         }
 

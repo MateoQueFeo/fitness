@@ -176,12 +176,15 @@ option {
 .log-actions {
     margin-top: 10px;
 }
-#log-management-actions {
+#log-management-actions, #log-management-actions-secondary {
     display: flex;
     gap: 10px;
     margin-bottom: 10px;
 }
-#log-management-actions button {
+#log-management-actions-secondary {
+    margin-bottom: 20px;
+}
+#log-management-actions button, #log-management-actions-secondary button {
     flex: 1;
     margin-top: 0;
 }
@@ -199,6 +202,13 @@ option {
 }
 .delete-button:hover {
     background-color: #800000;
+}
+#delete-all-btn {
+    background-color: #8B0000;
+    color: #fff;
+}
+#delete-all-btn:hover {
+    background-color: #A52A2A;
 }
 #cancel-button {
     background-color: #555;
