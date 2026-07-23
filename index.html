@@ -20,7 +20,7 @@
 
     <div id="exercise-details-modal" class="modal">
         <div class="modal-content">
-            <span class="modal-close-button" onclick="closeExerciseDetailsModal()">&times;</span>
+            <span class="modal-close-button">&times;</span>
             <div id="details-header" class="modal-header">
                 <h2 id="details-title" class="modal-title"></h2>
             </div>
@@ -30,7 +30,7 @@
 
     <div id="progress-summary-modal" class="modal">
         <div class="modal-content">
-            <span class="modal-close-button" onclick="closeProgressSummaryModal()">&times;</span>
+            <span class="modal-close-button">&times;</span>
             <h2 id="summary-title"></h2>
             <div id="summary-content"></div>
         </div>
@@ -49,15 +49,15 @@
             <input type="number" id="edit-reps">
             
             <input type="hidden" id="edit-key">
-            <button type="button" onclick="updateLog()">Update Set</button>
-            <button id="cancel-button" type="button" onclick="cancelEdit()">Cancel</button>
+            <button type="submit">Update Set</button>
+            <button id="cancel-button" type="button">Cancel</button>
         </form>
     </div>
 
     <div class="card">
         <h2>Workout Routine</h2>
         <label for="routine-select">Workout Routine:</label>
-        <select id="routine-select" onchange="generateRoutineForm()" disabled>
+        <select id="routine-select" disabled>
             <option value="loading">Loading routines...</option>
         </select>
         <div id="data-fetch-error" style="color: #ff4d4d; margin-top: 10px; display: none;"></div>
@@ -149,16 +149,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('start-timer-btn').addEventListener('click', () => startTimer(60));
-            document.getElementById('add-minute-btn').addEventListener('click', addMinute);
-            document.getElementById('reset-timer-btn').addEventListener('click', resetTimer);
-            document.getElementById('edit-form').addEventListener('submit', (event) => {
-                event.preventDefault();
-                updateLog();
-            });
-
-            updateTimerDisplay();
-
             initDB().then(() => {
                 fetchWorkoutsFromNetwork(); 
                 displayLogs();
@@ -168,6 +158,47 @@
                 errorDiv.textContent = 'Critical Error: Application database could not be opened. Please try clearing site data.';
                 errorDiv.style.display = 'block';
                 document.getElementById('routine-select').disabled = true;
+            });
+            
+            updateTimerDisplay();
+
+            document.getElementById('start-timer-btn').addEventListener('click', () => startTimer(60));
+            document.getElementById('add-minute-btn').addEventListener('click', addMinute);
+            document.getElementById('reset-timer-btn').addEventListener('click', resetTimer);
+            document.getElementById('routine-select').addEventListener('change', generateRoutineForm);
+            document.getElementById('cancel-button').addEventListener('click', cancelEdit);
+            document.getElementById('edit-form').addEventListener('submit', (event) => {
+                event.preventDefault();
+                updateLog();
+            });
+            document.getElementById('exercise-details-modal').addEventListener('click', (event) => {
+                if (event.target.classList.contains('modal-close-button')) {
+                    closeExerciseDetailsModal();
+                }
+            });
+            document.getElementById('progress-summary-modal').addEventListener('click', (event) => {
+                if (event.target.classList.contains('modal-close-button')) {
+                    closeProgressSummaryModal();
+                }
+            });
+            document.getElementById('routine-form-container').addEventListener('click', (event) => {
+                const target = event.target;
+                if (target.tagName === 'STRONG' && target.dataset.action === 'showDetails') {
+                    showExerciseDetails(target.dataset.routine, target.dataset.exerciseIndex);
+                }
+                if (target.tagName === 'BUTTON' && target.dataset.action === 'logSet') {
+                    logSet(target, target.dataset.exerciseIndex, target.dataset.setIndex, target.dataset.exerciseName);
+                }
+            });
+            document.getElementById('logContainer').addEventListener('click', (event) => {
+                const target = event.target;
+                if (target.dataset.action === 'showSummary') {
+                    showProgressSummary(target.dataset.exerciseName);
+                } else if (target.dataset.action === 'editLog') {
+                    editLog(target.dataset.key);
+                } else if (target.dataset.action === 'deleteLog') {
+                    deleteLog(target.dataset.key);
+                }
             });
         });
 
@@ -248,55 +279,41 @@
             const formContainer = document.getElementById('routine-form-container');
             formContainer.innerHTML = '';
 
-            if (!selectedRoutineName) {
-                return;
-            }
-
+            if (!selectedRoutineName) return;
             const exercises = workoutDataMap.get(selectedRoutineName);
-            if (!exercises) {
-                return;
-            }
+            if (!exercises) return;
 
-            const sections = {
-                'Warm-up': '',
-                'Lifts': '',
-                'Cool-down': ''
-            };
+            const sections = { 'Warm-up': '', 'Lifts': '', 'Cool-down': '' };
 
             exercises.forEach((exercise, index) => {
-                const sanitizedRoutineName = selectedRoutineName.replace(/'/g, "\\'");
                 const sanitizedExerciseName = exercise.exercise_name.replace(/'/g, "\\'");
+                const detailsAttr = `data-action="showDetails" data-routine="${selectedRoutineName}" data-exercise-index="${index}"`;
                 
                 if (exercise.category === 'Warm-up') {
-                    sections['Warm-up'] += `<div class="warmup-entry"><strong onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
+                    sections['Warm-up'] += `<div class="warmup-entry"><strong ${detailsAttr}>${exercise.exercise_name}</strong></div>`;
                 } else if (exercise.category === 'Main Lift' || exercise.category === 'Isolation Lift') {
-                    let liftHtml = `<div class="log-entry"><strong onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong>`;
-                    
+                    let liftHtml = `<div class="log-entry"><strong ${detailsAttr}>${exercise.exercise_name}</strong>`;
                     const numSets = exercise.category === 'Main Lift' ? 3 : 1;
+
                     for (let i = 0; i < numSets; i++) {
+                        const logBtnAttr = `data-action="logSet" data-exercise-index="${index}" data-set-index="${i}" data-exercise-name="${sanitizedExerciseName}"`;
                         liftHtml += `<div class="lift-form-row">
                                         <input type="number" id="weight-${index}-${i}" step="0.5" placeholder="Weight (lbs)">
                                         <input type="number" id="reps-${index}-${i}" placeholder="Reps">
-                                        <button class="checkmark-btn" aria-label="Log Set" onclick="logSet(this, ${index}, ${i}, '${sanitizedExerciseName}')">&#10004;</button>
+                                        <button class="checkmark-btn" aria-label="Log Set" ${logBtnAttr}>&#10004;</button>
                                      </div>`;
                     }
                     liftHtml += `</div>`;
                     sections['Lifts'] += liftHtml;
                 } else if (exercise.category === 'Cool-down') {
-                    sections['Cool-down'] += `<div class="warmup-entry"><strong onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
+                    sections['Cool-down'] += `<div class="warmup-entry"><strong ${detailsAttr}>${exercise.exercise_name}</strong></div>`;
                 }
             });
 
             let finalHtml = '';
-            if (sections['Warm-up']) {
-                finalHtml += `<div class="warmup-section">${sections['Warm-up']}</div>`;
-            }
-            if (sections['Lifts']) {
-                finalHtml += `<div class="lifts-section">${sections['Lifts']}</div>`;
-            }
-            if (sections['Cool-down']) {
-                finalHtml += `<div class="cooldown-section">${sections['Cool-down']}</div>`;
-            }
+            if (sections['Warm-up']) finalHtml += `<div class="warmup-section">${sections['Warm-up']}</div>`;
+            if (sections['Lifts']) finalHtml += `<div class="lifts-section">${sections['Lifts']}</div>`;
+            if (sections['Cool-down']) finalHtml += `<div class="cooldown-section">${sections['Cool-down']}</div>`;
             formContainer.innerHTML = finalHtml;
         }
         
@@ -328,16 +345,7 @@
                     prsStore.put({ exercise: exerciseName, est1RM: est1RM });
                 }
 
-                const logEntry = {
-                    timestamp: Date.now(),
-                    date: new Date().toLocaleDateString(),
-                    exercise: exerciseName,
-                    weight: weight,
-                    reps: reps,
-                    est1RM: est1RM,
-                    isPR: isNewPR
-                };
-
+                const logEntry = { timestamp: Date.now(), date: new Date().toLocaleDateString(), exercise: exerciseName, weight: weight, reps: reps, est1RM: est1RM, isPR: isNewPR };
                 const addRequest = logsStore.add(logEntry);
                 addRequest.onsuccess = () => {
                     displayLogs();
@@ -374,23 +382,13 @@
             const howToHtml = `<ol><li>${exercise.how_to.join('</li><li>')}</li></ol>`;
 
             contentEl.innerHTML = `
-                <div class="modal-section">
-                    <span class="modal-section-title">Targets:</span>
-                    <div class="modal-section-content">${targetsHtml}</div>
-                </div>
-                <div class="modal-section">
-                    <span class="modal-section-title">Biomechanics:</span>
-                    <div class="modal-section-content">${exercise.biomechanics}</div>
-                </div>
-                <div class="modal-section">
-                    <span class="modal-section-title">How To:</span>
-                    <div class="modal-section-content">${howToHtml}</div>
-                </div>
+                <div class="modal-section"><span class="modal-section-title">Targets:</span><div class="modal-section-content">${targetsHtml}</div></div>
+                <div class="modal-section"><span class="modal-section-title">Biomechanics:</span><div class="modal-section-content">${exercise.biomechanics}</div></div>
+                <div class="modal-section"><span class="modal-section-title">How To:</span><div class="modal-section-content">${howToHtml}</div></div>
                 <div id="modal-history-section" class="modal-section" style="display: none;">
                     <span class="modal-section-title">Personal Records & History:</span>
                     <div class="modal-section-content" id="modal-history-content"></div>
-                </div>
-            `;
+                </div>`;
 
             document.getElementById('exercise-details-modal').style.display = 'block';
 
@@ -410,15 +408,8 @@
                     const historyContent = document.getElementById('modal-history-content');
                     
                     historyContent.innerHTML = `
-                        <div style="margin-bottom: 8px;">
-                            <strong>All-Time Best (PR):</strong> 
-                            ${best.weight} lbs x ${best.reps} reps (Est. 1RM: <span class="rm-highlight">${best.est1RM}</span>) on ${best.date}
-                        </div>
-                        <div>
-                            <strong>Most Recent Session:</strong> 
-                            ${latest.weight} lbs x ${latest.reps} reps (Est. 1RM: <span class="rm-highlight">${latest.est1RM}</span>) on ${latest.date}
-                        </div>
-                    `;
+                        <div style="margin-bottom: 8px;"><strong>All-Time Best (PR):</strong> ${best.weight} lbs x ${best.reps} reps (Est. 1RM: <span class="rm-highlight">${best.est1RM}</span>) on ${best.date}</div>
+                        <div><strong>Most Recent Session:</strong> ${latest.weight} lbs x ${latest.reps} reps (Est. 1RM: <span class="rm-highlight">${latest.est1RM}</span>) on ${latest.date}</div>`;
                     historyContainer.style.display = 'block';
                 }
             };
@@ -448,12 +439,12 @@
                     const prBadge = log.isPR ? `<span class="pr-badge">✨ PR!</span>` : '';
                     return `
                     <div class="log-entry">
-                        <strong>${log.date} - <span style="color: #d4af37; cursor: pointer;" onclick="showProgressSummary('${safeExerciseName}')">${log.exercise}</span></strong><br>
+                        <strong>${log.date} - <span style="color: #d4af37; cursor: pointer;" data-action="showSummary" data-exercise-name="${safeExerciseName}">${log.exercise}</span></strong><br>
                         Lifted: ${log.weight} x ${log.reps} reps <br>
                         <span class="rm-highlight">Est. 1RM: ${log.est1RM}</span> ${prBadge}
                         <div class="log-actions">
-                            <button class="edit-button" onclick="editLog(${log.id})">Edit</button>
-                            <button class="delete-button" onclick="deleteLog(${log.id})">Delete</button>
+                            <button class="edit-button" data-action="editLog" data-key="${log.id}">Edit</button>
+                            <button class="delete-button" data-action="deleteLog" data-key="${log.id}">Delete</button>
                         </div>
                     </div>`;
                 }).join('');
@@ -462,15 +453,16 @@
 
         function deleteLog(key) {
             if (!confirm('Are you sure you want to delete this log?')) return;
+            const keyNum = parseInt(key, 10);
             
             const transaction = db.transaction(['logs', 'prs'], 'readwrite');
             const logsStore = transaction.objectStore('logs');
-            const getRequest = logsStore.get(key);
+            const getRequest = logsStore.get(keyNum);
 
             getRequest.onsuccess = () => {
                 const logToDelete = getRequest.result;
                 if (logToDelete) {
-                    logsStore.delete(key).onsuccess = () => {
+                    logsStore.delete(keyNum).onsuccess = () => {
                         recalculatePRs(logToDelete.exercise).then(() => {
                             displayLogs();
                             showToast('Log deleted.');
@@ -481,9 +473,10 @@
         }
 
         function editLog(key) {
+            const keyNum = parseInt(key, 10);
             const transaction = db.transaction('logs', 'readonly');
             const store = transaction.objectStore('logs');
-            const getRequest = store.get(key);
+            const getRequest = store.get(keyNum);
             getRequest.onsuccess = () => {
                 const log = getRequest.result;
                 document.getElementById('edit-exercise').value = log.exercise;

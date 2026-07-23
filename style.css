@@ -181,15 +181,16 @@ option {
 }
 .modal-content {
     background-color: #0c0c0c;
-    margin: 10% auto;
-    padding: 25px;
+    margin: 5% auto;
+    padding: 20px;
     border: 1px solid #d4af37;
-    width: 90%;
+    width: 95%;
     max-width: 600px;
     border-radius: 10px;
     position: relative;
     box-shadow: 0 5px 20px rgba(212, 175, 55, 0.2);
     color: #e0e0e0;
+    box-sizing: border-box;
 }
 .modal-close-button {
     color: #d4af37;
