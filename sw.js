@@ -1,11 +1,13 @@
 const CACHE_NAME = 'lift-tracker-cache-v2';
 const STATIC_ASSETS = [
+    './',
     './index.html',
     './style.css',
     './manifest.json',
+    './workouts.json',
     './icon-192.png',
     './icon-512.png',
-    './icon-512-maskable.png',
+    './icon-512-maskable.png'
 ];
 
 self.addEventListener('install', event => {
@@ -32,20 +34,6 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    if (event.request.url.includes('workouts.json')) {
-        event.respondWith(
-            fetch(event.request).then(fetchedResponse => {
-                return caches.open(CACHE_NAME).then(cache => {
-                    cache.put(event.request, fetchedResponse.clone());
-                    return fetchedResponse;
-                });
-            }).catch(() => {
-                return caches.match(event.request);
-            })
-        );
-        return;
-    }
-
     event.respondWith(
         caches.match(event.request).then(cachedResponse => {
             if (cachedResponse) {
