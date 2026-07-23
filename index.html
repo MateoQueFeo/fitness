@@ -10,10 +10,8 @@
 </head>
 <body>
     <div id="timer-container">
-        <span id="timer-display">01:00</span>
-        <button id="start-timer-btn">Start Rest</button>
-        <button id="add-minute-btn" style="display: none;">+1 Min</button>
-        <button id="reset-timer-btn" style="display: none; background-color: #555; color: #fff;">Reset</button>
+        <span id="timer-display">00:00</span>
+        <button id="add-minute-timer-btn">+1 Minute</button>
         <button id="metronome-btn" title="Toggle Metronome">⏱️</button>
     </div>
 
@@ -85,7 +83,7 @@
         const DB_VERSION = 3;
 
         let timerInterval = null;
-        let remainingTime = 60;
+        let remainingTime = 0;
         let isTimerRunning = false;
 
         let audioContext;
@@ -172,9 +170,7 @@
             
             updateTimerDisplay();
 
-            document.getElementById('start-timer-btn').addEventListener('click', () => startTimer(60));
-            document.getElementById('add-minute-btn').addEventListener('click', addMinute);
-            document.getElementById('reset-timer-btn').addEventListener('click', resetTimer);
+            document.getElementById('add-minute-timer-btn').addEventListener('click', addMinuteToTimer);
             document.getElementById('metronome-btn').addEventListener('click', toggleMetronome);
             document.getElementById('routine-select').addEventListener('change', generateRoutineForm);
             document.getElementById('cancel-button').addEventListener('click', cancelEdit);
@@ -258,44 +254,39 @@
             document.getElementById('timer-display').textContent = 
                 `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
-
-        function startTimer(duration) {
-            if (isTimerRunning) {
-                remainingTime += duration;
-                return;
-            }
-            remainingTime = duration;
+        
+        function startTimerCountdown() {
+            if (isTimerRunning) return;
             isTimerRunning = true;
-            document.getElementById('start-timer-btn').style.display = 'none';
-            document.getElementById('add-minute-btn').style.display = 'inline-block';
-            document.getElementById('reset-timer-btn').style.display = 'inline-block';
-            
+
             timerInterval = setInterval(() => {
                 remainingTime--;
                 updateTimerDisplay();
+
                 if (remainingTime <= 0) {
                     clearInterval(timerInterval);
                     isTimerRunning = false;
+                    remainingTime = 0;
+                    updateTimerDisplay();
                     showToast("Rest period is over!");
-                    resetTimer();
                 }
             }, 1000);
         }
 
-        function addMinute() {
-            if (!isTimerRunning) return;
+        function addMinuteToTimer() {
             remainingTime += 60;
             updateTimerDisplay();
+            if (!isTimerRunning && remainingTime > 0) {
+                startTimerCountdown();
+            }
         }
 
-        function resetTimer() {
+        function resetAndStartTimer(duration) {
             clearInterval(timerInterval);
             isTimerRunning = false;
-            remainingTime = 60;
+            remainingTime = duration;
             updateTimerDisplay();
-            document.getElementById('start-timer-btn').style.display = 'inline-block';
-            document.getElementById('add-minute-btn').style.display = 'none';
-            document.getElementById('reset-timer-btn').style.display = 'none';
+            startTimerCountdown();
         }
 
         function showToast(message) {
@@ -402,7 +393,7 @@
                     let toastMessage = `Set logged!`;
                     if (isNewPR) toastMessage += " ✨ New PR!";
                     showToast(toastMessage);
-                    startTimer(60);
+                    resetAndStartTimer(60);
                     weightInput.disabled = true;
                     repsInput.disabled = true;
                     weightInput.style.backgroundColor = "#222";
