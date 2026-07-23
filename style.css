@@ -95,8 +95,9 @@ button:hover {
     height: 36px;
     border-radius: 50%;
     font-size: 20px;
-    line-height: 36px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 #metronome-btn.metronome-on {
     background-color: #d4af37;
