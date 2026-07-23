@@ -22,7 +22,9 @@
     <div id="exercise-details-modal" class="modal">
         <div class="modal-content">
             <span class="modal-close-button" onclick="closeExerciseDetailsModal()">&times;</span>
-            <h2 id="details-title"></h2>
+            <div id="details-header" class="modal-header">
+                <h2 id="details-title" class="modal-title"></h2>
+            </div>
             <div id="details-content"></div>
         </div>
     </div>
@@ -262,12 +264,12 @@
                 if (exercise.category === 'Warm-up') {
                     if (!warmupHtml) warmupHtml = '<div class="warmup-section">';
                     warmupHtml += `<div class="warmup-entry"><strong onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong></div>`;
-                } else if (exercise.category === 'Lift') {
+                } else if (exercise.category === 'Main Lift' || exercise.category === 'Isolation Lift') {
                     if (!liftHtml) liftHtml = '<div class="lifts-section">';
                     liftHtml += `<div class="log-entry">
                                     <strong onclick='showExerciseDetails("${sanitizedRoutineName}", ${index})'>${exercise.exercise_name}</strong>`;
                     
-                    const numSets = exercise.lift_type === 'Main Lift' ? 3 : 1;
+                    const numSets = exercise.category === 'Main Lift' ? 3 : 1;
                     for (let i = 0; i < numSets; i++) {
                         liftHtml += `<div class="lift-form-row">
                                         <input type="number" id="weight-${index}-${i}" step="0.5" placeholder="Weight (lbs)">
@@ -353,15 +355,63 @@
             const exercises = workoutDataMap.get(routineName);
             const exercise = exercises ? exercises[exerciseIndex] : null;
             if (!exercise) return;
-            document.getElementById('details-title').textContent = exercise.exercise_name;
+
+            const titleEl = document.getElementById('details-title');
+            titleEl.innerHTML = `${exercise.exercise_name} <span class="modal-category">(${exercise.category})</span>`;
+
             const contentEl = document.getElementById('details-content');
+            const targetsHtml = exercise.targets.map(t => `<div>${t}</div>`).join('');
+            const howToHtml = `<ol><li>${exercise.how_to.join('</li><li>')}</li></ol>`;
+
             contentEl.innerHTML = `
-                <p><strong>Category:</strong> ${exercise.category}</p>
-                <p><strong>Targets:</strong> ${exercise.targets}</p>
-                <p><strong>Biomechanics:</strong> ${exercise.biomechanics}</p>
-                <p><strong>How To:</strong> ${exercise.how_to}</p>
+                <div class="modal-section">
+                    <span class="modal-section-title">Targets:</span>
+                    <div class="modal-section-content">${targetsHtml}</div>
+                </div>
+                <div class="modal-section">
+                    <span class="modal-section-title">Biomechanics:</span>
+                    <div class="modal-section-content">${exercise.biomechanics}</div>
+                </div>
+                <div class="modal-section">
+                    <span class="modal-section-title">How To:</span>
+                    <div class="modal-section-content">${howToHtml}</div>
+                </div>
+                <div id="modal-history-section" class="modal-section" style="display: none;">
+                    <span class="modal-section-title">Personal Records & History:</span>
+                    <div class="modal-section-content" id="modal-history-content"></div>
+                </div>
             `;
+
             document.getElementById('exercise-details-modal').style.display = 'block';
+
+            const transaction = db.transaction('logs', 'readonly');
+            const store = transaction.objectStore('logs');
+            const index = store.index('exercise');
+            const getLogsRequest = index.getAll(exercise.exercise_name);
+
+            getLogsRequest.onsuccess = () => {
+                const logs = getLogsRequest.result;
+                if (logs && logs.length > 0) {
+                    logs.sort((a, b) => b.timestamp - a.timestamp);
+                    const latest = logs[0];
+                    const best = logs.reduce((prev, current) => (prev.est1RM > current.est1RM) ? prev : current);
+                    
+                    const historyContainer = document.getElementById('modal-history-section');
+                    const historyContent = document.getElementById('modal-history-content');
+                    
+                    historyContent.innerHTML = `
+                        <div style="margin-bottom: 8px;">
+                            <strong>All-Time Best (PR):</strong> 
+                            ${best.weight} lbs x ${best.reps} reps (Est. 1RM: <span class="rm-highlight">${best.est1RM}</span>) on ${best.date}
+                        </div>
+                        <div>
+                            <strong>Most Recent Session:</strong> 
+                            ${latest.weight} lbs x ${latest.reps} reps (Est. 1RM: <span class="rm-highlight">${latest.est1RM}</span>) on ${latest.date}
+                        </div>
+                    `;
+                    historyContainer.style.display = 'block';
+                }
+            };
         }
 
         function closeExerciseDetailsModal() { document.getElementById('exercise-details-modal').style.display = 'none'; }

@@ -4,54 +4,91 @@
         "exercises": [
             {
                 "exercise_name": "Lateral Weight Shifts",
-                "targets": "Hip Adductors (O: Pubis, I: Femur), Gluteus Medius (O: Ilium, I: Greater trochanter)",
+                "targets": [
+                    "Hip Adductors (O: Pubis, I: Femur)",
+                    "Gluteus Medius (O: Ilium, I: Greater trochanter)"
+                ],
                 "biomechanics": "Frontal plane movement to warm up the hips.",
-                "how_to": "1. Stand with feet wide.\n2. Shift weight from side to side, bending one knee while keeping the other straight.",
+                "how_to": [
+                    "Stand with feet wide.",
+                    "Shift weight from side to side, bending one knee while keeping the other straight."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "Leg Swings",
-                "targets": "Iliopsoas (O: T12-L5 vertebrae, I: Lesser trochanter), Hamstrings (O: Ischial tuberosity, I: Tibia/fibula)",
+                "targets": [
+                    "Iliopsoas (O: T12-L5 vertebrae, I: Lesser trochanter)",
+                    "Hamstrings (O: Ischial tuberosity, I: Tibia/fibula)"
+                ],
                 "biomechanics": "Dynamic stretch to improve hip mobility.",
-                "how_to": "1. Hold onto a stable surface.\n2. Swing one leg forward and backward, then side to side.",
+                "how_to": [
+                    "Hold onto a stable surface.",
+                    "Swing one leg forward and backward, then side to side."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "Side Lunge",
-                "targets": "Gluteus Medius (O: Outer ilium, I: Greater trochanter), Adductor Magnus (O: Pubis, I: Lower femur)",
+                "targets": [
+                    "Gluteus Medius (O: Outer ilium, I: Greater trochanter)",
+                    "Adductor Magnus (O: Pubis, I: Lower femur)"
+                ],
                 "biomechanics": "A loaded frontal plane movement to build strength and stability.",
-                "how_to": "1. Hold a dumbbell at your chest.\n2. Step out to one side, hinging at the hips and bending the knee of the stepping leg.\n3. Keep the other leg straight. Push back to the start.",
-                "category": "Lift",
-                "lift_type": "Main Lift"
+                "how_to": [
+                    "Hold a dumbbell at your chest.",
+                    "Step out to one side, hinging at the hips and bending the knee of the stepping leg.",
+                    "Keep the other leg straight. Push back to the start."
+                ],
+                "category": "Main Lift"
             },
             {
                 "exercise_name": "Cable Hip Abduction",
-                "targets": "Gluteus Medius & Minimus (O: Ilium, I: Greater trochanter of the femur)",
+                "targets": [
+                    "Gluteus Medius & Minimus (O: Ilium, I: Greater trochanter of the femur)"
+                ],
                 "biomechanics": "Isolates the lateral glute muscles using constant tension.",
-                "how_to": "1. Attach an ankle cuff to a low cable.\n2. Stand sideways to the machine and pull your leg away from your body.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "Attach an ankle cuff to a low cable.",
+                    "Stand sideways to the machine and pull your leg away from your body."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "Cable Hip Adduction",
-                "targets": "Adductor Group (O: Pubic bone/ischium, I: Inner femur)",
+                "targets": [
+                    "Adductor Group (O: Pubic bone/ischium, I: Inner femur)"
+                ],
                 "biomechanics": "Isolates the inner thigh muscles using constant tension.",
-                "how_to": "1. Attach an ankle cuff to a low cable.\n2. Stand with the machine to your side and pull your leg across your body.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "Attach an ankle cuff to a low cable.",
+                    "Stand with the machine to your side and pull your leg across your body."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "Butterfly Stretch",
-                "targets": "Adductor Longus/Brevis (O: Pubis, I: Linea aspera of femur)",
+                "targets": [
+                    "Adductor Longus/Brevis (O: Pubis, I: Linea aspera of femur)"
+                ],
                 "biomechanics": "Static stretch to improve hip flexibility.",
-                "how_to": "1. Sit on the floor, bring the soles of your feet together.\n2. Gently press your knees toward the ground.",
+                "how_to": [
+                    "Sit on the floor, bring the soles of your feet together.",
+                    "Gently press your knees toward the ground."
+                ],
                 "category": "Cool-down"
             },
             {
                 "exercise_name": "Kneeling Quad Stretch",
-                "targets": "Rectus Femoris (O: AIIS, I: Tibial tuberosity, T: Patellar tendon), Iliopsoas (O: T12-L5 vertebrae, I: Lesser trochanter)",
+                "targets": [
+                    "Rectus Femoris (O: AIIS, I: Tibial tuberosity)",
+                    "Iliopsoas (O: T12-L5 vertebrae, I: Lesser trochanter)"
+                ],
                 "biomechanics": "Static stretch to lengthen the front of the thigh.",
-                "how_to": "1. Kneel on one knee, with the other foot forward.\n2. Gently push your hips forward to feel a stretch in the kneeling leg's quad.",
+                "how_to": [
+                    "Kneel on one knee, with the other foot forward.",
+                    "Gently push your hips forward to feel a stretch in the kneeling leg's quad."
+                ],
                 "category": "Cool-down"
             }
         ]
@@ -61,62 +98,104 @@
         "exercises": [
             {
                 "exercise_name": "Arm Circles",
-                "targets": "Deltoid Complex (O: Clavicle/Scapula, I: Deltoid tuberosity)",
+                "targets": [
+                    "Deltoid Complex (O: Clavicle/Scapula, I: Deltoid tuberosity)"
+                ],
                 "biomechanics": "Dynamic warm-up for the shoulder joint.",
-                "how_to": "1. Stand with arms extended to the sides.\n2. Make small, controlled circles, gradually increasing the size. Reverse direction.",
+                "how_to": [
+                    "Stand with arms extended to the sides.",
+                    "Make small, controlled circles, gradually increasing the size. Reverse direction."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "Prone Y-Raises",
-                "targets": "Lower Trapezius (O: Thoracic vertebrae, I: Scapular spine), Infraspinatus (O: Infraspinous fossa, I: Greater tubercle of humerus), Teres Minor (O: Lateral border of scapula, I: Greater tubercle of humerus)",
+                "targets": [
+                    "Lower Trapezius (O: Thoracic vertebrae, I: Scapular spine)",
+                    "Infraspinatus (O: Infraspinous fossa, I: Greater tubercle of humerus)",
+                    "Teres Minor (O: Lateral border of scapula, I: Greater tubercle of humerus)"
+                ],
                 "biomechanics": "Activates the muscles that stabilize and externally rotate the scapula.",
-                "how_to": "1. Lie face down on a bench or the floor.\n2. Extend your arms in a 'Y' shape, thumbs pointing up.\n3. Lift your arms by squeezing your shoulder blades together.",
+                "how_to": [
+                    "Lie face down on a bench or the floor.",
+                    "Extend your arms in a 'Y' shape, thumbs pointing up.",
+                    "Lift your arms by squeezing your shoulder blades together."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "Incline Dumbbell Press",
-                "targets": "Pectoralis Major, Clavicular head (O: Clavicle, I: Bicipital groove), Anterior Deltoid (O: Clavicle, I: Deltoid tuberosity), Triceps Brachii (O: Scapula/Humerus, I: Olecranon of ulna)",
+                "targets": [
+                    "Pectoralis Major, Clavicular head (O: Clavicle, I: Bicipital groove)",
+                    "Anterior Deltoid (O: Clavicle, I: Deltoid tuberosity)",
+                    "Triceps Brachii (O: Scapula/Humerus, I: Olecranon of ulna)"
+                ],
                 "biomechanics": "Pressing on an incline emphasizes the upper fibers of the chest.",
-                "how_to": "1. Set a bench to a 30-45 degree incline.\n2. Press dumbbells from your chest to straight above you.",
-                "category": "Lift",
-                "lift_type": "Main Lift"
+                "how_to": [
+                    "Set a bench to a 30-45 degree incline.",
+                    "Press dumbbells from your chest to straight above you."
+                ],
+                "category": "Main Lift"
             },
             {
                 "exercise_name": "Low-to-High Cable Crossover",
-                "targets": "Pectoralis Major, Clavicular (Upper) head (O: Medial clavicle, I: Bicipital groove of humerus)",
+                "targets": [
+                    "Pectoralis Major, Clavicular (Upper) head (O: Medial clavicle, I: Bicipital groove of humerus)"
+                ],
                 "biomechanics": "Constant tension through an upward arc that targets the upper chest fibers.",
-                "how_to": "1. Set cables to the lowest position.\n2. Bring the handles upward and together in a scooping motion to chest or face height.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "Set cables to the lowest position.",
+                    "Bring the handles upward and together in a scooping motion to chest or face height."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "Overhead Cable Triceps Ext.",
-                "targets": "Triceps Brachii, Long Head (O: Infraglenoid tubercle of scapula, I: Olecranon of ulna)",
+                "targets": [
+                    "Triceps Brachii, Long Head (O: Infraglenoid tubercle of scapula, I: Olecranon of ulna)"
+                ],
                 "biomechanics": "Puts the long head of the triceps on stretch for maximal activation.",
-                "how_to": "1. Face away from a high cable.\n2. Extend your elbows to press the rope or bar forward and out.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "Face away from a high cable.",
+                    "Extend your elbows to press the rope or bar forward and out."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "Cable Front Raise",
-                "targets": "Anterior Deltoid (O: Lateral clavicle, I: Deltoid tuberosity)",
+                "targets": [
+                    "Anterior Deltoid (O: Lateral clavicle, I: Deltoid tuberosity)"
+                ],
                 "biomechanics": "Isolates the front of the shoulder using constant tension.",
-                "how_to": "1. Face away from a low cable.\n2. Raise a bar or rope attachment straight in front of you to shoulder height.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "Face away from a low cable.",
+                    "Raise a bar or rope attachment straight in front of you to shoulder height."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "Doorway Chest Stretch",
-                "targets": "Pectoralis Major (O: Sternum/Clavicle, I: Bicipital groove), Pectoralis Minor (O: Ribs 3-5, I: Coracoid process)",
+                "targets": [
+                    "Pectoralis Major (O: Sternum/Clavicle, I: Bicipital groove)",
+                    "Pectoralis Minor (O: Ribs 3-5, I: Coracoid process)"
+                ],
                 "biomechanics": "Static stretch to open up the chest.",
-                "how_to": "1. Place forearms on a doorframe.\n2. Gently step through until you feel a stretch across your chest.",
+                "how_to": [
+                    "Place forearms on a doorframe.",
+                    "Gently step through until you feel a stretch across your chest."
+                ],
                 "category": "Cool-down"
             },
             {
                 "exercise_name": "Overhead Triceps Stretch",
-                "targets": "Triceps Brachii, Long Head (O: Infraglenoid tubercle of scapula, I: Olecranon of ulna)",
+                "targets": [
+                    "Triceps Brachii, Long Head (O: Infraglenoid tubercle of scapula, I: Olecranon of ulna)"
+                ],
                 "biomechanics": "Static stretch for the back of the arm.",
-                "how_to": "1. Reach one arm over your head, bend the elbow.\n2. Gently pull the elbow with your other hand.",
+                "how_to": [
+                    "Reach one arm over your head, bend the elbow.",
+                    "Gently pull the elbow with your other hand."
+                ],
                 "category": "Cool-down"
             }
         ]
@@ -126,54 +205,90 @@
         "exercises": [
             {
                 "exercise_name": "Forward Lunges",
-                "targets": "Quadriceps (O: Femur, I: Tibial tuberosity), Gluteus Maximus (O: Ilium/Sacrum, I: Gluteal tuberosity)",
+                "targets": [
+                    "Quadriceps (O: Femur, I: Tibial tuberosity)",
+                    "Gluteus Maximus (O: Ilium/Sacrum, I: Gluteal tuberosity)"
+                ],
                 "biomechanics": "Dynamic warm-up for the lunge pattern.",
-                "how_to": "1. Step forward and lower your hips until both knees are at a 90-degree angle.\n2. Push back to the start.",
+                "how_to": [
+                    "Step forward and lower your hips until both knees are at a 90-degree angle.",
+                    "Push back to the start."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "High Knees",
-                "targets": "Iliopsoas (O: T12-L5 vertebrae, I: Lesser trochanter), Rectus Abdominis",
+                "targets": [
+                    "Iliopsoas (O: T12-L5 vertebrae, I: Lesser trochanter)",
+                    "Rectus Abdominis"
+                ],
                 "biomechanics": "Dynamic warm-up to increase heart rate and activate the lower body.",
-                "how_to": "Run in place, bringing your knees up to hip height.",
+                "how_to": [
+                    "Run in place, bringing your knees up to hip height."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "Walking Lunge",
-                "targets": "Quadriceps (O: AIIS/Femur, I: Tibial tuberosity), Gluteus Maximus (O: Ilium/Sacrum, I: Gluteal tuberosity), Hamstrings (O: Ischial tuberosity, I: Tibia/Fibula)",
+                "targets": [
+                    "Quadriceps (O: AIIS/Femur, I: Tibial tuberosity)",
+                    "Gluteus Maximus (O: Ilium/Sacrum, I: Gluteal tuberosity)",
+                    "Hamstrings (O: Ischial tuberosity, I: Tibia/Fibula)"
+                ],
                 "biomechanics": "A compound movement that challenges strength, balance, and coordination.",
-                "how_to": "1. Hold dumbbells at your sides.\n2. Step forward into a lunge, then push off the front foot to step directly into the next lunge with the opposite leg.",
-                "category": "Lift",
-                "lift_type": "Main Lift"
+                "how_to": [
+                    "Hold dumbbells at your sides.",
+                    "Step forward into a lunge, then push off the front foot to step directly into the next lunge with the opposite leg."
+                ],
+                "category": "Main Lift"
             },
             {
                 "exercise_name": "One-Leg Seated Leg Curl",
-                "targets": "Hamstrings (O: Ischial tuberosity, I: Posterior tibia/fibula)",
+                "targets": [
+                    "Hamstrings (O: Ischial tuberosity, I: Posterior tibia/fibula)"
+                ],
                 "biomechanics": "Isolates the hamstring of one leg at a time.",
-                "how_to": "In a seated leg curl machine, use one leg to curl the pad down towards your glute.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "In a seated leg curl machine, use one leg to curl the pad down towards your glute."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "One-Leg Seated Calf Raise",
-                "targets": "Soleus (O: Posterior tibia/fibula, I: Calcaneus, T: Achilles tendon)",
+                "targets": [
+                    "Soleus (O: Posterior tibia/fibula, I: Calcaneus)"
+                ],
                 "biomechanics": "Isolates the soleus muscle by keeping the knee bent.",
-                "how_to": "1. Sit on a bench with the ball of one foot on a raised surface.\n2. Place a weight on your knee and perform calf raises.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "Sit on a bench with the ball of one foot on a raised surface.",
+                    "Place a weight on your knee and perform calf raises."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "Seated Toe Touch",
-                "targets": "Hamstrings (O: Ischial tuberosity, I: Posterior tibia/fibula), Erector Spinae",
+                "targets": [
+                    "Hamstrings (O: Ischial tuberosity, I: Posterior tibia/fibula)",
+                    "Erector Spinae"
+                ],
                 "biomechanics": "Static stretch to lengthen the posterior chain.",
-                "how_to": "1. Sit on the floor with legs straight out.\n2. Hinge at the hips and reach for your toes.",
+                "how_to": [
+                    "Sit on the floor with legs straight out.",
+                    "Hinge at the hips and reach for your toes."
+                ],
                 "category": "Cool-down"
             },
             {
                 "exercise_name": "Pigeon Pose",
-                "targets": "Piriformis (O: Sacrum, I: Greater trochanter), Gluteus Maximus",
+                "targets": [
+                    "Piriformis (O: Sacrum, I: Greater trochanter)",
+                    "Gluteus Maximus"
+                ],
                 "biomechanics": "Deep static stretch for the external rotators of the hip.",
-                "how_to": "1. From a plank position, bring one knee forward towards the opposite hand, and lay the shin on the floor.\n2. Extend the other leg back.",
+                "how_to": [
+                    "From a plank position, bring one knee forward towards the opposite hand, and lay the shin on the floor.",
+                    "Extend the other leg back."
+                ],
                 "category": "Cool-down"
             }
         ]
@@ -183,54 +298,88 @@
         "exercises": [
             {
                 "exercise_name": "Cat-Cow",
-                "targets": "Erector Spinae (O: Spine/sacrum, I: Ribs/vertebrae), Rectus Abdominis",
+                "targets": [
+                    "Erector Spinae (O: Spine/sacrum, I: Ribs/vertebrae)",
+                    "Rectus Abdominis"
+                ],
                 "biomechanics": "Dynamic movement to warm up the spine.",
-                "how_to": "On all fours, alternate between arching your back (cow) and rounding your spine (cat).",
+                "how_to": [
+                    "On all fours, alternate between arching your back (cow) and rounding your spine (cat)."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "Bent-Over T-Raises",
-                "targets": "Rhomboids (O: Thoracic spinous processes, I: Medial scapular border), Mid-Trapezius",
+                "targets": [
+                    "Rhomboids (O: Thoracic spinous processes, I: Medial scapular border)",
+                    "Mid-Trapezius"
+                ],
                 "biomechanics": "Activates the upper back muscles responsible for scapular retraction.",
-                "how_to": "1. Hinge at the hips with a flat back.\n2. With light weights or no weights, raise your arms out to the sides to form a 'T' shape.",
+                "how_to": [
+                    "Hinge at the hips with a flat back.",
+                    "With light weights or no weights, raise your arms out to the sides to form a 'T' shape."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "Bent-Over Row",
-                "targets": "Latissimus Dorsi (O: Thoracolumbar fascia, I: Bicipital groove of humerus), Biceps (O: Scapula, I: Radial tuberosity), Posterior Deltoid (O: Scapular spine, I: Deltoid tuberosity)",
+                "targets": [
+                    "Latissimus Dorsi (O: Thoracolumbar fascia, I: Bicipital groove of humerus)",
+                    "Biceps (O: Scapula, I: Radial tuberosity)",
+                    "Posterior Deltoid (O: Scapular spine, I: Deltoid tuberosity)"
+                ],
                 "biomechanics": "A compound pulling movement to build back thickness and strength.",
-                "how_to": "1. Hinge at the hips, keeping your back straight.\n2. Pull the dumbbells up towards your hips, squeezing your back muscles.",
-                "category": "Lift",
-                "lift_type": "Main Lift"
+                "how_to": [
+                    "Hinge at the hips, keeping your back straight.",
+                    "Pull the dumbbells up towards your hips, squeezing your back muscles."
+                ],
+                "category": "Main Lift"
             },
             {
                 "exercise_name": "Cable Rear Delt Fly",
-                "targets": "Posterior Deltoid (O: Spine of scapula, I: Deltoid tuberosity)",
+                "targets": [
+                    "Posterior Deltoid (O: Spine of scapula, I: Deltoid tuberosity)"
+                ],
                 "biomechanics": "Isolates the back of the shoulders.",
-                "how_to": "Using a cable machine, pull the handles apart and backward, keeping a slight bend in the elbows.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "Using a cable machine, pull the handles apart and backward, keeping a slight bend in the elbows."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "Standing Cable Bicep Curl",
-                "targets": "Biceps Brachii (O: Supraglenoid tubercle, I: Radial tuberosity), Brachialis (O: Humerus, I: Ulna)",
+                "targets": [
+                    "Biceps Brachii (O: Supraglenoid tubercle, I: Radial tuberosity)",
+                    "Brachialis (O: Humerus, I: Ulna)"
+                ],
                 "biomechanics": "Provides constant tension on the biceps throughout the movement.",
-                "how_to": "Stand facing a low cable pulley. Curl the bar up, keeping your elbows pinned to your sides.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "Stand facing a low cable pulley. Curl the bar up, keeping your elbows pinned to your sides."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "Child's Pose",
-                "targets": "Latissimus Dorsi (O: Thoracolumbar fascia, I: Bicipital groove of humerus), Erector Spinae",
+                "targets": [
+                    "Latissimus Dorsi (O: Thoracolumbar fascia, I: Bicipital groove of humerus)",
+                    "Erector Spinae"
+                ],
                 "biomechanics": "A restful static stretch.",
-                "how_to": "Kneel on the floor, sit back on your heels, and fold forward, extending your arms in front of you.",
+                "how_to": [
+                    "Kneel on the floor, sit back on your heels, and fold forward, extending your arms in front of you."
+                ],
                 "category": "Cool-down"
             },
             {
                 "exercise_name": "Cross-Body Shoulder Stretch",
-                "targets": "Posterior Deltoid (O: Spine of scapula, I: Deltoid tuberosity), Rhomboids",
+                "targets": [
+                    "Posterior Deltoid (O: Spine of scapula, I: Deltoid tuberosity)",
+                    "Rhomboids"
+                ],
                 "biomechanics": "Static stretch for the shoulder.",
-                "how_to": "Bring one arm across your body and gently pull it with the other arm to feel a stretch in the shoulder.",
+                "how_to": [
+                    "Bring one arm across your body and gently pull it with the other arm to feel a stretch in the shoulder."
+                ],
                 "category": "Cool-down"
             }
         ]
@@ -240,54 +389,83 @@
         "exercises": [
             {
                 "exercise_name": "Hip Abductions",
-                "targets": "Gluteus Medius & Minimus (O: Ilium, I: Greater trochanter)",
+                "targets": [
+                    "Gluteus Medius & Minimus (O: Ilium, I: Greater trochanter)"
+                ],
                 "biomechanics": "Activates the side glute muscles.",
-                "how_to": "Lie on your side and lift your top leg straight up, without rocking your torso.",
+                "how_to": [
+                    "Lie on your side and lift your top leg straight up, without rocking your torso."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "Fire Hydrants",
-                "targets": "Gluteus Medius & Minimus (O: Ilium, I: Greater trochanter)",
+                "targets": [
+                    "Gluteus Medius & Minimus (O: Ilium, I: Greater trochanter)"
+                ],
                 "biomechanics": "Hip abduction and external rotation to warm up the glutes.",
-                "how_to": "On all fours, lift one knee out to the side, keeping the knee bent.",
+                "how_to": [
+                    "On all fours, lift one knee out to the side, keeping the knee bent."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "Curtsy Lunge",
-                "targets": "Gluteus Medius (O: Ilium, I: Greater trochanter), Gluteus Maximus (O: Ilium/Sacrum, I: Gluteal tuberosity), Adductors",
+                "targets": [
+                    "Gluteus Medius (O: Ilium, I: Greater trochanter)",
+                    "Gluteus Maximus (O: Ilium/Sacrum, I: Gluteal tuberosity)",
+                    "Adductors"
+                ],
                 "biomechanics": "A lunge variation that targets the glutes and inner thighs.",
-                "how_to": "1. Hold a dumbbell at your chest.\n2. Step one leg back and across the other, lowering into a lunge as if curtsying.",
-                "category": "Lift",
-                "lift_type": "Main Lift"
+                "how_to": [
+                    "Hold a dumbbell at your chest.",
+                    "Step one leg back and across the other, lowering into a lunge as if curtsying."
+                ],
+                "category": "Main Lift"
             },
             {
                 "exercise_name": "Cable Hip Abduction",
-                "targets": "Gluteus Medius & Minimus (O: Ilium, I: Greater trochanter of the femur)",
+                "targets": [
+                    "Gluteus Medius & Minimus (O: Ilium, I: Greater trochanter of the femur)"
+                ],
                 "biomechanics": "Isolates the lateral glute muscles using constant tension.",
-                "how_to": "Attach an ankle cuff to a low cable. Stand sideways to the machine and pull your leg away from your body.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "Attach an ankle cuff to a low cable. Stand sideways to the machine and pull your leg away from your body."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "Cable Hip Adduction",
-                "targets": "Adductor Group (O: Pubis, I: Femur)",
+                "targets": [
+                    "Adductor Group (O: Pubis, I: Femur)"
+                ],
                 "biomechanics": "Isolates the inner thigh muscles using constant tension.",
-                "how_to": "Attach an ankle cuff to a low cable. Stand with the machine to your side and pull your leg across your body.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "Attach an ankle cuff to a low cable. Stand with the machine to your side and pull your leg across your body."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "Figure-4 Stretch",
-                "targets": "Piriformis (O: Sacrum, I: Greater trochanter of femur), Gluteus Maximus",
+                "targets": [
+                    "Piriformis (O: Sacrum, I: Greater trochanter of femur)",
+                    "Gluteus Maximus"
+                ],
                 "biomechanics": "A seated or supine stretch for the hips.",
-                "how_to": "While sitting or lying down, cross one ankle over the opposite knee and gently pull the leg towards you.",
+                "how_to": [
+                    "While sitting or lying down, cross one ankle over the opposite knee and gently pull the leg towards you."
+                ],
                 "category": "Cool-down"
             },
             {
                 "exercise_name": "Pigeon Pose",
-                "targets": "Piriformis (O: Sacrum, I: Greater trochanter of femur)",
+                "targets": [
+                    "Piriformis (O: Sacrum, I: Greater trochanter of femur)"
+                ],
                 "biomechanics": "Deep static stretch for the external rotators of the hip.",
-                "how_to": "From a plank position, bring one knee forward towards the opposite hand, and lay the shin on the floor. Extend the other leg back.",
+                "how_to": [
+                    "From a plank position, bring one knee forward towards the opposite hand, and lay the shin on the floor. Extend the other leg back."
+                ],
                 "category": "Cool-down"
             }
         ]
@@ -297,54 +475,85 @@
         "exercises": [
             {
                 "exercise_name": "Scapular Wall Push-ups",
-                "targets": "Serratus Anterior (O: Ribs 1-8, I: Medial border of scapula)",
+                "targets": [
+                    "Serratus Anterior (O: Ribs 1-8, I: Medial border of scapula)"
+                ],
                 "biomechanics": "Promotes healthy shoulder blade movement.",
-                "how_to": "Stand facing a wall with arms extended. Without bending your elbows, pinch and spread your shoulder blades.",
+                "how_to": [
+                    "Stand facing a wall with arms extended. Without bending your elbows, pinch and spread your shoulder blades."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "Wall Angels",
-                "targets": "Infraspinatus (O: Infraspinous fossa, I: Greater tubercle), Teres Minor (O: Lateral border of scapula, I: Greater tubercle), Trapezius",
+                "targets": [
+                    "Infraspinatus (O: Infraspinous fossa, I: Greater tubercle)",
+                    "Teres Minor (O: Lateral border of scapula, I: Greater tubercle)",
+                    "Trapezius"
+                ],
                 "biomechanics": "Improves shoulder mobility and posture.",
-                "how_to": "Stand with your back against a wall. Slide your arms up and down the wall in a 'snow angel' motion, keeping contact with the wall.",
+                "how_to": [
+                    "Stand with your back against a wall. Slide your arms up and down the wall in a 'snow angel' motion, keeping contact with the wall."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "Arnold Press",
-                "targets": "Anterior Deltoid (O: Clavicle, I: Deltoid tuberosity), Lateral Deltoid (O: Acromion, I: Deltoid tuberosity), Triceps Brachii (O: Scapula/Humerus, I: Olecranon)",
+                "targets": [
+                    "Anterior Deltoid (O: Clavicle, I: Deltoid tuberosity)",
+                    "Lateral Deltoid (O: Acromion, I: Deltoid tuberosity)",
+                    "Triceps Brachii (O: Scapula/Humerus, I: Olecranon)"
+                ],
                 "biomechanics": "A compound press that includes rotation to target multiple shoulder heads.",
-                "how_to": "1. Start with dumbbells in front of your shoulders, palms facing you.\n2. As you press up, rotate your palms to face forward.",
-                "category": "Lift",
-                "lift_type": "Main Lift"
+                "how_to": [
+                    "Start with dumbbells in front of your shoulders, palms facing you.",
+                    "As you press up, rotate your palms to face forward."
+                ],
+                "category": "Main Lift"
             },
             {
                 "exercise_name": "Cable Lateral Raise",
-                "targets": "Lateral Deltoid (O: Acromion, I: Deltoid tuberosity)",
+                "targets": [
+                    "Lateral Deltoid (O: Acromion, I: Deltoid tuberosity)"
+                ],
                 "biomechanics": "Isolates the side deltoids with constant tension.",
-                "how_to": "Stand sideways to a low cable pulley. Raise your arm out to the side up to shoulder height.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "Stand sideways to a low cable pulley. Raise your arm out to the side up to shoulder height."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "Cable Triceps Pushdown",
-                "targets": "Triceps Brachii, Lateral & Medial Heads (O: Posterior humerus, I: Olecranon)",
+                "targets": [
+                    "Triceps Brachii, Lateral & Medial Heads (O: Posterior humerus, I: Olecranon)"
+                ],
                 "biomechanics": "Classic isolation exercise for the triceps.",
-                "how_to": "Face a high cable pulley. Push the bar or rope down until your arms are fully extended, keeping elbows at your sides.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "Face a high cable pulley. Push the bar or rope down until your arms are fully extended, keeping elbows at your sides."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "Behind-the-Back Stretch",
-                "targets": "Anterior Deltoid (O: Clavicle, I: Deltoid tuberosity), Pectoralis Major",
+                "targets": [
+                    "Anterior Deltoid (O: Clavicle, I: Deltoid tuberosity)",
+                    "Pectoralis Major"
+                ],
                 "biomechanics": "Static stretch to open the chest and stretch the front of the shoulders.",
-                "how_to": "Clasp your hands behind your back and straighten your arms, lifting your hands away from your body.",
+                "how_to": [
+                    "Clasp your hands behind your back and straighten your arms, lifting your hands away from your body."
+                ],
                 "category": "Cool-down"
             },
             {
                 "exercise_name": "Cross-Body Shoulder Stretch",
-                "targets": "Posterior Deltoid (O: Spine of scapula, I: Deltoid tuberosity)",
+                "targets": [
+                    "Posterior Deltoid (O: Spine of scapula, I: Deltoid tuberosity)"
+                ],
                 "biomechanics": "Static stretch for the shoulder.",
-                "how_to": "Bring one arm across your body and gently pull it with the other arm to feel a stretch in the shoulder.",
+                "how_to": [
+                    "Bring one arm across your body and gently pull it with the other arm to feel a stretch in the shoulder."
+                ],
                 "category": "Cool-down"
             }
         ]
@@ -354,54 +563,87 @@
         "exercises": [
             {
                 "exercise_name": "Good Mornings",
-                "targets": "Hamstrings (O: Ischial tuberosity, I: Tibia/Fibula), Erector Spinae",
+                "targets": [
+                    "Hamstrings (O: Ischial tuberosity, I: Tibia/Fibula)",
+                    "Erector Spinae"
+                ],
                 "biomechanics": "Hip hinge movement to warm up the posterior chain.",
-                "how_to": "With a barbell on your back or just bodyweight, hinge at the hips, keeping your back flat and knees slightly bent.",
+                "how_to": [
+                    "With a barbell on your back or just bodyweight, hinge at the hips, keeping your back flat and knees slightly bent."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "Leg Swings",
-                "targets": "Hamstrings (O: Ischial tuberosity, I: Tibia/Fibula), Iliopsoas (O: T12-L5 vertebrae, I: Lesser trochanter)",
+                "targets": [
+                    "Hamstrings (O: Ischial tuberosity, I: Tibia/Fibula)",
+                    "Iliopsoas (O: T12-L5 vertebrae, I: Lesser trochanter)"
+                ],
                 "biomechanics": "Dynamic stretch to improve hip mobility.",
-                "how_to": "Hold onto a stable surface and swing one leg forward and backward, then side to side.",
+                "how_to": [
+                    "Hold onto a stable surface and swing one leg forward and backward, then side to side."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "Romanian Deadlift",
-                "targets": "Hamstrings (O: Ischial tuberosity, I: Tibia/Fibula), Gluteus Maximus (O: Ilium/Sacrum, I: Gluteal tuberosity), Erector Spinae",
+                "targets": [
+                    "Hamstrings (O: Ischial tuberosity, I: Tibia/Fibula)",
+                    "Gluteus Maximus (O: Ilium/Sacrum, I: Gluteal tuberosity)",
+                    "Erector Spinae"
+                ],
                 "biomechanics": "A hip hinge focusing on eccentrically loading the hamstrings.",
-                "how_to": "1. Hold a barbell or dumbbells.\n2. Hinge at your hips, pushing your butt back, and lower the weight with a flat back.\n3. Keep legs almost straight.",
-                "category": "Lift",
-                "lift_type": "Main Lift"
+                "how_to": [
+                    "Hold a barbell or dumbbells.",
+                    "Hinge at your hips, pushing your butt back, and lower the weight with a flat back.",
+                    "Keep legs almost straight."
+                ],
+                "category": "Main Lift"
             },
             {
                 "exercise_name": "One-Leg Seated Leg Curl",
-                "targets": "Hamstrings (O: Ischial tuberosity, I: Posterior tibia/fibula)",
+                "targets": [
+                    "Hamstrings (O: Ischial tuberosity, I: Posterior tibia/fibula)"
+                ],
                 "biomechanics": "Isolates the hamstring of one leg at a time.",
-                "how_to": "In a seated leg curl machine, use one leg to curl the pad down towards your glute.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "In a seated leg curl machine, use one leg to curl the pad down towards your glute."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "One-Leg Standing Calf Raise",
-                "targets": "Gastrocnemius (O: Femoral condyles, I: Calcaneus, T: Achilles tendon)",
+                "targets": [
+                    "Gastrocnemius (O: Femoral condyles, I: Calcaneus)"
+                ],
                 "biomechanics": "Isolates the calf muscle with the leg straight.",
-                "how_to": "Stand on one leg on a raised surface. Lower your heel for a stretch, then press up onto the ball of your foot.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "Stand on one leg on a raised surface. Lower your heel for a stretch, then press up onto the ball of your foot."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "Downward Facing Dog",
-                "targets": "Gastrocnemius (O: Femoral condyles, I: Calcaneus), Hamstrings (O: Ischial tuberosity, I: Tibia/Fibula)",
+                "targets": [
+                    "Gastrocnemius (O: Femoral condyles, I: Calcaneus)",
+                    "Hamstrings (O: Ischial tuberosity, I: Tibia/Fibula)"
+                ],
                 "biomechanics": "A full-body stretch that lengthens the entire posterior chain.",
-                "how_to": "From a plank position, push your hips up and back to form an inverted 'V' shape with your body.",
+                "how_to": [
+                    "From a plank position, push your hips up and back to form an inverted 'V' shape with your body."
+                ],
                 "category": "Cool-down"
             },
             {
                 "exercise_name": "Supine Knee-to-Chest",
-                "targets": "Gluteus Maximus (O: Ilium/sacrum, I: Gluteal tuberosity), Erector Spinae",
+                "targets": [
+                    "Gluteus Maximus (O: Ilium/sacrum, I: Gluteal tuberosity)",
+                    "Erector Spinae"
+                ],
                 "biomechanics": "Gentle static stretch to relieve lower back tension.",
-                "how_to": "Lie on your back and pull one or both knees into your chest.",
+                "how_to": [
+                    "Lie on your back and pull one or both knees into your chest."
+                ],
                 "category": "Cool-down"
             }
         ]
@@ -411,54 +653,85 @@
         "exercises": [
             {
                 "exercise_name": "Scapular Retractions",
-                "targets": "Rhomboids (O: Thoracic spinous processes, I: Medial scapular border), Trapezius",
+                "targets": [
+                    "Rhomboids (O: Thoracic spinous processes, I: Medial scapular border)",
+                    "Trapezius"
+                ],
                 "biomechanics": "Activates the muscles that pull the shoulder blades together.",
-                "how_to": "While sitting or standing, squeeze your shoulder blades together without shrugging your shoulders.",
+                "how_to": [
+                    "While sitting or standing, squeeze your shoulder blades together without shrugging your shoulders."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "Dead Hang",
-                "targets": "Latissimus Dorsi (O: Thoracolumbar fascia, I: Bicipital groove), Shoulder Capsule",
+                "targets": [
+                    "Latissimus Dorsi (O: Thoracolumbar fascia, I: Bicipital groove)",
+                    "Shoulder Capsule"
+                ],
                 "biomechanics": "Decompresses the spine and stretches the lats.",
-                "how_to": "Hang from a pull-up bar with an overhand grip, keeping your body relaxed.",
+                "how_to": [
+                    "Hang from a pull-up bar with an overhand grip, keeping your body relaxed."
+                ],
                 "category": "Warm-up"
             },
             {
                 "exercise_name": "Lat Pulldown",
-                "targets": "Latissimus Dorsi (O: Iliac crest/Thoracolumbar fascia, I: Bicipital groove), Brachialis (O: Humerus, I: Ulna), Biceps Brachii (O: Scapula, I: Radial tuberosity)",
+                "targets": [
+                    "Latissimus Dorsi (O: Iliac crest/Thoracolumbar fascia, I: Bicipital groove)",
+                    "Brachialis (O: Humerus, I: Ulna)",
+                    "Biceps Brachii (O: Scapula, I: Radial tuberosity)"
+                ],
                 "biomechanics": "A fundamental vertical pulling movement to build back width.",
-                "how_to": "1. Sit at a lat pulldown machine.\n2. Pull the bar down to your upper chest, driving your elbows down.",
-                "category": "Lift",
-                "lift_type": "Main Lift"
+                "how_to": [
+                    "Sit at a lat pulldown machine.",
+                    "Pull the bar down to your upper chest, driving your elbows down."
+                ],
+                "category": "Main Lift"
             },
             {
                 "exercise_name": "Straight Arm Cable Pulldown",
-                "targets": "Latissimus Dorsi (O: Thoracolumbar fascia, I: Bicipital groove)",
+                "targets": [
+                    "Latissimus Dorsi (O: Thoracolumbar fascia, I: Bicipital groove)"
+                ],
                 "biomechanics": "Isolates the lats by removing bicep involvement.",
-                "how_to": "Face a high cable. With straight arms, pull the bar down in an arc to your thighs.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "Face a high cable. With straight arms, pull the bar down in an arc to your thighs."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "Standing Cable Hammer Curl",
-                "targets": "Brachialis (O: Distal half of anterior humerus, I: Ulnar tuberosity), Brachioradialis (O: Humerus, I: Radius)",
+                "targets": [
+                    "Brachialis (O: Distal half of anterior humerus, I: Ulnar tuberosity)",
+                    "Brachioradialis (O: Humerus, I: Radius)"
+                ],
                 "biomechanics": "A curl variation with a neutral grip to target the brachialis.",
-                "how_to": "Using a rope or D-handle on a low cable, curl the weight up while keeping your palms facing each other.",
-                "category": "Lift",
-                "lift_type": "Isolation Lift"
+                "how_to": [
+                    "Using a rope or D-handle on a low cable, curl the weight up while keeping your palms facing each other."
+                ],
+                "category": "Isolation Lift"
             },
             {
                 "exercise_name": "Wrist Stretch",
-                "targets": "Forearm Flexors & Extensors (O: Epicondyles of humerus, I: Carpals/metacarpals)",
+                "targets": [
+                    "Forearm Flexors & Extensors (O: Epicondyles of humerus, I: Carpals/metacarpals)"
+                ],
                 "biomechanics": "Static stretch for the wrists.",
-                "how_to": "Extend your arm and gently bend your wrist up and down with your other hand.",
+                "how_to": [
+                    "Extend your arm and gently bend your wrist up and down with your other hand."
+                ],
                 "category": "Cool-down"
             },
             {
                 "exercise_name": "Overhead Lat Stretch",
-                "targets": "Latissimus Dorsi (O: Thoracolumbar fascia, I: Bicipital groove)",
+                "targets": [
+                    "Latissimus Dorsi (O: Thoracolumbar fascia, I: Bicipital groove)"
+                ],
                 "biomechanics": "Static stretch for the lats.",
-                "how_to": "Reach one arm overhead, grab your wrist with the other hand, and gently pull to the side.",
+                "how_to": [
+                    "Reach one arm overhead, grab your wrist with the other hand, and gently pull to the side."
+                ],
                 "category": "Cool-down"
             }
         ]
