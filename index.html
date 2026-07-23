@@ -38,18 +38,20 @@
 
     <div id="edit-log-container" class="card" style="display: none;">
         <h2>Edit Set</h2>
-        <label for="edit-exercise">Exercise:</label>
-        <input type="text" id="edit-exercise" disabled style="background-color: #333;">
-        
-        <label for="edit-weight">Weight (lbs):</label>
-        <input type="number" id="edit-weight" step="0.5">
-        
-        <label for="edit-reps">Reps:</label>
-        <input type="number" id="edit-reps">
-        
-        <input type="hidden" id="edit-key">
-        <button onclick="updateLog()">Update Set</button>
-        <button id="cancel-button" onclick="cancelEdit()">Cancel</button>
+        <form id="edit-form">
+            <label for="edit-exercise">Exercise:</label>
+            <input type="text" id="edit-exercise" disabled style="background-color: #333;">
+            
+            <label for="edit-weight">Weight (lbs):</label>
+            <input type="number" id="edit-weight" step="0.5">
+            
+            <label for="edit-reps">Reps:</label>
+            <input type="number" id="edit-reps">
+            
+            <input type="hidden" id="edit-key">
+            <button type="button" onclick="updateLog()">Update Set</button>
+            <button id="cancel-button" type="button" onclick="cancelEdit()">Cancel</button>
+        </form>
     </div>
 
     <div class="card">
@@ -127,34 +129,42 @@
                 })
                 .catch(error => {
                     console.error('Failed to fetch workouts from network:', error);
-                    errorDiv.textContent = 'Error: Could not load workout routines. Please check your connection and refresh.';
-                    errorDiv.style.display = 'block';
+                    const transaction = db.transaction('workouts', 'readonly');
+                    const store = transaction.objectStore('workouts');
+                    const getAllRequest = store.getAll();
+                    
+                    getAllRequest.onsuccess = () => {
+                        if (getAllRequest.result && getAllRequest.result.length > 0) {
+                            processAndStoreWorkouts(getAllRequest.result, false);
+                        } else {
+                            errorDiv.textContent = 'Error: Could not load workout routines. Please check your connection and refresh.';
+                            errorDiv.style.display = 'block';
+                        }
+                    };
+                    getAllRequest.onerror = () => {
+                        errorDiv.textContent = 'Error: Could not load workout routines. Please check your connection and refresh.';
+                        errorDiv.style.display = 'block';
+                    };
                 });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const errorDiv = document.getElementById('data-fetch-error');
             document.getElementById('start-timer-btn').addEventListener('click', () => startTimer(60));
             document.getElementById('add-minute-btn').addEventListener('click', addMinute);
             document.getElementById('reset-timer-btn').addEventListener('click', resetTimer);
+            document.getElementById('edit-form').addEventListener('submit', (event) => {
+                event.preventDefault();
+                updateLog();
+            });
+
             updateTimerDisplay();
 
             initDB().then(() => {
-                const transaction = db.transaction('workouts', 'readonly');
-                const store = transaction.objectStore('workouts');
-                const getAllRequest = store.getAll();
-                
-                getAllRequest.onsuccess = () => {
-                    if (getAllRequest.result && getAllRequest.result.length > 0) {
-                        processAndStoreWorkouts(getAllRequest.result, false);
-                    } else {
-                        fetchWorkoutsFromNetwork();
-                    }
-                };
-                getAllRequest.onerror = () => fetchWorkoutsFromNetwork(); 
+                fetchWorkoutsFromNetwork(); 
                 displayLogs();
             }).catch(error => {
                 console.error('Failed to initialize database:', error);
+                const errorDiv = document.getElementById('data-fetch-error');
                 errorDiv.textContent = 'Critical Error: Application database could not be opened. Please try clearing site data.';
                 errorDiv.style.display = 'block';
                 document.getElementById('routine-select').disabled = true;

@@ -336,17 +336,6 @@
                 "category": "Main Lift"
             },
             {
-                "exercise_name": "Cable Rear Delt Fly",
-                "targets": [
-                    "Posterior Deltoid (O: Spine of scapula, I: Deltoid tuberosity)"
-                ],
-                "biomechanics": "Isolates the back of the shoulders.",
-                "how_to": [
-                    "Using a cable machine, pull the handles apart and backward, keeping a slight bend in the elbows."
-                ],
-                "category": "Isolation Lift"
-            },
-            {
                 "exercise_name": "Standing Cable Bicep Curl",
                 "targets": [
                     "Biceps Brachii (O: Supraglenoid tubercle, I: Radial tuberosity)",
@@ -355,6 +344,17 @@
                 "biomechanics": "Provides constant tension on the biceps throughout the movement.",
                 "how_to": [
                     "Stand facing a low cable pulley. Curl the bar up, keeping your elbows pinned to your sides."
+                ],
+                "category": "Isolation Lift"
+            },
+            {
+                "exercise_name": "Cable Rear Delt Fly",
+                "targets": [
+                    "Posterior Deltoid (O: Spine of scapula, I: Deltoid tuberosity)"
+                ],
+                "biomechanics": "Isolates the back of the shoulders.",
+                "how_to": [
+                    "Using a cable machine, pull the handles apart and backward, keeping a slight bend in the elbows."
                 ],
                 "category": "Isolation Lift"
             },
