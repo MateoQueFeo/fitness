@@ -559,15 +559,21 @@
                     return;
                 }
 
-                const sortedLogs = allLogs.sort((a, b) => b.timestamp - a.timestamp);
-                
-                container.innerHTML = sortedLogs.slice(0, 10).map(log => {
+                const bestLogs = new Map();
+                allLogs.forEach(log => {
+                    if (!bestLogs.has(log.exercise) || log.est1RM > bestLogs.get(log.exercise).est1RM) {
+                        bestLogs.set(log.exercise, log);
+                    }
+                });
+
+                const sortedBestLogs = Array.from(bestLogs.values()).sort((a, b) => b.timestamp - a.timestamp);
+
+                container.innerHTML = sortedBestLogs.map(log => {
                     const safeExerciseName = log.exercise.replace(/'/g, "\\'");
                     return `
                     <div class="log-entry">
-                        <strong>${log.date} - <span style="color: #d4af37; cursor: pointer;" data-action="showSummary" data-exercise-name="${safeExerciseName}">${log.exercise}</span></strong><br>
-                        Lifted: ${log.weight} x ${log.reps} reps <br>
-                        <span class="rm-highlight">Est. 1RM: ${log.est1RM}</span>
+                        <strong><span style="color: #d4af37; cursor: pointer;" data-action="showSummary" data-exercise-name="${safeExerciseName}">${log.exercise}</span></strong><br>
+                        <span class="rm-highlight">Best 1RM: ${log.est1RM}</span>
                         <div class="log-actions">
                             <button class="edit-button" data-action="editLog" data-key="${log.id}">Edit</button>
                             <button class="delete-button" data-action="deleteLog" data-key="${log.id}">Delete</button>
