@@ -141,16 +141,6 @@ button:hover {
     color: #ffd700;
     font-weight: bold;
 }
-.pr-badge {
-    color: #000;
-    background-color: #ffd700;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.8em;
-    font-weight: bold;
-    margin-left: 8px;
-    display: inline-block;
-}
 .recent-1rm-badge {
     font-size: 12px;
     background-color: #111;
@@ -407,3 +397,4 @@ option {
     line-height: 1;
     padding: 8px 12px;
 }
+

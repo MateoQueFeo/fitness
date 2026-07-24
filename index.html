@@ -136,9 +136,6 @@
                         const logsStore = dbInstance.createObjectStore('logs', { keyPath: 'id', autoIncrement: true });
                         logsStore.createIndex('exercise', 'exercise', { unique: false });
                     }
-                    if (dbInstance.objectStoreNames.contains('prs')) {
-                        dbInstance.deleteObjectStore('prs');
-                    }
                 };
                 request.onerror = event => { reject('Database error: ' + event.target.errorCode); };
                 request.onsuccess = event => { db = event.target.result; resolve(db); };
