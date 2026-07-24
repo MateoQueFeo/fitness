@@ -7,6 +7,20 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Calendar Specific Styles */
+        .calendar-table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 10px; }
+        .calendar-table th, .calendar-table td { border: 1px solid #444; padding: 8px 4px; text-align: center; }
+        .calendar-table th { background-color: #222; font-size: 0.9em; }
+        .calendar-table td { cursor: pointer; height: 60px; vertical-align: top; position: relative; font-size: 0.9em; }
+        .calendar-table td:hover { background-color: #333; }
+        .calendar-table td.empty-cell { cursor: default; background-color: transparent; border: none; }
+        .calendar-table td.empty-cell:hover { background-color: transparent; }
+        .workout-dot { display: inline-block; width: 8px; height: 8px; background-color: #d4af37; border-radius: 50%; margin-top: 5px; }
+        .calendar-btn { padding: 5px 12px; background-color: #333; color: #fff; border: 1px solid #555; border-radius: 4px; cursor: pointer; }
+        .calendar-btn:hover { background-color: #444; }
+        .selected-day { background-color: #444 !important; border: 2px solid #d4af37 !important; }
+    </style>
 </head>
 <body>
     <div id="timer-container">
@@ -36,10 +50,18 @@
     </div>
 
     <div id="history-modal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 600px;">
             <span class="modal-close-button">&times;</span>
             <h2 class="modal-title">Workout History</h2>
-            <div id="history-content"></div>
+            
+            <div id="calendar-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <button id="prev-month-btn" class="calendar-btn">&lt; Prev</button>
+                <h3 id="current-month-display" style="margin: 0; font-size: 1.2em;"></h3>
+                <button id="next-month-btn" class="calendar-btn">Next &gt;</button>
+            </div>
+            
+            <div id="calendar-container"></div>
+            <div id="calendar-day-details" style="margin-top: 20px;"></div>
         </div>
     </div>
 
@@ -101,6 +123,11 @@
         let audioContext;
         let isMetronomeOn = false;
         let metronomeInterval = null;
+
+        // Calendar State
+        let currentHistoryYear = new Date().getFullYear();
+        let currentHistoryMonth = new Date().getMonth();
+        let groupedHistoryLogs = {};
 
         function initDB() {
             return new Promise((resolve, reject) => {
@@ -193,6 +220,24 @@
             document.getElementById('csv-file-input').addEventListener('change', importLogsFromCSV);
             document.getElementById('view-history-btn').addEventListener('click', showHistory);
             document.getElementById('delete-all-btn').addEventListener('click', deleteAllLogs);
+
+            document.getElementById('prev-month-btn').addEventListener('click', () => {
+                currentHistoryMonth--;
+                if (currentHistoryMonth < 0) {
+                    currentHistoryMonth = 11;
+                    currentHistoryYear--;
+                }
+                renderCalendar();
+            });
+
+            document.getElementById('next-month-btn').addEventListener('click', () => {
+                currentHistoryMonth++;
+                if (currentHistoryMonth > 11) {
+                    currentHistoryMonth = 0;
+                    currentHistoryYear++;
+                }
+                renderCalendar();
+            });
 
             document.getElementById('edit-form').addEventListener('submit', (event) => {
                 event.preventDefault();
@@ -363,10 +408,12 @@
                 const detailsAttr = `data-action="showDetails" data-routine="${selectedRoutineName}" data-exercise-index="${index}"`;
                 
                 let recent1RMHtml = '';
+                // Badge applied to both Main and Isolation lifts
                 if (exercise.category === 'Main Lift' || exercise.category === 'Isolation Lift') {
                     const recent1RM = await getMostRecent1RM(exercise.exercise_name);
                     if (recent1RM) {
-                        recent1RMHtml = `<span id="recent-1rm-${index}" class="recent-1rm-badge">Recent 1RM: ${recent1RM}</span>`;
+                        // Text updated to "1RM:"
+                        recent1RMHtml = `<span id="recent-1rm-${index}" class="recent-1rm-badge">1RM: ${recent1RM}</span>`;
                     } else {
                         recent1RMHtml = `<span id="recent-1rm-${index}" class="recent-1rm-badge" style="display:none;"></span>`;
                     }
@@ -448,9 +495,10 @@
                     repsInput.style.backgroundColor = "#222";
                     buttonElement.disabled = true;
 
-                    const badge = document.getElementById(`recent-1rm-${index}`);
+                    const badge = document.getElementById(`recent-1rm-${exerciseIndex}`);
                     if (badge) {
-                        badge.textContent = `Recent 1RM: ${est1RM}`;
+                        // Text updated to "1RM:"
+                        badge.textContent = `1RM: ${est1RM}`;
                         badge.style.display = 'inline-block';
                     }
                 });
@@ -715,6 +763,85 @@
             }
         }
         
+        function parseDateString(dateStr) {
+            if (dateStr.includes('-')) {
+                const [y, m, d] = dateStr.split('-');
+                return new Date(y, m - 1, d);
+            } else {
+                const [m, d, y] = dateStr.split('/');
+                return new Date(y, m - 1, d);
+            }
+        }
+
+        function renderCalendar() {
+            const container = document.getElementById('calendar-container');
+            const monthDisplay = document.getElementById('current-month-display');
+            const detailsContainer = document.getElementById('calendar-day-details');
+            detailsContainer.innerHTML = '<p style="color: #aaa; text-align: center;">Click a day with a dot to view workouts.</p>';
+
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            monthDisplay.textContent = `${monthNames[currentHistoryMonth]} ${currentHistoryYear}`;
+
+            let html = '<table class="calendar-table"><thead><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr></thead><tbody><tr>';
+            
+            const firstDay = new Date(currentHistoryYear, currentHistoryMonth, 1).getDay();
+            const daysInMonth = new Date(currentHistoryYear, currentHistoryMonth + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) {
+                html += '<td class="empty-cell"></td>';
+            }
+
+            let dayOfWeek = firstDay;
+            for (let day = 1; day <= daysInMonth; day++) {
+                if (dayOfWeek === 7) {
+                    html += '</tr><tr>';
+                    dayOfWeek = 0;
+                }
+                
+                const mm = String(currentHistoryMonth + 1).padStart(2, '0');
+                const dd = String(day).padStart(2, '0');
+                const dateKey = `${currentHistoryYear}-${mm}-${dd}`;
+                
+                const hasWorkout = groupedHistoryLogs[dateKey] && groupedHistoryLogs[dateKey].length > 0;
+                const dotHtml = hasWorkout ? '<br><span class="workout-dot"></span>' : '';
+                
+                html += `<td data-date="${dateKey}" onclick="showDayDetails('${dateKey}', this)">${day}${dotHtml}</td>`;
+                dayOfWeek++;
+            }
+
+            while (dayOfWeek < 7) {
+                html += '<td class="empty-cell"></td>';
+                dayOfWeek++;
+            }
+
+            html += '</tr></tbody></table>';
+            container.innerHTML = html;
+        }
+
+        window.showDayDetails = function(dateKey, cellElement) {
+            document.querySelectorAll('.calendar-table td').forEach(td => td.classList.remove('selected-day'));
+            if(cellElement) cellElement.classList.add('selected-day');
+
+            const detailsContainer = document.getElementById('calendar-day-details');
+            const logsForDate = groupedHistoryLogs[dateKey];
+
+            if (!logsForDate || logsForDate.length === 0) {
+                detailsContainer.innerHTML = `<p style="text-align: center; color: #aaa;">No workouts recorded on ${dateKey}.</p>`;
+                return;
+            }
+
+            let html = `<div class="history-date-group"><h3 style="margin-top:0;">Workouts for ${dateKey}</h3>`;
+            html += logsForDate.map(log => {
+                const prBadge = log.isPR ? `<span class="pr-badge">✨ PR!</span>` : '';
+                return `<div class="history-log-entry" style="margin-bottom: 8px;">
+                            <strong>${log.exercise}</strong>: ${log.weight} lbs x ${log.reps} reps 
+                            <span class="rm-highlight">(1RM: ${log.est1RM})</span> ${prBadge}
+                        </div>`;
+            }).join('');
+            html += `</div>`;
+            detailsContainer.innerHTML = html;
+        }
+
         function showHistory() {
             const transaction = db.transaction('logs', 'readonly');
             const store = transaction.objectStore('logs');
@@ -722,37 +849,22 @@
 
             getAllRequest.onsuccess = () => {
                 const logs = getAllRequest.result.sort((a, b) => b.timestamp - a.timestamp);
-                const historyContent = document.getElementById('history-content');
                 
-                if (logs.length === 0) {
-                    historyContent.innerHTML = "No history to display.";
-                    document.getElementById('history-modal').style.display = 'block';
-                    return;
-                }
+                groupedHistoryLogs = {};
+                logs.forEach(log => {
+                    const d = parseDateString(log.date);
+                    const yyyy = d.getFullYear();
+                    const mm = String(d.getMonth() + 1).padStart(2, '0');
+                    const dd = String(d.getDate()).padStart(2, '0');
+                    const key = `${yyyy}-${mm}-${dd}`;
+                    if (!groupedHistoryLogs[key]) groupedHistoryLogs[key] = [];
+                    groupedHistoryLogs[key].push(log);
+                });
 
-                const groupedByDate = logs.reduce((acc, log) => {
-                    (acc[log.date] = acc[log.date] || []).push(log);
-                    return acc;
-                }, {});
-
-                let historyHtml = '';
-                for (const date in groupedByDate) {
-                    historyHtml += `<div class="history-date-group">
-                                        <h3>${date}</h3>`;
-                    
-                    const logsForDate = groupedByDate[date];
-                    historyHtml += logsForDate.map(log => {
-                        const prBadge = log.isPR ? `<span class="pr-badge">✨ PR!</span>` : '';
-                        return `<div class="history-log-entry">
-                                    <strong>${log.exercise}</strong>: ${log.weight} lbs x ${log.reps} reps 
-                                    <span class="rm-highlight">(Est. 1RM: ${log.est1RM})</span> ${prBadge}
-                                </div>`;
-                    }).join('');
-
-                    historyHtml += `</div>`;
-                }
-
-                historyContent.innerHTML = historyHtml;
+                currentHistoryYear = new Date().getFullYear();
+                currentHistoryMonth = new Date().getMonth();
+                
+                renderCalendar();
                 document.getElementById('history-modal').style.display = 'block';
             };
             getAllRequest.onerror = () => showToast("Could not retrieve workout history.");
