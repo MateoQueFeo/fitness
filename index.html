@@ -674,6 +674,14 @@
                 const latestSet = logs[logs.length - 1];
 
                 document.getElementById('summary-title').textContent = `${exerciseName} Progress`;
+                
+                let historyHtml = '<div class="summary-section" style="max-height: 200px; overflow-y: auto; margin-top: 15px; border-top: 1px solid #444; padding-top: 10px;"><strong>Chronological History</strong><ul style="list-style-type: none; padding: 0; margin: 10px 0;">';
+                const sortedLogs = [...logs].sort((a, b) => b.timestamp - a.timestamp);
+                sortedLogs.forEach(log => {
+                    historyHtml += `<li style="margin-bottom: 5px; font-size: 0.9em;">${log.date}: ${log.weight} lbs x ${log.reps} reps <span class="rm-highlight">(1RM: ${log.est1RM})</span></li>`;
+                });
+                historyHtml += '</ul></div>';
+
                 const contentEl = document.getElementById('summary-content');
                 contentEl.innerHTML = `
                     <div class="summary-section">
@@ -685,7 +693,8 @@
                         <strong>Set Details</strong><br>
                         <small>Best: ${bestSet.weight} lbs x ${bestSet.reps} reps (on ${bestSet.date})</small><br>
                         <small>Latest: ${latestSet.weight} lbs x ${latestSet.reps} reps (on ${latestSet.date})</small>
-                    </div>`;
+                    </div>
+                    ${historyHtml}`;
                 document.getElementById('progress-summary-modal').style.display = 'block';
             };
             getAllRequest.onerror = () => {
