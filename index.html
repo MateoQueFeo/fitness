@@ -686,12 +686,25 @@
 
                 document.getElementById('summary-title').textContent = `${exerciseName} Progress`;
                 
-                let historyHtml = '<div class="summary-section" style="max-height: 200px; overflow-y: auto; margin-top: 15px; border-top: 1px solid #444; padding-top: 10px;"><strong>Chronological History</strong><ul style="list-style-type: none; padding: 0; margin: 10px 0;">';
-                const sortedLogs = [...logs].sort((a, b) => b.timestamp - a.timestamp);
-                sortedLogs.forEach(log => {
+                // --- MODIFICATION START ---
+                // Group logs by date, keeping only the one with the heaviest weight for each day.
+                const dailyBestLogs = new Map();
+                logs.forEach(log => {
+                    const existingLog = dailyBestLogs.get(log.date);
+                    if (!existingLog || log.weight > existingLog.weight) {
+                        dailyBestLogs.set(log.date, log);
+                    }
+                });
+
+                // Convert the map values to an array and sort by most recent date.
+                const filteredSortedLogs = Array.from(dailyBestLogs.values()).sort((a, b) => b.timestamp - a.timestamp);
+
+                let historyHtml = '<div class="summary-section" style="max-height: 200px; overflow-y: auto; margin-top: 15px; border-top: 1px solid #444; padding-top: 10px;"><strong>Chronological History (Best Set per Day)</strong><ul style="list-style-type: none; padding: 0; margin: 10px 0;">';
+                filteredSortedLogs.forEach(log => {
                     historyHtml += `<li style="margin-bottom: 5px; font-size: 0.9em;">${log.date}: ${log.weight} lbs x ${log.reps} reps <span class="rm-highlight">(1RM: ${log.est1RM})</span></li>`;
                 });
                 historyHtml += '</ul></div>';
+                // --- MODIFICATION END ---
 
                 const contentEl = document.getElementById('summary-content');
                 contentEl.innerHTML = `
