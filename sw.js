@@ -1,10 +1,11 @@
-const CACHE_NAME = 'workout-tracker-cache-v2';
+const STATIC_CACHE_NAME = 'workout-tracker-static-v2';
+const DATA_CACHE_NAME = 'workout-tracker-data-v2';
+
 const STATIC_ASSETS = [
     './',
     './index.html',
     './style.css',
     './manifest.json',
-    './workouts.json',
     './icon-192.png',
     './icon-512.png',
     './icon-512-maskable.png'
@@ -12,7 +13,7 @@ const STATIC_ASSETS = [
 
 self.addEventListener('install', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
+        caches.open(STATIC_CACHE_NAME).then(cache => {
             return cache.addAll(STATIC_ASSETS);
         })
     );
@@ -24,7 +25,7 @@ self.addEventListener('activate', event => {
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.filter(cacheName => {
-                    return cacheName !== CACHE_NAME;
+                    return cacheName !== STATIC_CACHE_NAME && cacheName !== DATA_CACHE_NAME;
                 }).map(cacheName => {
                     return caches.delete(cacheName);
                 })
@@ -34,17 +35,26 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.open(CACHE_NAME).then(cache => {
-            return cache.match(event.request).then(cachedResponse => {
-                const fetchPromise = fetch(event.request).then(networkResponse => {
-                    if (networkResponse && networkResponse.status === 200) {
+    const url = new URL(event.request.url);
+
+    if (url.pathname.endsWith('workouts.json')) {
+        event.respondWith(
+            caches.open(DATA_CACHE_NAME).then(cache => {
+                return cache.match(event.request).then(cachedResponse => {
+                    const fetchPromise = fetch(event.request).then(networkResponse => {
                         cache.put(event.request, networkResponse.clone());
-                    }
-                    return networkResponse;
+                        return networkResponse;
+                    });
+                    return cachedResponse || fetchPromise;
                 });
-                return cachedResponse || fetchPromise;
-            });
-        })
-    );
+            })
+        );
+    } 
+    else {
+        event.respondWith(
+            caches.match(event.request).then(response => {
+                return response || fetch(event.request);
+            })
+        );
+    }
 });
