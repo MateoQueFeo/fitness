@@ -50,10 +50,10 @@
             <input type="text" id="edit-exercise" disabled style="background-color: #333;">
             
             <label for="edit-weight">Weight (lbs):</label>
-            <input type="number" id="edit-weight" step="0.5">
+            <input type="number" id="edit-weight" min="0" step="any">
             
             <label for="edit-reps">Reps:</label>
-            <input type="number" id="edit-reps">
+            <input type="number" id="edit-reps" min="1" step="1">
             
             <input type="hidden" id="edit-key">
             <button type="submit">Update Set</button>
@@ -91,7 +91,7 @@
         let workoutsData = [];
         let workoutDataMap = new Map();
         let toastTimeout;
-        const DB_NAME = 'LiftTrackerDB';
+        const DB_NAME = 'WorkoutTrackerDB';
         const DB_VERSION = 3;
 
         let timerInterval = null;
@@ -138,6 +138,7 @@
 
         function fetchWorkoutsFromNetwork() {
             const errorDiv = document.getElementById('data-fetch-error');
+            const routineSelect = document.getElementById('routine-select');
             errorDiv.style.display = 'none';
             fetch('workouts.json')
                 .then(response => {
@@ -156,6 +157,7 @@
                     getAllRequest.onsuccess = () => {
                         if (getAllRequest.result && getAllRequest.result.length > 0) {
                             processAndStoreWorkouts(getAllRequest.result, false);
+                            routineSelect.disabled = false;
                         } else {
                             errorDiv.textContent = 'Error: Could not load workout routines. Please check your connection and refresh.';
                             errorDiv.style.display = 'block';
@@ -379,8 +381,8 @@
                     for (let i = 0; i < numSets; i++) {
                         const logBtnAttr = `data-action="logSet" data-exercise-index="${index}" data-set-index="${i}" data-exercise-name="${sanitizedExerciseName}"`;
                         liftHtml += `<div class="lift-form-row">
-                                        <input type="number" id="weight-${index}-${i}" step="0.5" placeholder="Weight (lbs)">
-                                        <input type="number" id="reps-${index}-${i}" placeholder="Reps">
+                                        <input type="number" id="weight-${index}-${i}" min="0" step="any" placeholder="Weight (lbs)">
+                                        <input type="number" id="reps-${index}-${i}" min="1" step="1" placeholder="Reps">
                                         <button class="checkmark-btn" aria-label="Log Set" ${logBtnAttr}>&#10004;</button>
                                      </div>`;
                     }
@@ -397,42 +399,48 @@
             if (sections['Cool-down']) finalHtml += `<div class="cooldown-section">${sections['Cool-down']}</div>`;
             formContainer.innerHTML = finalHtml;
         }
+
+        function getFormattedDate() {
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
         
-        async function logSet(buttonElement, exerciseIndex, setIndex, exerciseName) {
+        function logSet(buttonElement, exerciseIndex, setIndex, exerciseName) {
             const weightInput = document.getElementById(`weight-${exerciseIndex}-${setIndex}`);
             const repsInput = document.getElementById(`reps-${exerciseIndex}-${setIndex}`);
             if (!weightInput || !repsInput) return;
 
             const weight = parseFloat(weightInput.value);
-            const reps = parseInt(repsInput.value);
+            const reps = parseInt(repsInput.value, 10);
 
-            if (!exerciseName || isNaN(weight) || isNaN(reps) || weight <= 0 || reps <= 0) {
-                showToast("Please enter valid weight and reps for the set.");
+            if (!exerciseName || isNaN(weight) || weight < 0 || isNaN(reps) || !Number.isInteger(reps) || reps < 1) {
+                showToast("Please enter a valid, positive number for weight and a positive whole number for reps.");
                 return;
             }
 
             const est1RM = calculate1RM(weight, reps);
-            const transaction = db.transaction(['logs', 'prs'], 'readwrite');
-            const logsStore = transaction.objectStore('logs');
-            const prsStore = transaction.objectStore('prs');
+            const logEntry = { timestamp: Date.now(), date: getFormattedDate(), exercise: exerciseName, weight: weight, reps: reps, est1RM: est1RM, isPR: false };
+            
+            const transaction = db.transaction(['logs'], 'readwrite');
+            const addRequest = transaction.objectStore('logs').add(logEntry);
 
-            const prRequest = prsStore.get(exerciseName);
-            prRequest.onsuccess = () => {
-                const currentPR = prRequest.result ? prRequest.result.est1RM : 0;
-                let isNewPR = false;
-
-                if (est1RM > currentPR) {
-                    isNewPR = true;
-                    prsStore.put({ exercise: exerciseName, est1RM: est1RM });
-                }
-
-                const logEntry = { timestamp: Date.now(), date: new Date().toLocaleDateString(), exercise: exerciseName, weight: weight, reps: reps, est1RM: est1RM, isPR: isNewPR };
-                const addRequest = logsStore.add(logEntry);
-                addRequest.onsuccess = () => {
+            addRequest.onsuccess = () => {
+                recalculatePRs(exerciseName).then(() => {
                     displayLogs();
-                    let toastMessage = `Set logged!`;
-                    if (isNewPR) toastMessage += " ✨ New PR!";
-                    showToast(toastMessage);
+                    
+                    const prTransaction = db.transaction('prs', 'readonly');
+                    prTransaction.objectStore('prs').get(exerciseName).onsuccess = (e) => {
+                        const currentPR_est1RM = e.target.result ? e.target.result.est1RM : 0;
+                        let toastMessage = "Set logged!";
+                        if (est1RM > 0 && est1RM >= currentPR_est1RM) {
+                            toastMessage += " ✨ New PR!";
+                        }
+                        showToast(toastMessage);
+                    };
+
                     resetAndStartTimer(60);
                     weightInput.disabled = true;
                     repsInput.disabled = true;
@@ -440,22 +448,16 @@
                     repsInput.style.backgroundColor = "#222";
                     buttonElement.disabled = true;
 
-                    const badge = document.getElementById(`recent-1rm-${exerciseIndex}`);
+                    const badge = document.getElementById(`recent-1rm-${index}`);
                     if (badge) {
                         badge.textContent = `Recent 1RM: ${est1RM}`;
                         badge.style.display = 'inline-block';
                     }
-                };
-                addRequest.onerror = () => showToast('Error logging set.');
+                });
             };
-
-            prRequest.onerror = () => {
-                showToast('Error checking for PR, but logging set.');
-                const logEntry = { timestamp: Date.now(), date: new Date().toLocaleDateString(), exercise: exerciseName, weight: weight, reps: reps, est1RM: est1RM, isPR: false };
-                logsStore.add(logEntry).onsuccess = () => displayLogs();
-            };
+            addRequest.onerror = () => showToast('Error logging set.');
         }
-        
+
         function showExerciseDetails(routineName, exerciseIndex) {
             const exercises = workoutDataMap.get(routineName);
             const exercise = exercises ? exercises[exerciseIndex] : null;
@@ -502,7 +504,22 @@
             };
         }
         
-        function calculate1RM(weight, reps) { return reps === 1 ? weight : Math.round(weight * (1 + reps / 30)); }
+        function calculate1RM(weight, reps) {
+            if (reps <= 0) {
+                return 0;
+            }
+
+            let est1RM;
+
+            if (reps <= 10) {
+                est1RM = weight / (1.0278 - (0.0278 * reps));
+            } 
+            else { 
+                est1RM = weight * (1 + (reps / 30));
+            }
+            
+            return Math.round(est1RM);
+        }
 
         function displayLogs() {
             const transaction = db.transaction('logs', 'readonly');
@@ -541,7 +558,7 @@
             if (!confirm('Are you sure you want to delete this log?')) return;
             const keyNum = parseInt(key, 10);
             
-            const transaction = db.transaction(['logs', 'prs'], 'readwrite');
+            const transaction = db.transaction(['logs'], 'readwrite');
             const logsStore = transaction.objectStore('logs');
             const getRequest = logsStore.get(keyNum);
 
@@ -598,9 +615,13 @@
 
         function updateLog() {
             const weight = parseFloat(document.getElementById('edit-weight').value);
-            const reps = parseInt(document.getElementById('edit-reps').value);
+            const reps = parseInt(document.getElementById('edit-reps').value, 10);
             const key = parseInt(document.getElementById('edit-key').value, 10);
-            if (isNaN(weight) || isNaN(reps) || weight <= 0 || reps <= 0) { showToast("Please enter valid weight and reps."); return; }
+            
+            if (isNaN(weight) || weight < 0 || isNaN(reps) || !Number.isInteger(reps) || reps < 1) {
+                showToast("Please enter a valid, positive number for weight and a positive whole number for reps.");
+                return;
+            }
             
             const transaction = db.transaction('logs', 'readwrite');
             const logsStore = transaction.objectStore('logs');
@@ -613,8 +634,6 @@
                 logToUpdate.weight = weight;
                 logToUpdate.reps = reps;
                 logToUpdate.est1RM = calculate1RM(weight, reps);
-                logToUpdate.date = new Date().toLocaleDateString() + " (edited)";
-                logToUpdate.timestamp = Date.now();
                 logToUpdate.isPR = false;
 
                 logsStore.put(logToUpdate).onsuccess = () => {
@@ -642,13 +661,11 @@
                     
                     if (logs && logs.length > 0) {
                         overallBestLog = logs.reduce((best, current) => current.est1RM > best.est1RM ? current : best);
-                        
                         prsStore.put({ exercise: exerciseName, est1RM: overallBestLog.est1RM });
 
                         logs.forEach(log => {
-                            const wasPR = log.isPR;
-                            const isNowPR = (log.id === overallBestLog.id);
-                            if (wasPR !== isNowPR) {
+                            const isNowPR = log.id === overallBestLog.id;
+                            if (log.isPR !== isNowPR) {
                                 log.isPR = isNowPR;
                                 logsStore.put(log);
                             }
@@ -769,7 +786,7 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.setAttribute('href', url);
-                a.setAttribute('download', `lift-tracker-logs-${new Date().toISOString().slice(0, 10)}.csv`);
+                a.setAttribute('download', `workout-tracker-logs-${new Date().toISOString().slice(0, 10)}.csv`);
                 a.click();
                 showToast("Logs exported successfully.");
             };

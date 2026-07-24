@@ -43,7 +43,7 @@
                 "category": "Main Lift"
             },
             {
-                "exercise_name": "Cable Hip Abduction",
+                "exercise_name": "Hip Abduction",
                 "targets": [
                     "Gluteus Medius & Minimus (O: Ilium, I: Greater trochanter of the femur)"
                 ],
@@ -55,7 +55,7 @@
                 "category": "Isolation Lift"
             },
             {
-                "exercise_name": "Cable Hip Adduction",
+                "exercise_name": "Hip Adduction",
                 "targets": [
                     "Adductor Group (O: Pubic bone/ischium, I: Inner femur)"
                 ],
@@ -150,7 +150,7 @@
                 "category": "Isolation Lift"
             },
             {
-                "exercise_name": "Overhead Cable Triceps Ext.",
+                "exercise_name": "Overhead Triceps Ext.",
                 "targets": [
                     "Triceps Brachii, Long Head (O: Infraglenoid tubercle of scapula, I: Olecranon of ulna)"
                 ],
@@ -162,7 +162,7 @@
                 "category": "Isolation Lift"
             },
             {
-                "exercise_name": "Cable Front Raise",
+                "exercise_name": "Front Raise",
                 "targets": [
                     "Anterior Deltoid (O: Lateral clavicle, I: Deltoid tuberosity)"
                 ],
@@ -222,9 +222,9 @@
                     "Iliopsoas (O: T12-L5 vertebrae, I: Lesser trochanter)",
                     "Rectus Abdominis"
                 ],
-                "biomechanics": "Dynamic warm-up to increase heart rate and activate the lower body.",
+                "biomechanics": "Dynamic warm-up to activate the lower body.",
                 "how_to": [
-                    "Run in place, bringing your knees up to hip height."
+                    "Lift knees in place, bringing your knees up to hip height."
                 ],
                 "category": "Warm-up"
             },
@@ -243,7 +243,7 @@
                 "category": "Main Lift"
             },
             {
-                "exercise_name": "One-Leg Seated Leg Curl",
+                "exercise_name": "Seated Leg Curl",
                 "targets": [
                     "Hamstrings (O: Ischial tuberosity, I: Posterior tibia/fibula)"
                 ],
@@ -254,7 +254,7 @@
                 "category": "Isolation Lift"
             },
             {
-                "exercise_name": "One-Leg Seated Calf Raise",
+                "exercise_name": "Seated Calf Raise",
                 "targets": [
                     "Soleus (O: Posterior tibia/fibula, I: Calcaneus)"
                 ],
@@ -336,7 +336,7 @@
                 "category": "Main Lift"
             },
             {
-                "exercise_name": "Standing Cable Bicep Curl",
+                "exercise_name": "Bicep Curl",
                 "targets": [
                     "Biceps Brachii (O: Supraglenoid tubercle, I: Radial tuberosity)",
                     "Brachialis (O: Humerus, I: Ulna)"
@@ -348,7 +348,7 @@
                 "category": "Isolation Lift"
             },
             {
-                "exercise_name": "Cable Rear Delt Fly",
+                "exercise_name": "Rear Delt Fly",
                 "targets": [
                     "Posterior Deltoid (O: Spine of scapula, I: Deltoid tuberosity)"
                 ],
@@ -424,7 +424,7 @@
                 "category": "Main Lift"
             },
             {
-                "exercise_name": "Cable Hip Abduction",
+                "exercise_name": "Hip Abduction",
                 "targets": [
                     "Gluteus Medius & Minimus (O: Ilium, I: Greater trochanter of the femur)"
                 ],
@@ -435,7 +435,7 @@
                 "category": "Isolation Lift"
             },
             {
-                "exercise_name": "Cable Hip Adduction",
+                "exercise_name": "Hip Adduction",
                 "targets": [
                     "Adductor Group (O: Pubis, I: Femur)"
                 ],
@@ -474,7 +474,7 @@
         "routine_name": "Arnold Press",
         "exercises": [
             {
-                "exercise_name": "Scapular Wall Push-ups",
+                "exercise_name": "Scapular Wall Press",
                 "targets": [
                     "Serratus Anterior (O: Ribs 1-8, I: Medial border of scapula)"
                 ],
@@ -512,7 +512,7 @@
                 "category": "Main Lift"
             },
             {
-                "exercise_name": "Cable Lateral Raise",
+                "exercise_name": "Lateral Raise",
                 "targets": [
                     "Lateral Deltoid (O: Acromion, I: Deltoid tuberosity)"
                 ],
@@ -523,7 +523,7 @@
                 "category": "Isolation Lift"
             },
             {
-                "exercise_name": "Cable Triceps Pushdown",
+                "exercise_name": "Triceps Pushdown",
                 "targets": [
                     "Triceps Brachii, Lateral & Medial Heads (O: Posterior humerus, I: Olecranon)"
                 ],
@@ -601,7 +601,7 @@
                 "category": "Main Lift"
             },
             {
-                "exercise_name": "One-Leg Seated Leg Curl",
+                "exercise_name": "Seated Leg Curl",
                 "targets": [
                     "Hamstrings (O: Ischial tuberosity, I: Posterior tibia/fibula)"
                 ],
@@ -612,7 +612,7 @@
                 "category": "Isolation Lift"
             },
             {
-                "exercise_name": "One-Leg Standing Calf Raise",
+                "exercise_name": "Standing Calf Raise",
                 "targets": [
                     "Gastrocnemius (O: Femoral condyles, I: Calcaneus)"
                 ],
@@ -690,7 +690,7 @@
                 "category": "Main Lift"
             },
             {
-                "exercise_name": "Straight Arm Cable Pulldown",
+                "exercise_name": "Straight Arm Pulldown",
                 "targets": [
                     "Latissimus Dorsi (O: Thoracolumbar fascia, I: Bicipital groove)"
                 ],
@@ -701,7 +701,7 @@
                 "category": "Isolation Lift"
             },
             {
-                "exercise_name": "Standing Cable Hammer Curl",
+                "exercise_name": "Hammer Curl",
                 "targets": [
                     "Brachialis (O: Distal half of anterior humerus, I: Ulnar tuberosity)",
                     "Brachioradialis (O: Humerus, I: Radius)"

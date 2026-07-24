@@ -1,6 +1,6 @@
 {
-  "name": "Lift Tracker",
-  "short_name": "Lift Tracker",
+  "name": "Workout Tracker",
+  "short_name": "Workout Tracker",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
