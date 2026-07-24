@@ -260,6 +260,13 @@
                 }
             });
 
+            document.getElementById('calendar-container').addEventListener('click', (event) => {
+                const target = event.target.closest('td');
+                if (target && target.dataset.date) {
+                    showDayDetails(target.dataset.date, target);
+                }
+            });
+
             document.getElementById('calendar-day-details').addEventListener('click', (event) => {
                 const target = event.target;
                 if (target.dataset.action === 'editLog') {
@@ -686,8 +693,6 @@
 
                 document.getElementById('summary-title').textContent = `${exerciseName} Progress`;
                 
-                // --- MODIFICATION START ---
-                // Group logs by date, keeping only the one with the heaviest weight for each day.
                 const dailyBestLogs = new Map();
                 logs.forEach(log => {
                     const existingLog = dailyBestLogs.get(log.date);
@@ -696,7 +701,6 @@
                     }
                 });
 
-                // Convert the map values to an array and sort by most recent date.
                 const filteredSortedLogs = Array.from(dailyBestLogs.values()).sort((a, b) => b.timestamp - a.timestamp);
 
                 let historyHtml = '<div class="summary-section" style="max-height: 200px; overflow-y: auto; margin-top: 15px; border-top: 1px solid #444; padding-top: 10px;"><strong>Chronological History (Best Set per Day)</strong><ul style="list-style-type: none; padding: 0; margin: 10px 0;">';
@@ -704,7 +708,6 @@
                     historyHtml += `<li style="margin-bottom: 5px; font-size: 0.9em;">${log.date}: ${log.weight} lbs x ${log.reps} reps <span class="rm-highlight">(1RM: ${log.est1RM})</span></li>`;
                 });
                 historyHtml += '</ul></div>';
-                // --- MODIFICATION END ---
 
                 const contentEl = document.getElementById('summary-content');
                 contentEl.innerHTML = `
@@ -768,7 +771,7 @@
                 const hasWorkout = groupedHistoryLogs[dateKey] && groupedHistoryLogs[dateKey].length > 0;
                 const dotHtml = hasWorkout ? '<br><span class="workout-dot"></span>' : '';
                 
-                html += `<td data-date="${dateKey}" onclick="showDayDetails('${dateKey}', this)">${day}${dotHtml}</td>`;
+                html += `<td data-date="${dateKey}">${day}${dotHtml}</td>`;
                 dayOfWeek++;
             }
 
@@ -781,7 +784,7 @@
             container.innerHTML = html;
         }
 
-        window.showDayDetails = function(dateKey, cellElement) {
+        function showDayDetails(dateKey, cellElement) {
             document.querySelectorAll('.calendar-table td').forEach(td => td.classList.remove('selected-day'));
             if(cellElement) cellElement.classList.add('selected-day');
 
@@ -880,9 +883,18 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 const text = e.target.result;
-                const rows = text.split('\n').slice(1);
+                const lines = text.split('\n');
+                const headerRow = lines[0].trim().replace(/"/g, '');
+                const expectedHeaders = 'timestamp,date,exercise,weight,reps,est1RM';
+
+                if (headerRow !== expectedHeaders) {
+                    showToast("Invalid CSV headers. Please use the correct format.");
+                    return;
+                }
+
+                const rows = lines.slice(1);
                 if (rows.length === 0) {
-                    showToast("CSV file is empty or invalid.");
+                    showToast("CSV file has no data rows.");
                     return;
                 }
 
