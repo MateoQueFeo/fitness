@@ -6,6 +6,7 @@ const STATIC_ASSETS = [
     './index.html',
     './style.css',
     './manifest.json',
+    './workouts.json',
     './icon-192.png',
     './icon-512.png',
     './icon-512-maskable.png'
@@ -35,26 +36,27 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    const url = new URL(event.request.url);
-
-    if (url.pathname.endsWith('workouts.json')) {
+    if (event.request.url.includes('/api/') || event.request.url.includes('workouts.json')) {
         event.respondWith(
             caches.open(DATA_CACHE_NAME).then(cache => {
-                return cache.match(event.request).then(cachedResponse => {
-                    const fetchPromise = fetch(event.request).then(networkResponse => {
-                        cache.put(event.request, networkResponse.clone());
-                        return networkResponse;
+                return fetch(event.request)
+                    .then(response => {
+                        if (response.status === 200) {
+                            cache.put(event.request.url, response.clone());
+                        }
+                        return response;
+                    })
+                    .catch(err => {
+                        return cache.match(event.request);
                     });
-                    return cachedResponse || fetchPromise;
-                });
             })
         );
-    } 
-    else {
-        event.respondWith(
-            caches.match(event.request).then(response => {
-                return response || fetch(event.request);
-            })
-        );
+        return;
     }
+
+    event.respondWith(
+        caches.match(event.request).then(response => {
+            return response || fetch(event.request);
+        })
+    );
 });

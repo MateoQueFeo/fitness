@@ -158,43 +158,45 @@
             }
         }
 
-        function fetchWorkoutsFromNetwork() {
+        function loadWorkouts() {
             const errorDiv = document.getElementById('data-fetch-error');
-            const routineSelect = document.getElementById('routine-select');
             errorDiv.style.display = 'none';
-            fetch('workouts.json')
-                .then(response => {
-                    if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-                    return response.json();
-                })
-                .then(data => {
-                    processAndStoreWorkouts(data, true);
-                })
-                .catch(error => {
-                    console.error('Failed to fetch workouts from network:', error);
-                    const transaction = db.transaction('workouts', 'readonly');
-                    const store = transaction.objectStore('workouts');
-                    const getAllRequest = store.getAll();
-                    
-                    getAllRequest.onsuccess = () => {
-                        if (getAllRequest.result && getAllRequest.result.length > 0) {
-                            processAndStoreWorkouts(getAllRequest.result, false);
-                            routineSelect.disabled = false;
-                        } else {
+
+            const transaction = db.transaction('workouts', 'readonly');
+            const store = transaction.objectStore('workouts');
+            const getAllRequest = store.getAll();
+            
+            getAllRequest.onsuccess = () => {
+                if (getAllRequest.result && getAllRequest.result.length > 0) {
+                    processAndStoreWorkouts(getAllRequest.result, false);
+                }
+                
+                fetch('workouts.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+                        return response.json();
+                    })
+                    .then(data => {
+                        processAndStoreWorkouts(data, true);
+                    })
+                    .catch(error => {
+                        console.error('Failed to fetch workouts from network:', error);
+                        if (!workoutsData || workoutsData.length === 0) {
                             errorDiv.textContent = 'Error: Could not load workout routines. Please check your connection and refresh.';
                             errorDiv.style.display = 'block';
                         }
-                    };
-                    getAllRequest.onerror = () => {
-                        errorDiv.textContent = 'Error: Could not load workout routines. Please check your connection and refresh.';
-                        errorDiv.style.display = 'block';
-                    };
-                });
+                    });
+            };
+            getAllRequest.onerror = () => {
+                 errorDiv.textContent = 'Error: Could not load workout routines from the database.';
+                 errorDiv.style.display = 'block';
+            };
         }
+
 
         document.addEventListener('DOMContentLoaded', () => {
             initDB().then(() => {
-                fetchWorkoutsFromNetwork(); 
+                loadWorkouts(); 
                 displayLogs();
             }).catch(error => {
                 console.error('Failed to initialize database:', error);
@@ -354,6 +356,7 @@
             const routineSelect = document.getElementById('routine-select');
             if (!routineSelect) return;
             
+            const currentVal = routineSelect.value;
             routineSelect.innerHTML = '<option value="">Select Routine</option>';
             
             data.forEach(routine => {
@@ -362,6 +365,10 @@
                 option.textContent = routine.routine_name;
                 routineSelect.appendChild(option);
             });
+            
+            if (currentVal && workoutDataMap.has(currentVal)) {
+                routineSelect.value = currentVal;
+            }
 
             routineSelect.disabled = false;
         }
