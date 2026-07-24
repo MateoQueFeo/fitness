@@ -239,11 +239,13 @@
                 event.preventDefault();
                 updateLog();
             });
-             document.querySelectorAll('.modal .modal-close-button').forEach(button => {
+            
+            document.querySelectorAll('.modal .modal-close-button').forEach(button => {
                 button.addEventListener('click', (event) => {
                     event.target.closest('.modal').style.display = 'none';
                 });
             });
+            
             document.getElementById('routine-form-container').addEventListener('click', (event) => {
                 const target = event.target;
                 if (target.tagName === 'STRONG' && target.dataset.action === 'showDetails') {
@@ -253,11 +255,18 @@
                     logSet(target, target.dataset.exerciseIndex, target.dataset.setIndex, target.dataset.exerciseName);
                 }
             });
+            
             document.getElementById('logContainer').addEventListener('click', (event) => {
                 const target = event.target;
                 if (target.dataset.action === 'showSummary') {
                     showProgressSummary(target.dataset.exerciseName);
-                } else if (target.dataset.action === 'editLog') {
+                }
+            });
+
+            document.getElementById('calendar-day-details').addEventListener('click', (event) => {
+                const target = event.target;
+                if (target.dataset.action === 'editLog') {
+                    document.getElementById('history-modal').style.display = 'none';
                     editLog(target.dataset.key);
                 } else if (target.dataset.action === 'deleteLog') {
                     deleteLog(target.dataset.key);
@@ -405,7 +414,7 @@
 
             for (let index = 0; index < exercises.length; index++) {
                 const exercise = exercises[index];
-                const sanitizedExerciseName = exercise.exercise_name.replace(/'/g, "\'");
+                const sanitizedExerciseName = exercise.exercise_name.replace(/'/g, "\\'");
                 const detailsAttr = `data-action="showDetails" data-routine="${selectedRoutineName}" data-exercise-index="${index}"`;
                 
                 let recent1RMHtml = '';
@@ -593,6 +602,9 @@
             const logsStore = transaction.objectStore('logs');
             logsStore.delete(keyNum).onsuccess = () => {
                 displayLogs();
+                if (document.getElementById('history-modal').style.display === 'block') {
+                    showHistory();
+                }
                 showToast('Log deleted.');
             };
         }
@@ -714,11 +726,6 @@
             }
         }
 
-        document.getElementById('edit-form').addEventListener('submit', (event) => {
-            event.preventDefault();
-            updateLog();
-        });
-
         function renderCalendar() {
             const container = document.getElementById('calendar-container');
             const monthDisplay = document.getElementById('current-month-display');
@@ -778,9 +785,15 @@
 
             let html = `<div class="history-date-group"><h3 style="margin-top:0;">Workouts for ${dateKey}</h3>`;
             html += logsForDate.map(log => {
-                return `<div class="history-log-entry" style="margin-bottom: 8px;">
-                            <strong>${log.exercise}</strong>: ${log.weight} lbs x ${log.reps} reps 
-                            <span class="rm-highlight">(1RM: ${log.est1RM})</span>
+                return `<div class="history-log-entry" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 8px;">
+                            <div>
+                                <strong>${log.exercise}</strong>: ${log.weight} lbs x ${log.reps} reps 
+                                <span class="rm-highlight">(1RM: ${log.est1RM})</span>
+                            </div>
+                            <div>
+                                <button class="calendar-btn" data-action="editLog" data-key="${log.id}" style="padding: 4px 8px; font-size: 0.8em; margin-right: 5px;">Edit</button>
+                                <button class="calendar-btn" data-action="deleteLog" data-key="${log.id}" style="padding: 4px 8px; font-size: 0.8em; background-color: #8b0000; border-color: #aa0000;">Delete</button>
+                            </div>
                         </div>`;
             }).join('');
             html += `</div>`;
@@ -832,7 +845,7 @@
                 
                 logs.forEach(log => {
                     const values = headers.map(header => {
-                        const escaped = ('' + log[header]).replace(/"/g, '\"');
+                        const escaped = ('' + log[header]).replace(/"/g, '\\"');
                         return `"${escaped}"`;
                     });
                     csvRows.push(values.join(','));
