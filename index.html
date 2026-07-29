@@ -3,934 +3,438 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workout Tracker</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#000000">
-    <link rel="stylesheet" href="style.css">
+    <title>Fitness Log</title>
     <style>
-        .calendar-table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 10px; }
-        .calendar-table th, .calendar-table td { border: 1px solid #444; padding: 8px 4px; text-align: center; }
-        .calendar-table th { background-color: #222; font-size: 0.9em; }
-        .calendar-table td { cursor: pointer; height: 60px; vertical-align: top; position: relative; font-size: 0.9em; }
-        .calendar-table td:hover { background-color: #333; }
-        .calendar-table td.empty-cell { cursor: default; background-color: transparent; border: none; }
-        .calendar-table td.empty-cell:hover { background-color: transparent; }
-        .workout-dot { display: inline-block; width: 8px; height: 8px; background-color: #d4af37; border-radius: 50%; margin-top: 5px; }
-        .calendar-btn { padding: 5px 12px; background-color: #333; color: #fff; border: 1px solid #555; border-radius: 4px; cursor: pointer; }
-        .calendar-btn:hover { background-color: #444; }
-        .selected-day { background-color: #444 !important; border: 2px solid #d4af37 !important; }
+        :root{--bg:#121212;--card:#1e1e1e;--inp:#2a2a2a;--txt:#e0e0e0;--dim:#b0b0b0;--blu:#3498db;--grn:#2ecc71;--red:#ff4d4d;--pur:#9b59b6;--brd:#333;--gold: #FFD700;}
+        body{font-family:sans-serif;background:var(--bg);color:var(--txt);margin:0;padding:20px;}
+        .container{max-width:600px;margin:auto;background:var(--card);padding:20px;border-radius:12px;border:1px solid var(--brd);}
+        h1,h2,h3{color:#fff;text-align:center;margin-top:0;}
+        select,button,input,textarea{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid var(--brd);background:var(--inp);color:#fff;font-size:14px;box-sizing:border-box;}
+        button{background:var(--blu);border:none;cursor:pointer;font-weight:bold;}
+        button:disabled{background:#555;cursor:not-allowed;opacity:0.6;}
+        .timer-card{position:sticky;top:10px;z-index:100;max-width:600px;margin:auto;display:flex;justify-content:space-between;align-items:center;background:#121212;padding:5px 10px;border-radius:8px;margin-bottom:20px;flex-wrap: wrap; justify-content: center; gap: 15px;}
+        #timeDisplay{font-size:1.8em;font-weight:bold;font-family:monospace;margin:0; color: var(--gold);}
+        .timer-controls{display:flex;gap:8px;}
+        .timer-controls button, #metronomeToggleBtn {min-width:44px;min-height:44px;padding:4px 8px;font-size:14px;margin:0; background-color:#121212; color:var(--gold); border:1px solid var(--gold);}
+        .flex-row{display:flex;gap:10px;justify-content:center;align-items:center;}
+        .flex-row button,.flex-row select,.flex-row input{margin-top:0;margin-bottom:0;}
+        #date{width:150px;}
+        #daySel{flex-grow:1;}
+        .flex-row button{width:auto;padding:8px 15px;}
+        .section-card{background:var(--card);padding:15px;border:1px solid var(--brd);border-radius:8px;margin-bottom:20px;}
+        .routine-box{padding:12px;border-radius:6px;margin:10px 0;text-align:left;display:flex;flex-direction:column;}
+        .box-w{background:rgba(255,77,77,0.08);border-left:4px solid var(--red);}
+        .box-c{background:rgba(52,152,219,0.08);border-left:4px solid var(--blu);}
+        .chk-item, .set-row {display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+        .set-row {flex-wrap: nowrap;}
+        .chk-item > span, .set-row-main {flex-grow:1; display:flex; align-items:center; gap:6px;}
+        .check-actions {display:flex; gap: 4px; flex-shrink: 0;}
+        .btn-act{min-width:38px;min-height:38px;padding:4px 6px;font-size:14px;border-radius:4px;background:#333;color:#888;border:1px solid #444;}
+        .btn-comp.active{background:var(--grn);color:#000;border-color:var(--grn);}
+        .btn-skip.active{background:var(--red);color:#fff;border-color:var(--red);}
+        .txt-comp{text-decoration:line-through;color:var(--grn);}
+        .txt-skip{text-decoration:line-through;color:var(--red);opacity:0.5;}
+        .ex-block{background:rgba(155,89,182,0.05);padding:12px;margin-bottom:15px;border-radius:6px;border-left:5px solid var(--pur);}
+        .set-row input{width:50px;background:#333;text-align:center;font-weight:bold;padding:8px 4px;}
+        .set-row .weight-input{width:75px;}
+        .orm-header-badge{font-size:12px;color:var(--gold);font-weight:bold;margin-left:8px;}
+        .history-card{background:#252525;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #333;}
+        .chart-container{height:240px;width:100%;position:relative;margin-top:15px;overflow:hidden;}
+        .svg-chart-container { display: block; width: 100%; background: #252525; border-radius: 4px; }
+        .svg-chart-container .label { fill: var(--dim); font-size: 10px; }
+        .svg-chart-container .grid { stroke: var(--brd); stroke-dasharray: 2,2; }
+        .svg-chart-container .tooltip { display: none; }
+        .svg-chart-container circle:hover + .tooltip, .svg-chart-container rect:hover + .tooltip { display: block; }
+        table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px;}
+        th,td{border:1px solid var(--brd);padding:6px;text-align:left;}
+        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; display:flex; justify-content:center; align-items:center; }
+        .modal-content { background:var(--card); padding:20px 25px; border-radius:12px; max-width:90%; width:360px; border:1px solid var(--brd); position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-height:85vh; overflow-y:auto; }
+        .close-btn { position:absolute; top:8px; right:8px; width:40px; height:40px; margin:0; background:transparent; border:none; color:var(--dim); font-size:20px; cursor:pointer; display:flex; justify-content:center; align-items:center; padding:0; line-height:1; border-radius:50%; z-index:10; }
+        .close-btn:hover, .close-btn:active { background:rgba(255,255,255,0.1); color:#fff; }
+        .hidden{display:none !important;}
+        .modal-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
+        .badge { font-size: 11px; padding: 4px 8px; border-radius: 12px; font-weight: bold; }
+        .badge-pri { background: rgba(255,77,77,0.15); color: var(--red); border: 1px solid var(--red); }
+        .badge-sec { background: rgba(255,215,0,0.15); color: var(--gold); border: 1px solid var(--gold); }
+        .modal-section { margin-bottom: 12px; }
+        .modal-section h4 { color: #fff; margin: 0 0 4px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #333; padding-bottom: 4px; }
+        .modal-section p { font-size: 13px; margin: 0; color: var(--dim); line-height: 1.4; }
+        .error-border { border: 1px solid var(--red) !important; }
+        #toast-notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #333; color: white; padding: 15px 25px; border-radius: 8px; z-index: 10000; font-size: 16px; font-weight: bold; opacity: 0; visibility: hidden; transition: opacity 0.5s, visibility 0.5s; }
+        #toast-notification.show { opacity: 1; visibility: visible; }
+        #calendar-container { padding: 10px; background: #252525; border-radius: 8px; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .calendar-header button { width: 44px; height: 44px; margin: 0; padding: 0; background: #333; font-size: 18px; }
+        #calendar-month-year { font-size: 1.2em; font-weight: bold; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .calendar-day, .calendar-weekday { display: flex; justify-content: center; align-items: center; height: 38px; border-radius: 50%; }
+        .calendar-weekday { font-size: 0.8em; font-weight: bold; color: var(--dim); }
+        .calendar-day { cursor: pointer; position: relative; font-size: 0.9em; }
+        .calendar-day:hover { background: #444; }
+        .calendar-day.other-month { color: #555; cursor: default; }
+        .calendar-day.other-month:hover { background: transparent; }
+        .calendar-day.today { font-weight: bold; border: 1px solid var(--blu); }
+        .calendar-day.selected { background: var(--blu); color: #fff; }
+        .calendar-day .workout-dot { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; background: var(--pur); border-radius: 50%; }
+        .setup-block { margin-bottom: 15px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 6px; }
+        .setup-block h4 { margin-top:0; margin-bottom:10px; font-size:14px; color:#fff; }
     </style>
+    <link rel="manifest" id="manifest-link">
+    <meta name="theme-color" content="#1e1e1e">
+    <script>
+        const manifest = {
+            "name": "Fitness Log",
+            "short_name": "FitnessLog",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#121212",
+            "theme_color": "#1e1e1e",
+            "description": "A single-file progressive web app for tracking workouts.",
+            "icons": [
+                { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='85' font-size='80'%3E🏋️%3C/text%3E%3C/svg%3E", "sizes": "any", "type": "image/svg+xml" }
+            ]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        document.getElementById('manifest-link').href = manifestUrl;
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swContent = `
+                    const CACHE_NAME = 'fitness-log-cache-v1';
+                    const urlsToCache = ['.'];
+                    self.addEventListener('install', event => {
+                        self.skipWaiting(); 
+                        event.waitUntil(
+                            caches.open(CACHE_NAME).then(cache => {
+                                console.log('Opened cache');
+                                return cache.addAll(urlsToCache);
+                            })
+                        );
+                    });
+                    self.addEventListener('fetch', event => {
+                        if (event.request.method !== 'GET') return;
+                        event.respondWith(
+                            caches.match(event.request).then(response => {
+                                if (response) {
+                                    return response;
+                                }
+                                return fetch(event.request);
+                            })
+                        );
+                    });
+                `;
+                const swBlob = new Blob([swContent], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(swBlob);
+                navigator.serviceWorker.register(swUrl)
+                    .then(registration => console.log('ServiceWorker registration successful with scope: ', registration.scope))
+                    .catch(err => console.log('ServiceWorker registration failed: ', err));
+            });
+        }
+    </script>
 </head>
 <body>
-    <div id="timer-container">
-        <span id="timer-display">00:00</span>
-        <button id="add-minute-timer-btn">+1 Minute</button>
-        <button id="metronome-btn" title="Toggle Metronome">⏱️</button>
+<div id="exModal" class="modal-overlay hidden" data-action="closeModal">
+    <div class="modal-content">
+        <button class="close-btn" aria-label="Close Modal" data-action="closeModal">✕</button>
+        <h2 id="modalTitle" style="margin-top:0; color:var(--blu); text-align:left; padding-right:35px; font-size:20px; margin-bottom:10px;">🏋️ Exercise</h2>
+        <div id="modalBadges" class="modal-badges"></div>
+        <div class="modal-section"><h4>📐 Setup</h4><p id="modalSetup"></p></div>
+        <div class="modal-section"><h4>⚙️ Execution</h4><p id="modalExec"></p></div>
+        <div class="modal-section"><h4>⚠️ Mistakes to Avoid</h4><p id="modalMistakes"></p></div>
+        <button data-action="jumpToProgress" style="width:100%; margin-top:15px; padding:12px; border-radius:8px; font-size:15px; background:var(--blu); color:#fff; font-weight:bold;">📈 View Progress Chart</button>
     </div>
-
-    <div id="toast-notification"></div>
-
-    <div id="exercise-details-modal" class="modal">
-        <div class="modal-content">
-            <span class="modal-close-button">&times;</span>
-            <div id="details-header" class="modal-header">
-                <h2 id="details-title" class="modal-title"></h2>
+</div>
+<div class="timer-card">
+    <div class="flex-row">
+        <div id="timeDisplay">00:00</div>
+        <div class="timer-controls">
+            <button data-action="addTime" data-time="60">+1m</button>
+            <button data-action="resetTimer">Reset</button>
+        </div>
+    </div>
+    <div class="flex-row" style="border-left: 1px solid var(--brd); padding-left: 15px;">
+        <button id="metronomeToggleBtn" data-action="toggleMetronome">🎵</button>
+        <span id="bpmDisplay" style="font-size: 14px; font-family: monospace; color: var(--gold);">60 BPM</span>
+    </div>
+</div>
+<div class="container">
+    <h1>🏋️ Fitness Log</h1>
+    <div class="section-card">
+        <div id="editMode" class="hidden" style="color:var(--gold);text-align:center;padding:10px;">⚠️ EDIT MODE <button data-action="cancelEdit" style="background:none;color:var(--gold);border:none;">Cancel</button></div>
+        <div class="flex-row" style="margin-bottom:8px;">
+            <input type="date" id="date">
+            <select id="daySel" data-action="loadDay"></select>
+        </div>
+        <div id="wBox" class="routine-box box-w"></div>
+        <div id="form"></div>
+        <div id="cBox" class="routine-box box-c"></div>
+        <button id="saveSessionBtn" data-action="saveWorkoutSession" style="background:#27ae60;color:#f0f0f0;min-height:44px;">Save Session</button>
+    </div>
+    <div class="section-card">
+        <h3 id="progressSection">📈 Progress</h3>
+        <select id="cxSel" data-action="updateCharts"></select>
+        <div style="font-size:12px; color:var(--dim); text-align:center; margin-top:10px;">
+            <span id="leg-orm" style="color:var(--gold);">●</span> Est. 1RM (Strength) &nbsp;&nbsp;&nbsp; <span id="leg-exVol" style="color:#009688;">■</span> Total Volume (Workload)
+        </div>
+        <div class="chart-container" id="exC-orm" style="height:150px; margin-top:10px;"></div>
+        <div class="chart-container" id="exC-vol" style="height:150px; margin-top:10px;"></div>
+    </div>
+    <div class="section-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0;">📊 Volume</h3>
+            <select id="rollAvgSel" data-action="updateCharts" style="width:auto; padding:4px 8px; margin:0; font-size:12px; background:#333;">
+                <option value="2">2-Session</option>
+                <option value="4" selected>4-Session</option>
+                <option value="8">8-Session</option>
+                <option value="16">16-Session</option>
+            </select>
+        </div>
+        <div style="font-size:12px; color:var(--dim); text-align:center; margin-top:10px;">
+            <span id="leg-dayVol" style="color:#FF7F50;">■</span> Daily Volume &nbsp;&nbsp;&nbsp; <span id="leg-rollAvg" style="color:var(--gold);">●</span> Rolling Avg
+        </div>
+        <div class="chart-container" id="volC"></div>
+    </div>
+    <div class="section-card"><h3>🏆 PRs</h3><div id="pb"></div></div>
+    <h2>📜 History</h2>
+    <div id="calendar-container">
+        <div class="calendar-header">
+            <button data-action="prevMonth">‹</button>
+            <div id="calendar-month-year"></div>
+            <button data-action="nextMonth">›</button>
+        </div>
+        <div class="calendar-grid" id="calendar-weekdays"></div>
+        <div class="calendar-grid" id="calendar-days"></div>
+    </div>
+    <div id="hist-detail"></div>
+    <div class="section-card" style="margin-top: 20px;">
+        <h3 data-action="toggleSetup" style="cursor:pointer;padding:10px 0;">⚙️ Setup (Click to Expand)</h3>
+        <div id="setup" class="hidden">
+            <div class="setup-block">
+                <h4>General</h4>
+                <label style="font-size:12px; display:flex; align-items:center; gap:10px; color:var(--dim);">
+                    Metronome BPM:
+                    <input type="number" id="setup-bpm" style="width:80px; padding:4px 8px; margin:0;" min="40" max="200">
+                </label>
             </div>
-            <div id="details-content"></div>
-        </div>
-    </div>
-
-    <div id="progress-summary-modal" class="modal">
-        <div class="modal-content">
-            <span class="modal-close-button">&times;</span>
-            <h2 id="summary-title"></h2>
-            <div id="summary-content"></div>
-        </div>
-    </div>
-
-    <div id="history-modal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <span class="modal-close-button">&times;</span>
-            <h2 class="modal-title">Workout History</h2>
-            
-            <div id="calendar-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <button id="prev-month-btn" class="calendar-btn">&lt; Prev</button>
-                <h3 id="current-month-display" style="margin: 0; font-size: 1.2em;"></h3>
-                <button id="next-month-btn" class="calendar-btn">Next &gt;</button>
+            <div class="setup-block">
+                <h4>🎨 Chart Colors</h4>
+                <div class="flex-row" style="flex-wrap: wrap; gap: 15px; justify-content: flex-start;">
+                    <label style="font-size:12px; display:flex; align-items:center; gap:5px; color:var(--dim);">1RM <input type="color" id="c-orm" style="width:25px; height:25px; padding:0; border:none;"></label>
+                    <label style="font-size:12px; display:flex; align-items:center; gap:5px; color:var(--dim);">Ex. Vol <input type="color" id="c-exVol" style="width:25px; height:25px; padding:0; border:none;"></label>
+                    <label style="font-size:12px; display:flex; align-items:center; gap:5px; color:var(--dim);">Daily Vol <input type="color" id="c-dayVol" style="width:25px; height:25px; padding:0; border:none;"></label>
+                    <label style="font-size:12px; display:flex; align-items:center; gap:5px; color:var(--dim);">Roll Avg <input type="color" id="c-rollAvg" style="width:25px; height:25px; padding:0; border:none;"></label>
+                </div>
             </div>
-            
-            <div id="calendar-container"></div>
-            <div id="calendar-day-details" style="margin-top: 20px;"></div>
+            <div id="setupInputs"></div>
+            <button data-action="addDayToSetup" style="background:#333; min-height:44px; margin-top:10px;">+ Add New Day</button>
+            <button data-action="saveSetup" style="background:var(--pur);min-height:44px;margin-top:10px;">Save Configuration</button>
+            <button data-action="resetSetup" style="background:var(--red);margin-top:10px;min-height:44px;">Factory Reset</button>
         </div>
     </div>
-
-    <div id="edit-log-container" class="card" style="display: none;">
-        <h2>Edit Set</h2>
-        <form id="edit-form">
-            <label for="edit-exercise">Exercise:</label>
-            <input type="text" id="edit-exercise" disabled style="background-color: #333;">
-            
-            <label for="edit-weight">Weight (lbs):</label>
-            <input type="number" id="edit-weight" min="0" step="any">
-            
-            <label for="edit-reps">Reps:</label>
-            <input type="number" id="edit-reps" min="1" step="1">
-            
-            <input type="hidden" id="edit-key">
-            <button type="submit">Update Set</button>
-            <button id="cancel-button" type="button">Cancel</button>
-        </form>
+    <div class="flex-row" style="margin-top:20px;">
+        <button id="exportBtn" data-action="exportData" style="background:#444;min-height:44px;">📤 Export</button>
+        <button id="importBtn" data-action="triggerImport" style="background:#444;min-height:44px;">📥 Import</button>
+        <input type="file" id="imp" class="hidden" data-action="importData">
     </div>
-
-    <div class="card">
-        <h2>Workout Routine</h2>
-        <label for="routine-select">Workout Routine:</label>
-        <select id="routine-select" disabled>
-            <option value="loading">Loading routines...</option>
-        </select>
-        <div id="data-fetch-error" style="color: #ff4d4d; margin-top: 10px; display: none;"></div>
-    </div>
-
-    <div id="routine-form-container"></div>
-
-    <div class="card">
-        <h2>Recent Logs & Data</h2>
-        <div id="log-management-actions">
-            <button id="import-csv-btn">Import CSV</button>
-            <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
-            <button id="export-csv-btn">Export CSV</button>
-        </div>
-        <div id="log-management-actions-secondary">
-             <button id="view-history-btn">View Full History</button>
-             <button id="delete-all-btn">Delete All Logs</button>
-        </div>
-        <div id="logContainer"></div>
-    </div>
-
-    <script>
-        let db;
-        let workoutsData = [];
-        let workoutDataMap = new Map();
-        let toastTimeout;
-        const DB_NAME = 'WorkoutTrackerDB';
-        const DB_VERSION = 3;
-        let timerInterval = null;
-        let remainingTime = 0;
-        let isTimerRunning = false;
-        let audioContext;
-        let isMetronomeOn = false;
-        let metronomeInterval = null;
-        let currentHistoryYear = new Date().getFullYear();
-        let currentHistoryMonth = new Date().getMonth();
-        let groupedHistoryLogs = {};
-
-        function initDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-                request.onupgradeneeded = event => {
-                    const dbInstance = event.target.result;
-                    if (!dbInstance.objectStoreNames.contains('workouts')) {
-                        dbInstance.createObjectStore('workouts', { keyPath: 'routine_name' });
-                    }
-                    if (!dbInstance.objectStoreNames.contains('logs')) {
-                        const logsStore = dbInstance.createObjectStore('logs', { keyPath: 'id', autoIncrement: true });
-                        logsStore.createIndex('exercise', 'exercise', { unique: false });
-                    }
-                };
-                request.onerror = event => { reject('Database error: ' + event.target.errorCode); };
-                request.onsuccess = event => { db = event.target.result; resolve(db); };
+</div>
+<div id="toast-notification"></div>
+<script>
+(function() {
+    'use strict';
+    const constants = {
+        DEFAULT_REST_TIME: 60,
+        DEFAULT_BPM: 60,
+        DB_NAME: "FitnessLogDB",
+        DB_VERSION: 2,
+    };
+    const AppState = {
+        db: null,
+        editIndex: null,
+        timerInterval: null,
+        timeRemaining: 0,
+        metronomeInterval: null,
+        isMetronomeOn: false,
+        audioContext: null,
+        cachedPRs: null,
+        cachedHistory: null,
+        cachedChartData: {},
+        appConfig: null,
+        workoutPlan: {},
+        warmupPlan: {},
+        cooldownPlan: {},
+        calendarDate: new Date(),
+    };
+    const exerciseInfo = { "Incline Press": { icon:"🏋️", pri:["Upper Chest"], sec:["Front Delts", "Triceps"], setup:"Set bench to 30-45°. Plant feet firmly. Grip slightly wider than shoulders.", exec:"Lower weight to upper chest under control. Press up and slightly back over eyes.", mistakes:"Bouncing weight off chest. Flaring elbows straight out. Lifting glutes off seat." }, "Incline Fly": { icon:"🪢", pri:["Upper Chest"], sec:["Front Delts"], setup:"Set bench to 30-45°. Hold dumbbells or cables with a neutral grip.", exec:"Keep a slight bend in elbows. Open arms wide like hugging a barrel. Squeeze chest to bring hands together.", mistakes:"Bending elbows too much (turns into a press). Going too deep and straining shoulders." }, "Front Raise": { icon:"💪", pri:["Front Delts"], sec:["Core"], setup:"Stand tall holding dumbbells or cable handle. Keep a slight elbow bend.", exec:"Raise weight directly in front of you to shoulder height. Lower slowly.", mistakes:"Using momentum/swinging torso. Raising weight too high above head." }, "Triceps Pushdown": { icon:"🪢", pri:["Triceps"], sec:["Core"], setup:"Attach rope or bar to high cable. Hinge slightly forward at hips. Pin elbows to sides.", exec:"Push weight straight down until arms are fully extended. Squeeze triceps. Return to chest height.", mistakes:"Letting elbows flare or travel forward. Using bodyweight to press down." }, "Overhead Triceps Extension": { icon:"💪", pri:["Triceps"], sec:["Core"], setup:"Sit or stand tall holding one dumbbell with both hands over your head. Can also use a cable rope.", exec:"Lower the weight behind your head by bending your elbows. Extend arms fully to lift the weight back up. Keep upper arms stationary.", mistakes:"Flaring elbows out to the sides. Arching the lower back excessively. Using momentum." }, "Side Lunge": { icon:"🦵", pri:["Quads", "Glutes"], sec:["Adductors"], setup:"Stand with feet wide. Toes pointed slightly out. Keep chest up.", exec:"Push hips back and bend one knee, keeping the trailing leg perfectly straight. Drive through heel to return.", mistakes:"Letting knee collapse inward. Rounding lower back." }, "Leg Extension": { icon:"🦵", pri:["Quadriceps"], sec:[], setup:"Align machine pivot point with your knees. Pad should rest on lower shins.", exec:"Extend legs fully to straight position. Squeeze quads hard. Lower under control.", mistakes:"Using momentum. Not achieving full extension at the top." }, "Hip Adduction": { icon:"🦵", pri:["Adductors (Inner Thigh)"], sec:[], setup:"Sit with pads inside knees. Set starting width to a comfortable stretch.", exec:"Squeeze knees together smoothly. Hold for a split second. Return slowly.", mistakes:"Jerking the weight. Dropping the weight abruptly on the return." }, "Nordic Hamstring Curl": { icon:"🦵", pri:["Hamstrings"], sec:["Calves", "Glutes"], setup:"Lock ankles under a pad or have a partner hold them. Kneel on a soft pad.", exec:"Keep body perfectly straight. Slowly lower torso toward the floor using hamstrings as brakes. Catch with hands.", mistakes:"Bending at the hips to lower faster. Not controlling the descent." }, "Calf Raise": { icon:"🦵", pri:["Calves"], sec:[], setup:"Stand on edge of block/step. Drop heels below parallel.", exec:"Drive up onto the balls of your feet as high as possible. Pause at top. Lower slowly.", mistakes:"Bouncing at the bottom. Bending knees to cheat the weight up." }, "Bent-Over Row": { icon:"🏋️", pri:["Lats", "Mid-Back"], sec:["Biceps", "Core"], setup:"Hinge at hips until torso is roughly 45°. Keep back perfectly flat. Brace core.", exec:"Pull bar or dumbbells toward lower stomach/hips. Squeeze shoulder blades together.", mistakes:"Standing too upright. Yanking weight with lower back. Flaring elbows too wide." }, "Incline Bench Row": { icon:"🏋️", pri:["Lats", "Mid-Back"], sec:["Biceps", "Core"], setup:"Set an incline bench to 30-45 degrees. Lie chest-down on the pad with a dumbbell in each hand.", exec:"Row the dumbbells up toward your hips, squeezing your shoulder blades together at the top. Lower under control.", mistakes:"Lifting chest off the pad. Pulling weights toward armpits instead of hips." }, "Straight-Arm Pulldown": { icon:"🪢", pri:["Lats"], sec:["Triceps"], setup:"Attach straight bar or rope to high cable. Step back. Keep arms straight with tiny elbow bend.", exec:"Pull bar down in an arc motion until it touches your thighs. Squeeze lats hard.", mistakes:"Bending elbows and turning it into a tricep pushdown. Rounding upper back." }, "Lat Pulldown": { icon:"🏋️", pri:["Lats"], sec:["Biceps", "Mid-Back"], setup:"Adjust pad so knees are secure. Grab bar slightly wider than shoulders.", exec:"Pull bar down to upper chest while depressing shoulders. Return under control.", mistakes:"Leaning back excessively to use bodyweight." }, "Prone T Raise": { icon:"💪", pri:["Mid-Back", "Rear Delts"], sec:["Lower Traps"], setup:"Lie face down on a slight incline bench. Hold light weights.", exec:"Raise arms straight out to the sides to form a 'T'. Squeeze shoulder blades.", mistakes:"Using too much weight. Shrugging shoulders up toward ears." }, "Prone Y Raise": { icon:"💪", pri:["Lower Traps", "Upper Back"], sec:["Rear Delts"], setup:"Lie face down on a slight incline bench. Hold light weights.", exec:"Raise arms forward and outward at a 45° angle to form a 'Y'.", mistakes:"Bending elbows. Arching lower back excessively." }, "Face Pull": { icon:"🪢", pri:["Rear Delts", "Rotator Cuff"], sec:["Traps"], setup:"Set cable to upper chest height with rope attachment. Grab ends with thumbs pointing back.", exec:"Pull rope toward face, pulling handles apart so hands end up beside ears. Squeeze upper back.", mistakes:"Pulling to chin instead of face. Using too much weight and falling forward." }, "Reverse Fly": { icon:"💪", pri:["Rear Delts"], sec:["Rhomboids"], setup:"Hinge forward at hips or lay chest-down on incline bench. Slight bend in elbows.", exec:"Raise weights directly out to the sides. Squeeze shoulder blades together.", mistakes:"Swinging the weight. Turning the movement into a rowing motion." }, "Incline Curl": { icon:"💪", pri:["Biceps (Long Head)"], sec:["Forearms"], setup:"Set bench to 45-60°. Sit back and let arms hang straight down toward floor.", exec:"Curl weight up while keeping upper arms completely stationary. Squeeze biceps.", mistakes:"Swinging elbows forward to cheat. Not fully extending at the bottom." }, "Walking Lunge": { icon:"🦵", pri:["Quads", "Glutes"], sec:["Core"], setup:"Stand tall holding dumbbells. Brace core.", exec:"Take a long step forward. Lower hips until both knees are bent 90°. Drive through front heel to step forward.", mistakes:"Letting front knee cave inward. Taking steps that are too short." }, "Back Extension": { icon:"🦵", pri:["Lower Back", "Glutes"], sec:["Hamstrings"], setup:"Position hips at top edge of pad. Lock feet in. Cross arms on chest.", exec:"Hinge down until you feel a hamstring stretch. Squeeze glutes to raise torso back in line with legs.", mistakes:"Hyperextending (arching) lower back at the top. Using momentum." }, "Standing Arnold Press": { icon:"💪", pri:["Front & Side Delts"], sec:["Triceps", "Core"], setup:"Stand tall. Hold dumbbells at shoulder height with palms facing YOU.", exec:"Press weight overhead while simultaneously rotating hands so palms face AWAY at the top.", mistakes:"Leaning back too far. Not completing the full rotation." }, "Lateral Raise": { icon:"💪", pri:["Side Delts"], sec:["Traps"], setup:"Stand tall. Hold dumbbells at sides. Slight bend in elbows.", exec:"Raise arms out to sides until parallel with floor. Lead slightly with elbows, pouring a pitcher of water.", mistakes:"Swinging torso. Shrugging shoulders up to ears to lift the weight." }, "Curtsy Lunge": { icon:"🦵", pri:["Glutes", "Quads"], sec:["Adductors"], setup:"Stand tall. Shift weight to one leg.", exec:"Step other leg behind and across the planted leg. Lower hips into a curtsy. Drive back up.", mistakes:"Twisting hips/torso too much. Letting front knee cave inward." }, "Hip Abduction": { icon:"🦵", pri:["Abductors (Outer Glute)"], sec:[], setup:"Sit in machine with pads outside your knees.", exec:"Push legs outward against pads as far as comfortable. Pause. Return slowly.", mistakes:"Rushing the eccentric (return) portion. Using momentum to bounce out." }, "Pull-Up / Chin-Up": { icon:"🧗", pri:["Lats"], sec:["Biceps", "Core"], setup:"Hang from bar with overhand (pull) or underhand (chin) grip. Brace core.", exec:"Depress shoulders and pull body up until chin clears bar. Lower under control to a dead hang.", mistakes:"Kipping or swinging. Doing half-reps (not fully extending at bottom)." }, "Romanian Deadlift": { icon:"🏋️", pri:["Hamstrings", "Glutes"], sec:["Lower Back"], setup:"Stand holding bar/dumbbells. Keep legs relatively straight with a tiny soft bend in knees.", exec:"Push hips straight back (hinge). Keep weight dragged against your legs. Go until hamstrings stretch, then squeeze glutes to stand.", mistakes:"Bending knees into a squat. Letting bar drift away from legs. Rounding back." }, "Arm Circles": { icon:"🔄", pri:["Shoulders"], sec:[], setup:"Stand tall with arms out to the sides.", exec:"Make small forward and backward circles, gradually increasing in size.", mistakes:"Moving your entire torso." }, "Wall Slides": { icon:"🧱", pri:["Shoulders", "Upper Back"], sec:[], setup:"Stand with back against a wall, arms raised at 90 degrees.", exec:"Slide arms up the wall and back down.", mistakes:"Arching back away from the wall." }, "Gate Swings": { icon:"🦵", pri:["Adductors", "Glutes"], sec:[], setup:"Stand tall.", exec:"Hop into a wide squat, pushing knees out, then hop back up.", mistakes:"Knees caving inward." }, "Lateral Shifts": { icon:"🦵", pri:["Adductors", "Quads"], sec:[], setup:"Take a very wide stance.", exec:"Shift weight side to side, bending one knee while keeping the other straight.", mistakes:"Heel lifting off ground." }, "Light Walk": { icon:"🚶", pri:["Cardio"], sec:[], setup:"Treadmill or open space.", exec:"Walk at a brisk but conversational pace.", mistakes:"Going too fast and tiring out." }, "Dynamic Stretch": { icon:"🤸", pri:["Full Body"], sec:[], setup:"Find open space.", exec:"Perform moving stretches like leg swings and torso twists.", mistakes:"Holding stretches statically before a workout." }, "T-Spine Rotations": { icon:"🔄", pri:["Thoracic Spine"], sec:[], setup:"On all fours or lying on side.", exec:"Rotate your upper back and reach toward the ceiling.", mistakes:"Rotating purely from the lower back." }, "Scapular Retractions": { icon:"💪", pri:["Rhomboids"], sec:[], setup:"Stand tall or hang from a bar.", exec:"Pinch shoulder blades together without bending elbows.", mistakes:"Shrugging shoulders up to ears." }, "Hip Circles": { icon:"🔄", pri:["Hips"], sec:[], setup:"Stand tall, hands on hips.", exec:"Make large, slow circles with your hips in both directions.", mistakes:"Moving upper body instead of hips." }, "Leg Swings": { icon:"🦵", pri:["Hips", "Hamstrings"], sec:[], setup:"Hold onto a wall/rack for balance.", exec:"Swing one leg forward and backward, then side to side.", mistakes:"Swinging wildly and over-arching lower back." }, "Shoulder Halos": { icon:"🔄", pri:["Shoulder Mobility"], sec:[], setup:"Hold a light plate or kettlebell at chest height.", exec:"Circle the weight closely around your head in both directions.", mistakes:"Moving your head around the weight instead of vice versa." }, "Fire Hydrants": { icon:"🐕", pri:["Glutes"], sec:[], setup:"Get on all fours.", exec:"Lift one knee out to the side, keeping it bent at 90 degrees.", mistakes:"Twisting lower back to get the leg higher." }, "Scapular Pull-ups": { icon:"🧗", pri:["Lower Traps"], sec:[], setup:"Hang from a pull-up bar.", exec:"Pull shoulders down and back without bending arms.", mistakes:"Using biceps to bend the arms." }, "Bird-Dog": { icon:"🐕", pri:["Core"], sec:["Lower Back"], setup:"Get on all fours.", exec:"Extend opposite arm and leg straight out. Squeeze core.", mistakes:"Arching back and lifting limbs too high." }, "Cat-Cow": { icon:"🐈", pri:["Spine"], sec:[], setup:"Get on all fours.", exec:"Alternate arching back up to ceiling (cat) and dipping it toward floor (cow).", mistakes:"Forcing the stretch into a painful range." }, "Doorway Chest Stretch": { icon:"🚪", pri:["Chest"], sec:["Front Delts"], setup:"Stand in a doorway. Place forearm against the frame.", exec:"Gently step forward and turn body slightly away until you feel a stretch.", mistakes:"Pushing into pain." }, "Overhead Tricep": { icon:"💪", pri:["Triceps"], sec:[], setup:"Stand tall.", exec:"Reach one arm overhead and bend elbow. Use other hand to gently pull elbow back.", mistakes:"Arching lower back." }, "Anterior Delt": { icon:"💪", pri:["Front Delts"], sec:["Chest"], setup:"Stand tall.", exec:"Clasp hands behind your back and gently lift them upward.", mistakes:"Leaning torso forward." }, "Adductor Stretch": { icon:"🧘", pri:["Adductors"], sec:[], setup:"Sit with soles of feet together (butterfly) or take a wide stance.", exec:"Gently push knees down or shift weight to feel a stretch inside thigh.", mistakes:"Bouncing the stretch aggressively." }, "Calf Stretch": { icon:"🦵", pri:["Calves"], sec:[], setup:"Stand facing a wall.", exec:"Step one foot back, keep heel flat and leg straight, lean forward.", mistakes:"Lifting heel off the ground." }, "Foam Roll": { icon:"🧻", pri:["Myofascial Release"], sec:[], setup:"Lie on a foam roller on target muscle.", exec:"Slowly roll back and forth over tight areas. Pause on knots.", mistakes:"Rolling over joints or directly over lower back spine." }, "Cross-body Rear Delt": { icon:"💪", pri:["Rear Delts"], sec:[], setup:"Stand tall.", exec:"Pull one arm across your chest using the other arm.", mistakes:"Shrugging the stretching shoulder upward." }, "Upper Back": { icon:"🧘", pri:["Upper Back", "Traps"], sec:[], setup:"Stand tall.", exec:"Clasp hands in front of you and push them away, intentionally rounding upper back.", mistakes:"Straining neck forward." }, "Bicep Wall Stretch": { icon:"🧱", pri:["Biceps"], sec:["Chest"], setup:"Stand next to a wall. Extend arm back flat against it.", exec:"Slowly turn body away from wall to stretch bicep.", mistakes:"Over-stretching the shoulder capsule." }, "Kneeling Hip Flexor": { icon:"🧎", pri:["Hip Flexors"], sec:["Quads"], setup:"Kneel on one knee (lunge position).", exec:"Tuck pelvis under and gently lean hips forward until a stretch is felt.", mistakes:"Arching lower back excessively." }, "Standing Quad": { icon:"𦩿", pri:["Quadriceps"], sec:[], setup:"Stand tall, holding a wall for balance.", exec:"Grab your ankle behind you and gently pull heel toward glute.", mistakes:"Letting the knee flare out to the side." }, "Glute Stretch": { icon:"🧘", pri:["Glutes"], sec:[], setup:"Lie on back or sit.", exec:"Cross one ankle over opposite knee and pull thigh toward chest (Figure-Four).", mistakes:"Lifting head/shoulders off ground." }, "Cross-Body Shoulder": { icon:"💪", pri:["Shoulders"], sec:[], setup:"Stand tall.", exec:"Pull arm across body gently.", mistakes:"Shrugging shoulder." }, "Neck Stretch": { icon:"🧘", pri:["Neck"], sec:["Upper Traps"], setup:"Sit or stand tall.", exec:"Gently pull head toward one shoulder. Do not force it.", mistakes:"Pulling too hard." }, "Pigeon Pose": { icon:"🧘", pri:["Glutes"], sec:["Hip Rotators"], setup:"On the floor.", exec:"Bring one knee forward and across your body, extending the other leg back. Lean forward.", mistakes:"Forcing the knee aggressively to the floor." }, "Seated Twist": { icon:"🧘", pri:["Spine"], sec:["Glutes"], setup:"Sit on floor.", exec:"Cross one leg over the other, sit tall, and twist torso toward the bent knee.", mistakes:"Slouching." }, "Hip Flexor": { icon:"🧎", pri:["Hip Flexors"], sec:[], setup:"Get in kneeling lunge position.", exec:"Tuck pelvis and lean forward.", mistakes:"Arching back." }, "Dead Hang": { icon:"🧗", pri:["Spine Decompression"], sec:["Lats", "Grip"], setup:"Grab a pull-up bar.", exec:"Relax body and let it hang completely passive. Breathe deeply.", mistakes:"Holding tension in the shoulders." }, "Doorway Lat Stretch": { icon:"🚪", pri:["Lats"], sec:[], setup:"Grab a doorframe or rack overhead.", exec:"Lean hips back to feel a stretch along the side of your back.", mistakes:"Bending the arms." }, "Chest/Bicep Wall": { icon:"🧱", pri:["Chest", "Biceps"], sec:[], setup:"Stand next to wall.", exec:"Place palm flat on wall behind you, gently turn away.", mistakes:"Forcing the stretch." }, "Lying Hamstring": { icon:"🧘", pri:["Hamstrings"], sec:[], setup:"Lie on back.", exec:"Keep one leg straight on floor, lift other leg straight up, pull gently toward chest.", mistakes:"Bending knee too much." }, "Figure-Four": { icon:"🧘", pri:["Glutes"], sec:[], setup:"Lie on back.", exec:"Cross ankle over knee, grab thigh and pull.", mistakes:"Rounding spine off the floor." }, "Child's Pose": { icon:"🧘", pri:["Lats", "Lower Back"], sec:[], setup:"Kneel on the floor.", exec:"Sit back on heels, stretch arms far forward on floor, drop head.", mistakes:"Not letting the body fully relax." } };
+    const fallbackEx = { icon:"⚙️", pri:["Target Area"], sec:[], setup:"Review machine placards or ask a trainer for proper setup instructions.", exec:"Focus on mind-muscle connection and control.", mistakes:"Using momentum, improper breathing, and pushing into pain." };
+    const defaultPlan = [ { name: "Side Lunge", exercises: ["Side Lunge|3|6|45|65", "Hip Adduction|1|AMRAP|40|55", "Calf Raise|1|AMRAP|20|30"] }, { name: "Incline Press", exercises: ["Incline Press|3|6|65|100", "Incline Fly|1|AMRAP|10|15", "Front Raise|1|AMRAP|10|15", "Triceps Pushdown|1|AMRAP|20|30"] }, { name: "Walking Lunge", exercises: ["Walking Lunge|3|6|45|65", "Back Extension|1|AMRAP|0|10"] }, { name: "Incline Bench Row", exercises: ["Incline Bench Row|3|6|50|75", "Straight-Arm Pulldown|1|AMRAP|25|35", "Incline Curl|1|AMRAP|15|20"] }, { name: "Curtsy Lunge", exercises: ["Curtsy Lunge|3|6|40|60", "Hip Abduction|1|AMRAP|40|55", "Calf Raise|1|AMRAP|20|30"] }, { name: "Arnold Press", exercises: ["Standing Arnold Press|3|6|25|40", "Lateral Raise|1|AMRAP|10|15", "Reverse Fly|1|AMRAP|10|15", "Overhead Triceps Extension|1|AMRAP|20|30"] }, { name: "RDL", exercises: ["Romanian Deadlift|3|6|65|100", "Back Extension|1|AMRAP|0|10"] }, { name: "Lat Pulldown (8a)", exercises: ["Lat Pulldown|3|6|60|90", "Straight-Arm Pulldown|1|AMRAP|25|35", "Incline Curl|1|AMRAP|15|20", "Prone Y Raise|1|AMRAP|5|10"] }, { name: "Pull-Up (8b)", exercises: ["Pull-Up / Chin-Up|3|6|0|0", "Straight-Arm Pulldown|1|AMRAP|25|35", "Incline Curl|1|AMRAP|15|20", "Prone Y Raise|1|AMRAP|5|10"] } ];
+    const defaultWarmups = { "Side Lunge": ["Gate Swings: 6 reps","Lateral Shifts: 6 reps"], "Incline Press": ["Arm Circles: 6 reps","Wall Slides: 6 reps"], "Walking Lunge": ["Hip Circles: 6 reps","Leg Swings: 6 reps"], "Incline Bench Row": ["T-Spine Rotations: 6 reps","Scapular Retractions: 6 reps"], "Curtsy Lunge": ["Fire Hydrants: 6 reps","Leg Swings: 6 reps"], "Arnold Press": ["Shoulder Halos: 6 reps","Wall Slides: 6 reps", "T-Spine Rotations: 6 reps"], "RDL": ["Bird-Dog: 6 reps","Cat-Cow: 6 reps", "Leg Swings (Front/Back): 10 reps"], "Lat Pulldown (8a)": ["Scapular Retractions: 6 reps","Arm Circles: 6 reps"], "Pull-Up (8b)": ["Scapular Pull-ups: 6 reps","Arm Circles: 6 reps"] };
+    const defaultCooldowns = { "Side Lunge": ["Adductor Stretch (30s)","Calf Stretch (30s)"], "Incline Press": ["Doorway Chest Stretch (30s)","Overhead Tricep (30s)","Anterior Delt (30s)"], "Walking Lunge": ["Kneeling Hip Flexor (30s)","Standing Quad (30s)","Glute Stretch (30s)"], "Incline Bench Row": ["Cross-body Rear Delt (30s)","Upper Back (30s)","Bicep Wall Stretch (30s)"], "Curtsy Lunge": ["Pigeon Pose (30s)","Seated Twist (30s)","Hip Flexor (30s)"], "Arnold Press": ["Cross-Body Shoulder (30s)","Overhead Tricep (30s)","Neck Stretch (30s/side)"], "RDL": ["Lying Hamstring (30s)","Figure-Four (30s)","Child's Pose (30s)"], "Lat Pulldown (8a)": ["Child's Pose (30s)","Doorway Lat Stretch (30s)","Chest/Bicep Wall (30s)"], "Pull-Up (8b)": ["Dead Hang (Passive) (30s)","Doorway Lat Stretch (30s)","Chest/Bicep Wall (30s)"] };
+    const defaultColors = { orm: "#FFD700", exVol: "#009688", dayVol: "#FF7F50", rollAvg: "#FFD700" };
+    function openDB() { return new Promise((resolve, reject) => { const request = indexedDB.open(constants.DB_NAME, constants.DB_VERSION); request.onerror = e => reject(new Error("DB Error: " + e.target.errorCode)); request.onsuccess = e => resolve(e.target.result); request.onupgradeneeded = e => { const db = e.target.result; if (!db.objectStoreNames.contains('sessions')) db.createObjectStore('sessions', { keyPath: 'rd' }); if (!db.objectStoreNames.contains('config')) db.createObjectStore('config', { keyPath: 'id' }); }; }); }
+    function dbGet(storeName, key) { return new Promise((resolve, reject) => { const tx = AppState.db.transaction(storeName, 'readonly'); tx.objectStore(storeName).get(key).onsuccess = e => resolve(e.target.result); tx.onerror = e => reject(e.target.error); }); }
+    function dbGetAll(storeName) { return new Promise((resolve, reject) => { const tx = AppState.db.transaction(storeName, 'readonly'); tx.objectStore(storeName).getAll().onsuccess = e => resolve(e.target.result); tx.onerror = e => reject(e.target.error); }); }
+    function dbPut(storeName, value) { return new Promise((resolve, reject) => { const tx = AppState.db.transaction(storeName, 'readwrite'); tx.objectStore(storeName).put(value); tx.oncomplete = resolve; tx.onerror = e => reject(e.target.error); }); }
+    function dbDelete(storeName, key) { return new Promise((resolve, reject) => { const tx = AppState.db.transaction(storeName, 'readwrite'); tx.objectStore(storeName).delete(key); tx.oncomplete = resolve; tx.onerror = e => reject(e.target.error); }); }
+    function dbClear(storeName) { return new Promise((resolve, reject) => { const tx = AppState.db.transaction(storeName, 'readwrite'); tx.objectStore(storeName).clear(); tx.oncomplete = resolve; tx.onerror = e => reject(e.target.error); }); }
+    function invalidateCache() { AppState.cachedPRs = null; AppState.cachedHistory = null; AppState.cachedChartData = {}; }
+    async function getHistory() { if (AppState.cachedHistory) return AppState.cachedHistory; try { AppState.cachedHistory = (await dbGetAll('sessions')).sort((a,b)=> b.rd.localeCompare(a.rd)); } catch (e) { console.error("Could not fetch history:", e); AppState.cachedHistory = []; } return AppState.cachedHistory; }
+    async function migrateDataStructures(config) {
+        if (config && config.plan && !Array.isArray(config.plan)) {
+            console.log("Migrating config data structure from object to array...");
+            try {
+                const newPlan = Object.entries(config.plan).map(([name, exercises]) => ({ name, exercises }));
+                const newWarmups = Object.entries(config.warmups || {}).map(([name, items]) => ({ name, items }));
+                const newCooldowns = Object.entries(config.cooldowns || {}).map(([name, items]) => ({ name, items }));
+                config.plan = newPlan;
+                config.warmups = newWarmups;
+                config.cooldowns = newCooldowns;
+                await dbPut('config', config);
+                console.log("Data structure migration successful.");
+                return config;
+            } catch (error) {
+                console.error("Failed to migrate data structures:", error);
+                showToast("Error migrating data.", 5000);
+                return config;
+            }
+        }
+        return config;
+    }
+    async function loadConfig() {
+        let storedConfig = await dbGet('config', 'appConfig');
+        if(storedConfig) storedConfig = await migrateDataStructures(storedConfig);
+        if (storedConfig) {
+            AppState.appConfig = storedConfig;
+            if(!AppState.appConfig.colors) AppState.appConfig.colors = { ...defaultColors };
+            if(!AppState.appConfig.bpm) AppState.appConfig.bpm = constants.DEFAULT_BPM;
+        } else {
+            console.log("Setting up default config...");
+            AppState.appConfig = { id: 'appConfig', plan: defaultPlan, warmups: Object.entries(defaultWarmups).map(([name, items])=>({name, items})), cooldowns: Object.entries(defaultCooldowns).map(([name, items])=>({name, items})), colors: { ...defaultColors }, bpm: constants.DEFAULT_BPM };
+            await dbPut('config', AppState.appConfig);
+        }
+    }
+    async function saveSettings() { await dbPut('config', AppState.appConfig); invalidateCache(); }
+    async function resetSetup() { if(confirm("Reset to factory defaults? All custom plans AND workout history will be lost.")) { try { await Promise.all([dbClear('sessions'), dbClear('config')]); location.reload(); } catch (error) { console.error("Factory reset failed:", error); showToast("Error during reset.", 5000); } } }
+    function showExerciseInfo(exName) { const info = exerciseInfo[exName] || fallbackEx; const modal = document.getElementById('exModal'); modal.querySelector('#modalTitle').innerText = `${info.icon} ${exName}`; modal.querySelector('#modalBadges').innerHTML = info.pri.map(m => `<span class="badge badge-pri">${m}</span>`).join('') + info.sec.map(m => `<span class="badge badge-sec">${m}</span>`).join(''); modal.querySelector('#modalSetup').innerText = info.setup; modal.querySelector('#modalExec').innerText = info.exec; modal.querySelector('#modalMistakes').innerText = info.mistakes; modal.dataset.currentEx = exName; modal.classList.remove('hidden'); }
+    function closeModal() { document.getElementById('exModal').classList.add('hidden'); }
+    async function jumpToProgress() { const exName = document.getElementById('exModal').dataset.currentEx; closeModal(); const cxSel = document.getElementById('cxSel'); if ([...cxSel.options].some(opt => opt.value === exName)) { cxSel.value = exName; await updateCharts(); document.getElementById('progressSection').scrollIntoView({ behavior: 'smooth', block: 'start' }); } else { showToast("No chart data yet.", 3000); } }
+    function renderSetupInputs() { const frag = document.createDocumentFragment(); AppState.appConfig.plan.forEach((day, i) => { const dayName = day.name; const exercises = day.exercises; const id = `setup-day-${i}`, block = document.createElement('div'); block.className = 'ex-block'; block.id = id; const warmupItems = AppState.appConfig.warmups.find(w => w.name === dayName)?.items || []; const cooldownItems = AppState.appConfig.cooldowns.find(c => c.name === dayName)?.items || []; block.innerHTML = `<input data-id="${id}" class="setup-label" value="${dayName}"><textarea data-id="${id}" class="setup-warmup" placeholder="Warmup">${warmupItems.join('\n')}</textarea><textarea data-id="${id}" class="setup-exercises" placeholder="Exercise | Sets | Reps | Lbs | (Optional) Default 1RM">${exercises?.join('\n')||""}</textarea><textarea data-id="${id}" class="setup-cooldown" placeholder="Cooldown">${cooldownItems.join('\n')}</textarea>`; frag.appendChild(block); }); document.getElementById("setupInputs").replaceChildren(frag); }
+    function addDayToSetup() { const setupInputs = document.getElementById("setupInputs"); const id = `setup-day-${setupInputs.children.length}`, newBlock = document.createElement('div'); newBlock.className = 'ex-block'; newBlock.id = id; newBlock.innerHTML = `<input data-id="${id}" class="setup-label" placeholder="New Day Name"><textarea data-id="${id}" class="setup-warmup" placeholder="Warmup"></textarea><textarea data-id="${id}" class="setup-exercises" placeholder="Exercise | Sets | Reps | Lbs | (Optional) Default 1RM"></textarea><textarea data-id="${id}" class="setup-cooldown" placeholder="Cooldown"></textarea>`; setupInputs.appendChild(newBlock); newBlock.querySelector('input').focus(); }
+    async function init(){
+        try {
+            AppState.db = await openDB();
+            AppState.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            await loadConfig();
+            const sel = document.getElementById("daySel"), cSel = document.getElementById("cxSel");
+            sel.innerHTML = AppState.appConfig.plan.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+            cSel.innerHTML = [...new Set((await getHistory()).flatMap(s => s.logs.map(l => l.ex)))].sort().map(ex => `<option value="${ex}">${ex}</option>`).join('');
+            Object.entries(AppState.appConfig.colors).forEach(([key, val]) => document.getElementById(`c-${key}`).value = val);
+            document.getElementById('setup-bpm').value = AppState.appConfig.bpm;
+            document.getElementById('bpmDisplay').textContent = `${AppState.appConfig.bpm} BPM`;
+            document.getElementById('calendar-weekdays').innerHTML = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<div class="calendar-weekday">${d}</div>`).join('');
+            renderSetupInputs();
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            const timerEndTime = localStorage.getItem('timerEndTime');
+            if (timerEndTime) { const rem = Math.round((timerEndTime - Date.now()) / 1000); if (rem > 0) { AppState.timeRemaining = rem; startCountdown(); } else { localStorage.removeItem('timerEndTime'); } updateTimerDisplay(); }
+            await Promise.all([loadDay(), renderCalendar(), updateCharts(), renderPRs()]);
+        } catch (error) { console.error("Initialization failed:", error); document.body.innerHTML = `<div style="color:red;padding:20px;"><h1>Fatal Error</h1><p>Application could not start. Check browser settings (IndexedDB might be blocked).</p><p><strong>Error:</strong> ${error.message}</p></div>`; }
+    }
+    async function saveSetup(){
+        let nP=[],nW=[],nC=[];
+        document.querySelectorAll('#setupInputs .ex-block').forEach(block => { let l=block.querySelector('.setup-label').value.trim(); if(l) { nW.push({ name: l, items: block.querySelector('.setup-warmup').value.split('\n').filter(Boolean) }); nP.push({ name: l, exercises: block.querySelector('.setup-exercises').value.split('\n').filter(Boolean) }); nC.push({ name: l, items: block.querySelector('.setup-cooldown').value.split('\n').filter(Boolean) }); } });
+        AppState.appConfig.plan = nP; AppState.appConfig.warmups = nW; AppState.appConfig.cooldowns = nC;
+        Object.keys(AppState.appConfig.colors).forEach(c => AppState.appConfig.colors[c] = document.getElementById(`c-${c}`).value);
+        const newBPM = parseInt(document.getElementById('setup-bpm').value, 10);
+        AppState.appConfig.bpm = (newBPM >= 40 && newBPM <= 200) ? newBPM : constants.DEFAULT_BPM;
+        await saveSettings();
+        const sel=document.getElementById("daySel"), currentDay = sel.value;
+        sel.innerHTML = AppState.appConfig.plan.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+        sel.value = currentDay;
+        document.getElementById('setup-bpm').value = AppState.appConfig.bpm;
+        document.getElementById('bpmDisplay').textContent = `${AppState.appConfig.bpm} BPM`;
+        document.getElementById('setup').classList.add('hidden');
+        showToast("Configuration saved!", 2000);
+    }
+    function playSound(type, freq, duration, delay=0) { if (!AppState.audioContext) return; const o=AppState.audioContext.createOscillator(), g=AppState.audioContext.createGain(), now = AppState.audioContext.currentTime + delay; o.type = type; o.frequency.setValueAtTime(freq, now); g.gain.setValueAtTime(0.5, now); g.gain.exponentialRampToValueAtTime(.0001, now + duration); o.connect(g); g.connect(AppState.audioContext.destination); o.start(now); o.stop(now + duration); }
+    function showToast(message, duration = 3000) { const t = document.getElementById('toast-notification'); t.textContent = message; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), duration); }
+    function updateTimerDisplay(){document.getElementById("timeDisplay").innerText=`${Math.floor(AppState.timeRemaining/60).toString().padStart(2,'0')}:${(AppState.timeRemaining%60).toString().padStart(2,'0')}`}
+    function startTimerFrom(s){ clearInterval(AppState.timerInterval); AppState.timeRemaining=s; localStorage.setItem('timerEndTime', Date.now() + s * 1000); updateTimerDisplay(); startCountdown(); }
+    function addTime(s) { AppState.timeRemaining += s; if (AppState.timeRemaining < 0) AppState.timeRemaining = 0; localStorage.setItem('timerEndTime', Date.now() + AppState.timeRemaining * 1000); updateTimerDisplay(); if (!AppState.timerInterval && AppState.timeRemaining > 0) startCountdown(); }
+    function resetTimer(){ clearInterval(AppState.timerInterval); AppState.timerInterval=null; AppState.timeRemaining=0; localStorage.removeItem('timerEndTime'); updateTimerDisplay(); }
+    function startCountdown(){if(AppState.timerInterval||AppState.timeRemaining<=0)return;AppState.timerInterval=setInterval(()=>{AppState.timeRemaining--;updateTimerDisplay();if(AppState.timeRemaining<=0){clearInterval(AppState.timerInterval);AppState.timerInterval=null;localStorage.removeItem('timerEndTime');[0,.3,.6].forEach(d=>playSound('sine', 880, 0.2, d));showToast("⏰ Time's up!");}},1000);}
+    function startMetronome() { if (AppState.metronomeInterval) clearInterval(AppState.metronomeInterval); const interval = 60000 / AppState.appConfig.bpm; const playTick = () => playSound('sine', 1200, 0.05); AppState.metronomeInterval = setInterval(playTick, interval); playTick(); AppState.isMetronomeOn = true; document.getElementById('metronomeToggleBtn').style.borderColor = 'var(--grn)'; }
+    function stopMetronome() { clearInterval(AppState.metronomeInterval); AppState.metronomeInterval = null; AppState.isMetronomeOn = false; document.getElementById('metronomeToggleBtn').style.borderColor = 'var(--gold)'; }
+    function toggleMetronome() { AppState.isMetronomeOn ? stopMetronome() : startMetronome(); }
+    function toggleCheck(button){ const row = button.closest('.chk-item,.set-row'), isComplete = button.classList.contains('btn-comp'), textSpan = row.querySelector('span:first-child'), wasActive = button.classList.contains('active'); if (isComplete && !wasActive && row.classList.contains('set-row')) { const repInp = row.querySelector('.rep-input'), wtInp = row.querySelector('.weight-input'); let isValid = true; 
+    const repVal = parseInt(repInp.value.trim());
+    const wtVal = parseInt(wtInp.value.trim());
+    if (isNaN(repVal)) { repInp.classList.add('error-border'); isValid = false; } else { repInp.classList.remove('error-border'); }
+    if (isNaN(wtVal)) { wtInp.classList.add('error-border'); isValid = false; } else { wtInp.classList.remove('error-border'); }
+     if (!isValid) { showToast('Enter valid reps & weight.', 2000); return; } } row.querySelectorAll('.btn-act').forEach(b => b.classList.remove('active')); textSpan?.classList.remove('txt-comp', 'txt-skip'); if (!wasActive) { button.classList.add('active'); textSpan?.classList.add(isComplete ? 'txt-comp' : 'txt-skip'); if (isComplete) startTimerFrom(constants.DEFAULT_REST_TIME); } }
+    function generateRowHTML(ei, si, r = '', w = '', am = false, status = '') { const repValue = am ? '' : r, statusClasses = {completed: {comp: ' active', txt: ' txt-comp'}, skipped: {skip: ' active', txt: ' txt-skip'}}[status] || {}; return `<div class="set-row" id="r-${ei}-${si}"><div class="set-row-main"><span style="width:20px;font-size:12px;color:var(--dim);">S<span class="set-num"></span></span><input type="number" min="1" step="1" inputmode="numeric" class="rep-input" placeholder="${am ? 'AMRAP' : 'Reps'}" value="${repValue}" data-amrap="${am}"><input type="number" min="0" step="1" inputmode="numeric" class="weight-input" placeholder="lbs" value="${w}"></div><div class="check-actions"><button type="button" class="btn-act btn-comp${statusClasses.comp||''}" aria-label="Mark Complete" data-action="toggleCheck">✔</button><button type="button" class="btn-act btn-skip${statusClasses.skip||''}" aria-label="Skip" data-action="toggleCheck">✕</button></div></div>`; }
+    function createCheckItemHTML(item, color, status = '') { const baseName = item.split(/[:(]/)[0].trim(), statusClasses = {completed: 'txt-comp', skipped: 'txt-skip'}[status] || ''; return `<div class="chk-item"><span data-action="showExerciseInfo" data-ex-name="${baseName}" style="cursor:pointer; color:var(--${color}); text-decoration:underline; font-size:15px;" class="${statusClasses}">${item}</span><div class="check-actions"><button type="button" class="btn-act btn-comp${status === 'completed'?' active':''}" aria-label="Mark Complete" data-action="toggleCheck">✔</button><button type="button" class="btn-act btn-skip${status === 'skipped'?' active':''}" aria-label="Skip" data-action="toggleCheck">✕</button></div></div>`; }
+    function addSetRow(button) { const setContainer = button.previousElementSibling; setContainer.insertAdjacentHTML('beforeend', generateRowHTML(setContainer.id.split('-')[1], Date.now())); updateSetNumbers(setContainer); }
+    function updateSetNumbers(container) { container.querySelectorAll('.set-row .set-num').forEach((span, ix) => span.innerText = ix + 1); }
+    function roundToNearest5(n) { return Math.round(n / 5) * 5; }
+    async function loadDay(histData = null) {
+        const day = document.getElementById("daySel").value; if (!day) return;
+        const warmupItems = histData?.warmups || AppState.appConfig.warmups.find(w => w.name === day)?.items || []; document.getElementById("wBox").innerHTML = `<b style="color:#fff">🔥 Warm-up:</b>` + warmupItems.map(item => createCheckItemHTML(histData ? item.name : item, 'red', histData ? item.status : '')).join('');
+        const cooldownItems = histData?.cooldowns || AppState.appConfig.cooldowns.find(c => c.name === day)?.items || []; document.getElementById("cBox").innerHTML = `<b style="color:#fff">❄️ Cool-down:</b>` + cooldownItems.map(item => createCheckItemHTML(histData ? item.name : item, 'blu', histData ? item.status : '')).join('');
+        const pbs = await getPRs(), frag = document.createDocumentFragment(), dayPlan = AppState.appConfig.plan.find(p => p.name === day), itemsToRender = histData ? histData.logs.map(l => ({name: l.ex, log: l})) : (dayPlan?.exercises || []).map(line => ({name: line.split('|')[0].trim(), line}));
+        if (!itemsToRender.length) { const el = document.createElement('div'); el.style = 'text-align:center;color:var(--dim);'; el.innerText = 'Rest Day or Unplanned Session'; frag.appendChild(el); }
+        else {
+            itemsToRender.forEach((item, i) => {
+                const { name, line, log } = item, exBlock = document.createElement('div'), [ , setsStr, repsStr, weightStr, defaultOrmStr] = line ? line.split('|').map(s => s.trim()) : [];
+                const actualORM = pbs[name]?.orm, defaultORM = parseInt(defaultOrmStr), ormToUse = actualORM || defaultORM || 0;
+                let setRowsHTML = log ? log.sets.map((s, j) => generateRowHTML(i, `${Date.now()}${j}`, s.r, s.w, false, s.status)).join('') : (() => { const sets = parseInt(setsStr), weight = parseInt(weightStr), isAmrap = repsStr === 'AMRAP'; if (sets === 3 && !isAmrap && ormToUse > 0) { return [generateRowHTML(i,0,repsStr,roundToNearest5(ormToUse*.33)), generateRowHTML(i,1,repsStr,roundToNearest5(ormToUse*.66)), generateRowHTML(i,2,'',roundToNearest5(ormToUse*.8),true)].join(''); } else { return Array.from({length: sets||1}, (_,j)=>generateRowHTML(i,j, isAmrap?'':repsStr, isAmrap?(ormToUse>0?roundToNearest5(ormToUse*0.75):weight):weight, isAmrap)).join(''); } })();
+                exBlock.className = 'ex-block'; exBlock.dataset.exName = name;
+                exBlock.innerHTML = `<div style="margin-bottom:8px;"><b data-action="showExerciseInfo" data-ex-name="${name}" style="cursor:pointer; color:var(--pur); text-decoration:underline; font-size:16px;">${name}</b><span class="orm-header-badge">${actualORM ? `(1RM: ${actualORM}lbs)` : (defaultORM ? `(Default: ${defaultORM}lbs)` : '')}</span><span style="float:right;font-size:11px;color:var(--gold);">${pbs[name] ? `🏆 PR: ${pbs[name].w}x${pbs[name].r}` : ''}</span></div><div id="s-${i}">${setRowsHTML}</div><button data-action="addSetRow" style="width:auto; padding: 4px 10px; font-size:12px; margin-top:5px; background:#333;">+ Add Set</button>`;
+                frag.appendChild(exBlock);
             });
         }
-
-        function processAndStoreWorkouts(data, fromNetwork = false) {
-            workoutsData = data;
-            workoutDataMap.clear();
-            workoutsData.forEach(routine => workoutDataMap.set(routine.routine_name, routine.exercises));
-            populateRoutines(workoutsData);
-
-            if (fromNetwork) {
-                const writeTransaction = db.transaction('workouts', 'readwrite');
-                const writeStore = writeTransaction.objectStore('workouts');
-                workoutsData.forEach(routine => writeStore.put(routine));
+        document.getElementById("form").replaceChildren(frag);
+        document.querySelectorAll('[id^="s-"]').forEach(updateSetNumbers);
+    }
+    function buildSessionObject() { let isValid = true; let session = { rd: document.getElementById("date").value, day: document.getElementById("daySel").value, logs: [], warmups: [], cooldowns: [] }; const getStatus = item => item.querySelector('.btn-comp.active') ? 'completed' : (item.querySelector('.btn-skip.active') ? 'skipped' : null); document.querySelectorAll('#wBox .chk-item, #cBox .chk-item').forEach(item => { const status = getStatus(item); if (status) session[item.parentElement.id === 'wBox' ? 'warmups' : 'cooldowns'].push({ name: item.querySelector('span').innerText, status }); }); document.querySelectorAll('.ex-block[data-ex-name]').forEach(block => { let log = { ex: block.dataset.exName, sets: [] }; block.querySelectorAll('.set-row').forEach(row => { const status = getStatus(row); if (!status) return; const reps = parseInt(row.querySelector('.rep-input').value), weight = parseInt(row.querySelector('.weight-input').value); if (status === 'completed' && (!Number.isInteger(reps) || !Number.isInteger(weight))) { isValid = false; if (!Number.isInteger(reps)) row.querySelector('.rep-input').classList.add('error-border'); if (!Number.isInteger(weight)) row.querySelector('.weight-input').classList.add('error-border'); } else { log.sets.push({ r: reps || 0, w: weight || 0, orm: Math.round((weight || 0) * (1 + (reps || 0) / 30)), status }); } }); if (log.sets.length) session.logs.push(log); }); if (!isValid) { showToast("Validation failed.", 3000); return null; } return session; }
+    async function saveWorkoutSession(){ const session = buildSessionObject(); if(!session) return; if(!session.logs.length && !session.warmups.length && !session.cooldowns.length) { return showToast("Mark at least one item to save.", 3000); } try { await dbPut('sessions', session); invalidateCache(); resetTimer(); 
+    const dayIndex = AppState.appConfig.plan.findIndex(p => p.name === session.day);
+        if (dayIndex > -1) {
+            const [completedDay] = AppState.appConfig.plan.splice(dayIndex, 1);
+            AppState.appConfig.plan.push(completedDay);
+            const warmupIndex = AppState.appConfig.warmups.findIndex(w => w.name === session.day);
+            if (warmupIndex > -1) {
+                const [completedWarmup] = AppState.appConfig.warmups.splice(warmupIndex, 1);
+                AppState.appConfig.warmups.push(completedWarmup);
             }
-        }
-
-        function loadWorkouts() {
-            const errorDiv = document.getElementById('data-fetch-error');
-            errorDiv.style.display = 'none';
-
-            const transaction = db.transaction('workouts', 'readonly');
-            const store = transaction.objectStore('workouts');
-            const getAllRequest = store.getAll();
-            
-            getAllRequest.onsuccess = () => {
-                if (getAllRequest.result && getAllRequest.result.length > 0) {
-                    processAndStoreWorkouts(getAllRequest.result, false);
-                }
-                
-                fetch('workouts.json')
-                    .then(response => {
-                        if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-                        return response.json();
-                    })
-                    .then(data => {
-                        processAndStoreWorkouts(data, true);
-                    })
-                    .catch(error => {
-                        console.error('Failed to fetch workouts from network:', error);
-                        if (!workoutsData || workoutsData.length === 0) {
-                            errorDiv.textContent = 'Error: Could not load workout routines. Please check your connection and refresh.';
-                            errorDiv.style.display = 'block';
-                        }
-                    });
-            };
-            getAllRequest.onerror = () => {
-                 errorDiv.textContent = 'Error: Could not load workout routines from the database.';
-                 errorDiv.style.display = 'block';
-            };
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            initDB().then(() => {
-                loadWorkouts(); 
-                displayLogs();
-            }).catch(error => {
-                console.error('Failed to initialize database:', error);
-                const errorDiv = document.getElementById('data-fetch-error');
-                errorDiv.textContent = 'Critical Error: Application database could not be opened. Please try clearing site data.';
-                errorDiv.style.display = 'block';
-                document.getElementById('routine-select').disabled = true;
-            });
-            
-            updateTimerDisplay();
-            
-            document.getElementById('add-minute-timer-btn').addEventListener('click', addMinuteToTimer);
-            document.getElementById('metronome-btn').addEventListener('click', toggleMetronome);
-            document.getElementById('routine-select').addEventListener('change', generateRoutineForm);
-            document.getElementById('cancel-button').addEventListener('click', cancelEdit);
-            document.getElementById('export-csv-btn').addEventListener('click', exportLogsToCSV);
-            document.getElementById('import-csv-btn').addEventListener('click', () => document.getElementById('csv-file-input').click());
-            document.getElementById('csv-file-input').addEventListener('change', importLogsFromCSV);
-            document.getElementById('view-history-btn').addEventListener('click', showHistory);
-            document.getElementById('delete-all-btn').addEventListener('click', deleteAllLogs);
-
-            document.getElementById('prev-month-btn').addEventListener('click', () => {
-                currentHistoryMonth--;
-                if (currentHistoryMonth < 0) {
-                    currentHistoryMonth = 11;
-                    currentHistoryYear--;
-                }
-                renderCalendar();
-            });
-
-            document.getElementById('next-month-btn').addEventListener('click', () => {
-                currentHistoryMonth++;
-                if (currentHistoryMonth > 11) {
-                    currentHistoryMonth = 0;
-                    currentHistoryYear++;
-                }
-                renderCalendar();
-            });
-
-            document.getElementById('edit-form').addEventListener('submit', (event) => {
-                event.preventDefault();
-                updateLog();
-            });
-            
-            document.querySelectorAll('.modal .modal-close-button').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    event.target.closest('.modal').style.display = 'none';
-                });
-            });
-            
-            document.getElementById('routine-form-container').addEventListener('click', (event) => {
-                const target = event.target;
-                if (target.tagName === 'STRONG' && target.dataset.action === 'showDetails') {
-                    showExerciseDetails(target.dataset.routine, target.dataset.exerciseIndex);
-                }
-                if (target.tagName === 'BUTTON' && target.dataset.action === 'logSet') {
-                    logSet(target, target.dataset.exerciseIndex, target.dataset.setIndex, target.dataset.exerciseName);
-                }
-            });
-            
-            document.getElementById('logContainer').addEventListener('click', (event) => {
-                const target = event.target;
-                if (target.dataset.action === 'showSummary') {
-                    showProgressSummary(target.dataset.exerciseName);
-                }
-            });
-
-            document.getElementById('calendar-container').addEventListener('click', (event) => {
-                const target = event.target.closest('td');
-                if (target && target.dataset.date) {
-                    showDayDetails(target.dataset.date, target);
-                }
-            });
-
-            document.getElementById('calendar-day-details').addEventListener('click', (event) => {
-                const target = event.target;
-                if (target.dataset.action === 'editLog') {
-                    document.getElementById('history-modal').style.display = 'none';
-                    editLog(target.dataset.key);
-                } else if (target.dataset.action === 'deleteLog') {
-                    deleteLog(target.dataset.key);
-                }
-            });
-        });
-
-        function playMetronomeTick() {
-            if (!audioContext) return;
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-
-            oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
-            gainNode.gain.setValueAtTime(1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.05);
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.05);
-        }
-
-        function toggleMetronome() {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const cooldownIndex = AppState.appConfig.cooldowns.findIndex(c => c.name === session.day);
+            if (cooldownIndex > -1) {
+                const [completedCooldown] = AppState.appConfig.cooldowns.splice(cooldownIndex, 1);
+                AppState.appConfig.cooldowns.push(completedCooldown);
             }
-
-            isMetronomeOn = !isMetronomeOn;
-            const metronomeBtn = document.getElementById('metronome-btn');
-
-            if (isMetronomeOn) {
-                metronomeBtn.classList.add('metronome-on');
-                playMetronomeTick(); 
-                metronomeInterval = setInterval(playMetronomeTick, 1000); 
-            } else {
-                metronomeBtn.classList.remove('metronome-on');
-                clearInterval(metronomeInterval);
-                metronomeInterval = null;
-            }
+            await saveSettings();
+            const sel = document.getElementById("daySel");
+            sel.innerHTML = AppState.appConfig.plan.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
         }
-
-        function updateTimerDisplay() {
-            const minutes = Math.floor(remainingTime / 60);
-            const seconds = remainingTime % 60;
-            document.getElementById('timer-display').textContent = 
-                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        }
-        
-        function startTimerCountdown() {
-            if (isTimerRunning) return;
-            isTimerRunning = true;
-
-            timerInterval = setInterval(() => {
-                remainingTime--;
-                updateTimerDisplay();
-
-                if (remainingTime <= 0) {
-                    clearInterval(timerInterval);
-                    isTimerRunning = false;
-                    remainingTime = 0;
-                    updateTimerDisplay();
-                    showToast("Rest period is over!");
-                }
-            }, 1000);
-        }
-
-        function addMinuteToTimer() {
-            remainingTime += 60;
-            updateTimerDisplay();
-            if (!isTimerRunning && remainingTime > 0) {
-                startTimerCountdown();
-            }
-        }
-
-        function resetAndStartTimer(duration) {
-            clearInterval(timerInterval);
-            isTimerRunning = false;
-            remainingTime = duration;
-            updateTimerDisplay();
-            startTimerCountdown();
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toast-notification');
-            toast.textContent = message;
-            toast.className = 'show';
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
-                toast.className = toast.className.replace('show', '');
-            }, 3000);
-        }
-
-        function populateRoutines(data) {
-            const routineSelect = document.getElementById('routine-select');
-            if (!routineSelect) return;
-            
-            const currentVal = routineSelect.value;
-            routineSelect.innerHTML = '<option value="">Select Routine</option>';
-            
-            data.forEach(routine => {
-                const option = document.createElement('option');
-                option.value = routine.routine_name;
-                option.textContent = routine.routine_name;
-                routineSelect.appendChild(option);
-            });
-            
-            if (currentVal && workoutDataMap.has(currentVal)) {
-                routineSelect.value = currentVal;
-            }
-
-            routineSelect.disabled = false;
-        }
-
-        function getMostRecent1RM(exerciseName) {
-            return new Promise((resolve) => {
-                const transaction = db.transaction('logs', 'readonly');
-                const store = transaction.objectStore('logs');
-                const index = store.index('exercise');
-                const request = index.getAll(exerciseName);
-
-                request.onsuccess = () => {
-                    const logs = request.result;
-                    if (logs && logs.length > 0) {
-                        logs.sort((a, b) => b.timestamp - a.timestamp);
-                        resolve(logs[0].est1RM);
-                    } else {
-                        resolve(null);
-                    }
-                };
-                request.onerror = () => resolve(null);
-            });
-        }
-
-        async function generateRoutineForm() {
-            const selectedRoutineName = document.getElementById('routine-select').value;
-            const formContainer = document.getElementById('routine-form-container');
-            formContainer.innerHTML = '';
-
-            if (!selectedRoutineName) return;
-            const exercises = workoutDataMap.get(selectedRoutineName);
-            if (!exercises) return;
-
-            const sections = { 'Warm-up': '', 'Lifts': '', 'Cool-down': '' };
-
-            for (let index = 0; index < exercises.length; index++) {
-                const exercise = exercises[index];
-                const sanitizedExerciseName = exercise.exercise_name.replace(/'/g, "\\'");
-                const detailsAttr = `data-action="showDetails" data-routine="${selectedRoutineName}" data-exercise-index="${index}"`;
-                
-                let recent1RMHtml = '';
-                if (exercise.category === 'Main Lift' || exercise.category === 'Isolation Lift') {
-                    const recent1RM = await getMostRecent1RM(exercise.exercise_name);
-                    if (recent1RM) {
-                        recent1RMHtml = `<span id="recent-1rm-${index}" class="recent-1rm-badge">1RM: ${recent1RM}</span>`;
-                    } else {
-                        recent1RMHtml = `<span id="recent-1rm-${index}" class="recent-1rm-badge" style="display:none;"></span>`;
-                    }
-                }
-
-                if (exercise.category === 'Warm-up') {
-                    sections['Warm-up'] += `<div class="warmup-entry"><strong ${detailsAttr}>${exercise.exercise_name}</strong></div>`;
-                } else if (exercise.category === 'Main Lift' || exercise.category === 'Isolation Lift') {
-                    let liftHtml = `<div class="log-entry"><strong ${detailsAttr}>${exercise.exercise_name}</strong>${recent1RMHtml}`;
-                    const numSets = exercise.category === 'Main Lift' ? 3 : 1;
-
-                    for (let i = 0; i < numSets; i++) {
-                        const logBtnAttr = `data-action="logSet" data-exercise-index="${index}" data-set-index="${i}" data-exercise-name="${sanitizedExerciseName}"`;
-                        liftHtml += `<div class="lift-form-row">
-                                        <input type="number" id="weight-${index}-${i}" min="0" step="any" placeholder="Weight (lbs)">
-                                        <input type="number" id="reps-${index}-${i}" min="1" step="1" placeholder="Reps">
-                                        <button class="checkmark-btn" aria-label="Log Set" ${logBtnAttr}>&#10004;</button>
-                                     </div>`;
-                    }
-                    liftHtml += `</div>`;
-                    sections['Lifts'] += liftHtml;
-                } else if (exercise.category === 'Cool-down') {
-                    sections['Cool-down'] += `<div class="warmup-entry"><strong ${detailsAttr}>${exercise.exercise_name}</strong></div>`;
-                }
-            }
-
-            let finalHtml = '';
-            if (sections['Warm-up']) finalHtml += `<div class="warmup-section">${sections['Warm-up']}</div>`;
-            if (sections['Lifts']) finalHtml += `<div class="lifts-section">${sections['Lifts']}</div>`;
-            if (sections['Cool-down']) finalHtml += `<div class="cooldown-section">${sections['Cool-down']}</div>`;
-            formContainer.innerHTML = finalHtml;
-        }
-
-        function getFormattedDate() {
-            const d = new Date();
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-        
-        async function logSet(buttonElement, exerciseIndex, setIndex, exerciseName) {
-            const weightInput = document.getElementById(`weight-${exerciseIndex}-${setIndex}`);
-            const repsInput = document.getElementById(`reps-${exerciseIndex}-${setIndex}`);
-            if (!weightInput || !repsInput) return;
-
-            const weight = parseFloat(weightInput.value);
-            const reps = parseInt(repsInput.value, 10);
-
-            if (!exerciseName || isNaN(weight) || weight < 0 || isNaN(reps) || !Number.isInteger(reps) || reps < 1) {
-                showToast("Please enter a valid, positive number for weight and a positive whole number for reps.");
-                return;
-            }
-
-            const est1RM = calculate1RM(weight, reps);
-            const logEntry = { timestamp: Date.now(), date: getFormattedDate(), exercise: exerciseName, weight: weight, reps: reps, est1RM: est1RM };
-            
-            const transaction = db.transaction(['logs'], 'readwrite');
-            const logsStore = transaction.objectStore('logs');
-            const addRequest = logsStore.add(logEntry);
-
-            addRequest.onsuccess = () => {
-                showToast("Set logged!");
-                displayLogs();
-                resetAndStartTimer(60);
-                weightInput.disabled = true;
-                repsInput.disabled = true;
-                weightInput.style.backgroundColor = "#222";
-                repsInput.style.backgroundColor = "#222";
-                buttonElement.disabled = true;
-
-                const badge = document.getElementById(`recent-1rm-${exerciseIndex}`);
-                if (badge) {
-                    badge.textContent = `1RM: ${est1RM}`;
-                    badge.style.display = 'inline-block';
-                }
-            };
-            addRequest.onerror = () => showToast('Error logging set.');
-        }
-
-        function showExerciseDetails(routineName, exerciseIndex) {
-            const exercises = workoutDataMap.get(routineName);
-            const exercise = exercises ? exercises[exerciseIndex] : null;
-            if (!exercise) return;
-
-            const titleEl = document.getElementById('details-title');
-            titleEl.innerHTML = `${exercise.exercise_name} <span class="modal-category">(${exercise.category})</span>`;
-
-            const contentEl = document.getElementById('details-content');
-            const targetsHtml = exercise.targets.map(t => `<div>${t}</div>`).join('');
-            const howToHtml = `<ol><li>${exercise.how_to.join('</li><li>')}</li></ol>`;
-
-            contentEl.innerHTML = `
-                <div class="modal-section"><span class="modal-section-title">Targets:</span><div class="modal-section-content">${targetsHtml}</div></div>
-                <div class="modal-section"><span class="modal-section-title">Biomechanics:</span><div class="modal-section-content">${exercise.biomechanics}</div></div>
-                <div class="modal-section"><span class="modal-section-title">How To:</span><div class="modal-section-content">${howToHtml}</div></div>
-                <div id="modal-history-section" class="modal-section" style="display: none;">
-                    <span class="modal-section-title">Personal History:</span>
-                    <div class="modal-section-content" id="modal-history-content"></div>
-                </div>`;
-
-            document.getElementById('exercise-details-modal').style.display = 'block';
-
-            const transaction = db.transaction('logs', 'readonly');
-            const store = transaction.objectStore('logs');
-            const index = store.index('exercise');
-            const getLogsRequest = index.getAll(exercise.exercise_name);
-
-            getLogsRequest.onsuccess = () => {
-                const logs = getLogsRequest.result;
-                if (logs && logs.length > 0) {
-                    logs.sort((a, b) => b.timestamp - a.timestamp);
-                    const latest = logs[0];
-                    const best = logs.reduce((prev, current) => (prev.est1RM > current.est1RM) ? prev : current);
-                    
-                    const historyContainer = document.getElementById('modal-history-section');
-                    const historyContent = document.getElementById('modal-history-content');
-                    
-                    historyContent.innerHTML = `
-                        <div style="margin-bottom: 8px;"><strong>All-Time Best:</strong> ${best.weight} lbs x ${best.reps} reps (Est. 1RM: <span class="rm-highlight">${best.est1RM}</span>) on ${best.date}</div>
-                        <div><strong>Most Recent Session:</strong> ${latest.weight} lbs x ${latest.reps} reps (Est. 1RM: <span class="rm-highlight">${latest.est1RM}</span>) on ${latest.date}</div>`;
-                    historyContainer.style.display = 'block';
-                }
-            };
-        }
-        
-        function calculate1RM(weight, reps) {
-            if (reps <= 0) return 0;
-            if (reps === 1) return weight;
-            let est1RM;
-            if (reps > 0 && reps <= 10) {
-                est1RM = weight * (1 + (reps / 30));
-            } else { 
-                est1RM = weight / (1.0278 - (0.0278 * reps));
-            }
-            return Math.round(est1RM);
-        }
-
-        function displayLogs() {
-            const transaction = db.transaction('logs', 'readonly');
-            const store = transaction.objectStore('logs');
-            const getAllRequest = store.getAll();
-
-            getAllRequest.onsuccess = () => {
-                const allLogs = getAllRequest.result;
-                const container = document.getElementById('logContainer');
-
-                if (allLogs.length === 0) {
-                    container.innerHTML = "No sets logged yet.";
-                    return;
-                }
-
-                const bestLogs = new Map();
-                allLogs.forEach(log => {
-                    if (!bestLogs.has(log.exercise) || log.est1RM > bestLogs.get(log.exercise).est1RM) {
-                        bestLogs.set(log.exercise, log);
-                    }
-                });
-
-                const sortedBestLogs = Array.from(bestLogs.values()).sort((a, b) => b.timestamp - a.timestamp);
-
-                container.innerHTML = sortedBestLogs.map(log => {
-                    const safeExerciseName = log.exercise.replace(/'/g, "\\'");
-                    return `
-                    <div class="log-entry">
-                        <strong><span style="color: #d4af37; cursor: pointer;" data-action="showSummary" data-exercise-name="${safeExerciseName}">${log.exercise}</span></strong><br>
-                        <span class="rm-highlight">Best 1RM: ${log.est1RM}</span>
-                    </div>`;
-                }).join('');
-            };
-        }
-
-        function deleteLog(key) {
-            if (!confirm('Are you sure you want to delete this log?')) return;
-            const keyNum = parseInt(key, 10);
-            
-            const transaction = db.transaction(['logs'], 'readwrite');
-            const logsStore = transaction.objectStore('logs');
-            logsStore.delete(keyNum).onsuccess = () => {
-                displayLogs();
-                if (document.getElementById('history-modal').style.display === 'block') {
-                    showHistory();
-                }
-                showToast('Log deleted.');
-            };
-        }
-
-        function deleteAllLogs() {
-            if (!confirm('Are you ABSOLUTELY sure you want to delete ALL of your workout logs? This action cannot be undone.')) return;
-            
-            const transaction = db.transaction(['logs'], 'readwrite');
-            const logsStore = transaction.objectStore('logs');
-            logsStore.clear();
-
-            transaction.oncomplete = () => {
-                displayLogs();
-                showToast('All logs have been permanently deleted.');
-            };
-
-            transaction.onerror = () => {
-                showToast('Error deleting all logs.');
-            };
-        }
-
-        function editLog(key) {
-            const keyNum = parseInt(key, 10);
-            const transaction = db.transaction('logs', 'readonly');
-            const store = transaction.objectStore('logs');
-            const getRequest = store.get(keyNum);
-            getRequest.onsuccess = () => {
-                const log = getRequest.result;
-                document.getElementById('edit-exercise').value = log.exercise;
-                document.getElementById('edit-weight').value = log.weight;
-                document.getElementById('edit-reps').value = log.reps;
-                document.getElementById('edit-key').value = log.id;
-                document.getElementById('edit-log-container').style.display = 'block';
-                window.scrollTo(0, 0);
-            };
-        }
-
-        function cancelEdit() { document.getElementById('edit-log-container').style.display = 'none'; }
-
-        function updateLog() {
-            const weight = parseFloat(document.getElementById('edit-weight').value);
-            const reps = parseInt(document.getElementById('edit-reps').value, 10);
-            const key = parseInt(document.getElementById('edit-key').value, 10);
-            
-            if (isNaN(weight) || weight < 0 || isNaN(reps) || !Number.isInteger(reps) || reps < 1) {
-                showToast("Please enter a valid, positive number for weight and a positive whole number for reps.");
-                return;
-            }
-            
-            const transaction = db.transaction('logs', 'readwrite');
-            const logsStore = transaction.objectStore('logs');
-            const getRequest = logsStore.get(key);
-
-            getRequest.onsuccess = () => {
-                const logToUpdate = getRequest.result;
-                logToUpdate.weight = weight;
-                logToUpdate.reps = reps;
-                logToUpdate.est1RM = calculate1RM(weight, reps);
-
-                logsStore.put(logToUpdate).onsuccess = () => {
-                    displayLogs();
-                    cancelEdit();
-                    showToast('Set updated successfully!');
-                };
-            };
-        }
-    
-        function showProgressSummary(exerciseName) {
-            const transaction = db.transaction('logs', 'readonly');
-            const store = transaction.objectStore('logs');
-            const index = store.index('exercise');
-            const getAllRequest = index.getAll(exerciseName);
-
-            getAllRequest.onsuccess = () => {
-                const logs = getAllRequest.result;
-                if (logs.length < 1) { showToast("No data available for this exercise."); return; }
-
-                logs.sort((a, b) => a.timestamp - b.timestamp);
-
-                const bestSet = logs.reduce((prev, current) => (prev.est1RM > current.est1RM) ? prev : current);
-                const latestSet = logs[logs.length - 1];
-
-                document.getElementById('summary-title').textContent = `${exerciseName} Progress`;
-                
-                const dailyBestLogs = new Map();
-                logs.forEach(log => {
-                    const existingLog = dailyBestLogs.get(log.date);
-                    if (!existingLog || log.weight > existingLog.weight) {
-                        dailyBestLogs.set(log.date, log);
-                    }
-                });
-
-                const filteredSortedLogs = Array.from(dailyBestLogs.values()).sort((a, b) => b.timestamp - a.timestamp);
-
-                let historyHtml = '<div class="summary-section" style="max-height: 200px; overflow-y: auto; margin-top: 15px; border-top: 1px solid #444; padding-top: 10px;"><strong>Chronological History (Best Set per Day)</strong><ul style="list-style-type: none; padding: 0; margin: 10px 0;">';
-                filteredSortedLogs.forEach(log => {
-                    historyHtml += `<li style="margin-bottom: 5px; font-size: 0.9em;">${log.date}: ${log.weight} lbs x ${log.reps} reps <span class="rm-highlight">(1RM: ${log.est1RM})</span></li>`;
-                });
-                historyHtml += '</ul></div>';
-
-                const contentEl = document.getElementById('summary-content');
-                contentEl.innerHTML = `
-                    <div class="summary-section">
-                        <strong>Best vs. Latest (Est. 1RM)</strong><br>
-                        All-Time Best: <span class="rm-highlight">${bestSet.est1RM}</span><br>
-                        Most Recent: <span class="rm-highlight">${latestSet.est1RM}</span>
-                    </div>
-                    <div class="summary-section">
-                        <strong>Set Details</strong><br>
-                        <small>Best: ${bestSet.weight} lbs x ${bestSet.reps} reps (on ${bestSet.date})</small><br>
-                        <small>Latest: ${latestSet.weight} lbs x ${latestSet.reps} reps (on ${latestSet.date})</small>
-                    </div>
-                    ${historyHtml}`;
-                document.getElementById('progress-summary-modal').style.display = 'block';
-            };
-            getAllRequest.onerror = () => {
-                showToast("Could not retrieve progress data.");
-            }
-        }
-        
-        function parseDateString(dateStr) {
-            if (dateStr.includes('-')) {
-                const [y, m, d] = dateStr.split('-');
-                return new Date(y, m - 1, d);
-            } else {
-                const [m, d, y] = dateStr.split('/');
-                return new Date(y, m - 1, d);
-            }
-        }
-
-        function renderCalendar() {
-            const container = document.getElementById('calendar-container');
-            const monthDisplay = document.getElementById('current-month-display');
-            const detailsContainer = document.getElementById('calendar-day-details');
-            detailsContainer.innerHTML = '<p style="color: #aaa; text-align: center;">Click a day with a dot to view workouts.</p>';
-
-            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            monthDisplay.textContent = `${monthNames[currentHistoryMonth]} ${currentHistoryYear}`;
-
-            let html = '<table class="calendar-table"><thead><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr></thead><tbody><tr>';
-            
-            const firstDay = new Date(currentHistoryYear, currentHistoryMonth, 1).getDay();
-            const daysInMonth = new Date(currentHistoryYear, currentHistoryMonth + 1, 0).getDate();
-
-            for (let i = 0; i < firstDay; i++) {
-                html += '<td class="empty-cell"></td>';
-            }
-
-            let dayOfWeek = firstDay;
-            for (let day = 1; day <= daysInMonth; day++) {
-                if (dayOfWeek === 7) {
-                    html += '</tr><tr>';
-                    dayOfWeek = 0;
-                }
-                
-                const mm = String(currentHistoryMonth + 1).padStart(2, '0');
-                const dd = String(day).padStart(2, '0');
-                const dateKey = `${currentHistoryYear}-${mm}-${dd}`;
-                
-                const hasWorkout = groupedHistoryLogs[dateKey] && groupedHistoryLogs[dateKey].length > 0;
-                const dotHtml = hasWorkout ? '<br><span class="workout-dot"></span>' : '';
-                
-                html += `<td data-date="${dateKey}">${day}${dotHtml}</td>`;
-                dayOfWeek++;
-            }
-
-            while (dayOfWeek < 7) {
-                html += '<td class="empty-cell"></td>';
-                dayOfWeek++;
-            }
-
-            html += '</tr></tbody></table>';
-            container.innerHTML = html;
-        }
-
-        function showDayDetails(dateKey, cellElement) {
-            document.querySelectorAll('.calendar-table td').forEach(td => td.classList.remove('selected-day'));
-            if(cellElement) cellElement.classList.add('selected-day');
-
-            const detailsContainer = document.getElementById('calendar-day-details');
-            const logsForDate = groupedHistoryLogs[dateKey];
-
-            if (!logsForDate || logsForDate.length === 0) {
-                detailsContainer.innerHTML = `<p style="text-align: center; color: #aaa;">No workouts recorded on ${dateKey}.</p>`;
-                return;
-            }
-
-            let html = `<div class="history-date-group"><h3 style="margin-top:0;">Workouts for ${dateKey}</h3>`;
-            html += logsForDate.map(log => {
-                return `<div class="history-log-entry" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 8px;">
-                            <div>
-                                <strong>${log.exercise}</strong>: ${log.weight} lbs x ${log.reps} reps 
-                                <span class="rm-highlight">(1RM: ${log.est1RM})</span>
-                            </div>
-                            <div>
-                                <button class="calendar-btn" data-action="editLog" data-key="${log.id}" style="padding: 4px 8px; font-size: 0.8em; margin-right: 5px;">Edit</button>
-                                <button class="calendar-btn" data-action="deleteLog" data-key="${log.id}" style="padding: 4px 8px; font-size: 0.8em; background-color: #8b0000; border-color: #aa0000;">Delete</button>
-                            </div>
-                        </div>`;
-            }).join('');
-            html += `</div>`;
-            detailsContainer.innerHTML = html;
-        }
-
-        function showHistory() {
-            const transaction = db.transaction('logs', 'readonly');
-            const store = transaction.objectStore('logs');
-            const getAllRequest = store.getAll();
-
-            getAllRequest.onsuccess = () => {
-                const logs = getAllRequest.result.sort((a, b) => b.timestamp - a.timestamp);
-                
-                groupedHistoryLogs = {};
-                logs.forEach(log => {
-                    const d = parseDateString(log.date);
-                    const yyyy = d.getFullYear();
-                    const mm = String(d.getMonth() + 1).padStart(2, '0');
-                    const dd = String(d.getDate()).padStart(2, '0');
-                    const key = `${yyyy}-${mm}-${dd}`;
-                    if (!groupedHistoryLogs[key]) groupedHistoryLogs[key] = [];
-                    groupedHistoryLogs[key].push(log);
-                });
-
-                currentHistoryYear = new Date().getFullYear();
-                currentHistoryMonth = new Date().getMonth();
-                
-                renderCalendar();
-                document.getElementById('history-modal').style.display = 'block';
-            };
-            getAllRequest.onerror = () => showToast("Could not retrieve workout history.");
-        }
-        
-        function exportLogsToCSV() {
-            const transaction = db.transaction('logs', 'readonly');
-            const store = transaction.objectStore('logs');
-            const getAllRequest = store.getAll();
-
-            getAllRequest.onsuccess = () => {
-                const logs = getAllRequest.result;
-                if (logs.length === 0) {
-                    showToast("No logs to export.");
-                    return;
-                }
-
-                const headers = ['timestamp', 'date', 'exercise', 'weight', 'reps', 'est1RM'];
-                const csvRows = [headers.join(',')];
-                
-                logs.forEach(log => {
-                    const values = headers.map(header => {
-                        const escaped = ('' + log[header]).replace(/"/g, '\\"');
-                        return `"${escaped}"`;
-                    });
-                    csvRows.push(values.join(','));
-                });
-
-                const csvString = csvRows.join('\n');
-                const blob = new Blob([csvString], { type: 'text/csv' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.setAttribute('href', url);
-                a.setAttribute('download', `workout-tracker-logs-${new Date().toISOString().slice(0, 10)}.csv`);
-                a.click();
-                showToast("Logs exported successfully.");
-            };
-            getAllRequest.onerror = () => showToast("Error exporting logs.");
-        }
-
-        function importLogsFromCSV(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const text = e.target.result;
-                const lines = text.split('\n');
-                const headerRow = lines[0].trim().replace(/"/g, '');
-                const expectedHeaders = 'timestamp,date,exercise,weight,reps,est1RM';
-
-                if (headerRow !== expectedHeaders) {
-                    showToast("Invalid CSV headers. Please use the correct format.");
-                    return;
-                }
-
-                const rows = lines.slice(1);
-                if (rows.length === 0) {
-                    showToast("CSV file has no data rows.");
-                    return;
-                }
-
-                const transaction = db.transaction(['logs'], 'readwrite');
-                const logsStore = transaction.objectStore('logs');
-                let importedCount = 0;
-
-                rows.forEach(row => {
-                    if (row.trim() === '') return;
-                    const values = row.split(',').map(v => v.trim().replace(/"/g, ''));
-                    const log = {
-                        timestamp: parseInt(values[0], 10),
-                        date: values[1],
-                        exercise: values[2],
-                        weight: parseFloat(values[3]),
-                        reps: parseInt(values[4], 10),
-                        est1RM: parseInt(values[5], 10)
-                    };
-
-                    if (!isNaN(log.timestamp) && log.exercise && !isNaN(log.weight) && !isNaN(log.reps)) {
-                        logsStore.add(log);
-                        importedCount++;
-                    }
-                });
-
-                transaction.oncomplete = () => {
-                    displayLogs();
-                    showToast(`${importedCount} logs imported successfully!`);
-                };
-                transaction.onerror = () => showToast("Error importing logs.");
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        }
-
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); }); }
-    </script>
+     } catch (error) { console.error("Failed to save session:", error); showToast("Error saving session.", 3000); return; } if (AppState.editIndex !== null) cancelEdit(); await Promise.all([loadDay(), renderCalendar(), updateCharts(), renderPRs()]); }
+    function createHistoryCardHTML(session) { let totalVol = session.logs.reduce((v, l) => v + l.sets.reduce((sv, s) => sv + (s.r * s.w), 0), 0); const wu = (session.warmups||[]).filter(i=>i.status==='completed').map(i => `<li><span style="color:var(--red);">🔥 ${i.name}</span></li>`).join(""); const cd = (session.cooldowns||[]).filter(i=>i.status==='completed').map(i => `<li><span style="color:var(--blu);">❄️ ${i.name}</span></li>`).join(""); const logs = session.logs.map(l => { const sets = l.sets.filter(s=>s.status==='completed').map(s => `<span style="color:var(--pur);">${s.r}x${s.w}</span>`).join(", "); return sets ? `<li><b style="color:var(--pur);">${l.ex}</b>: ${sets}</li>` : ''; }).join(""); const volCol = AppState.appConfig.colors.dayVol, card = document.createElement('div'); card.className = 'history-card'; card.dataset.rd = session.rd; card.innerHTML = `<b>📅 ${new Date(session.rd + 'T00:00:00').toLocaleDateString()} - ${session.day}</b><span style="color:${volCol};background:${volCol}33; float:right; padding: 2px 6px; border-radius: 4px;">${totalVol.toLocaleString()} lbs</span><ul>${wu}${logs}${cd}</ul><div class="flex-row" style="margin-top:10px;"><button data-action="editWorkout" data-rd="${session.rd}" style="background:#f39c12;min-height:44px;">Edit</button><button data-action="deleteWorkout" data-rd="${session.rd}" style="background:var(--red);min-height:44px;">Delete</button></div>`; return card; }
+    async function renderCalendar() { const history = await getHistory(), workoutDates = new Set(history.map(s => s.rd)), frag = document.createDocumentFragment(), { year, month } = { year: AppState.calendarDate.getFullYear(), month: AppState.calendarDate.getMonth() }; document.getElementById('calendar-month-year').textContent = `${AppState.calendarDate.toLocaleString('default', { month: 'long' })} ${year}`; const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(), todayStr = new Date().toISOString().split('T')[0]; for (let i = 0; i < firstDay; i++) { const el = document.createElement('div'); el.className = 'calendar-day other-month'; frag.appendChild(el); } for (let day = 1; day <= daysInMonth; day++) { const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`, el = document.createElement('div'); el.className = 'calendar-day'; if (dateStr === todayStr) el.classList.add('today'); el.dataset.action = 'showHistoryDetail'; el.dataset.date = dateStr; el.innerHTML = day + (workoutDates.has(dateStr) ? '<div class="workout-dot"></div>' : ''); frag.appendChild(el); } document.getElementById('calendar-days').replaceChildren(frag); }
+    async function showHistoryDetail(dateStr) { document.querySelector('.calendar-day.selected')?.classList.remove('selected'); document.querySelector(`.calendar-day[data-date="${dateStr}"]`)?.classList.add('selected'); const detailContainer = document.getElementById('hist-detail'), session = (await getHistory()).find(s => s.rd === dateStr); if (session) detailContainer.replaceChildren(createHistoryCardHTML(session)); else detailContainer.innerHTML = ''; }
+    function changeMonth(offset) { AppState.calendarDate.setMonth(AppState.calendarDate.getMonth() + offset); renderCalendar(); document.getElementById('hist-detail').innerHTML = ''; }
+    function toggleActionButtons(disabled) { ["saveSessionBtn", "exportBtn", "importBtn", "daySel"].forEach(id => document.getElementById(id).disabled = disabled); document.querySelectorAll('.history-card button').forEach(btn => btn.disabled = disabled); }
+    async function editWorkout(rd){ const session = await dbGet('sessions', rd); if (!session) return showToast("Session not found.", 2000); AppState.editIndex = rd; toggleActionButtons(true); document.getElementById("saveSessionBtn").disabled = false; document.getElementById("editMode").classList.remove("hidden"); document.getElementById("daySel").value = session.day; document.getElementById("date").value = session.rd; await loadDay(session); window.scrollTo({top:0,behavior:'smooth'}); }
+    function cancelEdit(){ AppState.editIndex = null; toggleActionButtons(false); document.getElementById("editMode").classList.add("hidden"); document.getElementById('date').value = new Date().toISOString().split('T')[0]; loadDay(); }
+    async function deleteWorkout(rd){ if(confirm("Delete session?")){ await dbDelete('sessions', rd); invalidateCache(); document.getElementById('hist-detail').innerHTML = ''; await Promise.all([renderCalendar(), updateCharts(), renderPRs()]); } }
+    async function getPRs(){ if(AppState.cachedPRs) return AppState.cachedPRs; let prs = {}; (await getHistory()).forEach(s => s.logs.forEach(l => l.sets.forEach(st => { if(st.status === 'completed' && (!prs[l.ex] || st.orm > prs[l.ex].orm)) { prs[l.ex] = {w: st.w, r: st.r, orm: st.orm}; } }))); AppState.cachedPRs = prs; return prs; }
+    async function renderPRs() { const prs = await getPRs(), pb = document.getElementById("pb"); if (!Object.keys(prs).length) { pb.innerHTML = ""; return; } const table = document.createElement('table'); table.innerHTML = "<tr><th>Lift</th><th>Best Set (lbs x reps)</th><th>Est. 1RM</th></tr>" + Object.keys(prs).sort().map(x => `<tr><td><b>${x}</b></td><td>${prs[x].w} x ${prs[x].r}</td><td style="color:var(--gold);">${prs[x].orm}</td></tr>`).join(''); pb.replaceChildren(table); }
+    function createSVGChart(containerId, datasets, options = {}) { const c = document.getElementById(containerId); if (!c) return; const W = c.clientWidth, H = c.clientHeight, P = 30, allPoints = datasets.flatMap(ds => ds.data); if (W === 0 || H === 0 || !allPoints.length || (allPoints.length < 2 && !options.allowSinglePoint)) { c.innerHTML = '<p style="text-align:center;color:var(--dim);margin-top:20%;">Not enough data.</p>'; return; } const maxVal = Math.max(...allPoints.map(d => d.value)), minVal = options.startAtZero ? 0 : Math.min(...allPoints.map(d => d.value)); const xR = W - P - P, yR = H - P - P, getX = i => P + (allPoints.length > 1 ? i * xR / (allPoints.length - 1) : xR / 2), getY = val => H - P - (maxVal === minVal ? yR / 2 : (val - minVal) * yR / (maxVal - minVal)); let svg = `<svg class="svg-chart-container" viewBox="0 0 ${W} ${H}" role="img"><title>${options.title||'Chart'}</title>`; for(let i=0; i<=4; i++) { const val = minVal + i * (maxVal-minVal) / 4, y = getY(val); svg += `<g><line class="grid" x1="${P}" y1="${y}" x2="${W-P}" y2="${y}"></line><text class="label" x="5" y="${y+4}">${Math.round(val)}</text></g>`; } datasets.forEach(ds => { const data = ds.data; if (!data.length) return; if (ds.type === 'line') { svg += `<polyline fill="none" stroke="${ds.color}" stroke-width="2" points="${data.map((d, i) => `${getX(i)},${getY(d.value)}`).join(' ')}"/>`; data.forEach((d, i) => { svg += `<g><circle cx="${getX(i)}" cy="${getY(d.value)}" r="3" fill="${ds.color}"/><text class="tooltip" text-anchor="middle" x="${getX(i)}" y="${getY(d.value)-8}" fill="${ds.color}">${d.value}</text></g>`; }); } else if (ds.type === 'bar') { const barW = Math.max(5, (xR / allPoints.length) * 0.8); data.forEach((d, i) => { const barH = Math.max(1, getY(minVal) - getY(d.value)); svg += `<g><rect x="${getX(i)-barW/2}" y="${getY(d.value)}" width="${barW}" height="${barH}" fill="${ds.color}"/><text class="tooltip" x="${getX(i)}" y="${getY(d.value)-5}" text-anchor="middle" fill="${ds.color}">${d.value}</text></g>`; }); } }); allPoints.forEach((d, i) => { if (allPoints.length < 15 || i % Math.floor(allPoints.length / 8) === 0) { svg += `<text class="label" text-anchor="middle" x="${getX(i)}" y="${H - 5}">${d.label}</text>`; } }); svg += '</svg>'; c.innerHTML = svg; }
+    async function updateCharts(){ Object.entries(AppState.appConfig.colors).forEach(([k, v]) => { const el = document.getElementById(`leg-${k}`); if(el) el.style.color = v; }); const ex = document.getElementById("cxSel").value, h = await getHistory(), rollWin = parseInt(document.getElementById("rollAvgSel")?.value || "4"), cacheKey = `${ex}-${rollWin}`; if (AppState.cachedChartData[cacheKey]) { const {orm, vol, total} = AppState.cachedChartData[cacheKey]; createSVGChart('exC-orm', orm, {startAtZero:false, allowSinglePoint:true}); createSVGChart('exC-vol', vol, {startAtZero:true, allowSinglePoint:true}); createSVGChart('volC', total, {startAtZero:true, allowSinglePoint:true}); return; } const exData = h.map(s=>{ const l=s.logs.find(x=>x.ex===ex); return l?.sets.length ? { d:s.rd, lbl:s.rd.substring(5), orm:Math.max(...l.sets.filter(i=>i.status==='completed').map(x=>x.orm)), vol:l.sets.filter(i=>i.status==='completed').reduce((sm,x)=>sm+(x.r*x.w),0) } : null; }).filter(Boolean).sort((a,b)=>a.d.localeCompare(b.d)); const totalData = h.map(s=>{let v=s.logs.reduce((tv,l)=>tv+l.sets.reduce((sv,set)=>sv+(set.r*set.w),0),0); return {d:s.rd,lbl:s.rd.substring(5),v:v};}).filter(s=>s.v > 0).sort((a,b)=>a.d.localeCompare(b.d)); const volPts = totalData.map(d => ({ value: d.v, label: d.lbl })); const rollPts = volPts.map((_, i, arr) => { const subset = arr.slice(Math.max(0, i - rollWin + 1), i + 1); return { value: Math.round(subset.reduce((s, c) => s + c.value, 0) / subset.length), label: arr[i].label }; }); const ormChartData = [{ type: 'line', color: AppState.appConfig.colors.orm, data: exData.map(d => ({ value: d.orm, label: d.lbl })) }]; const volChartData = [{ type: 'bar', color: AppState.appConfig.colors.exVol, data: exData.map(d => ({ value: d.vol, label: d.lbl })) }]; const totalChartData = [ { type: 'bar', color: AppState.appConfig.colors.dayVol + '99', data: volPts }, { type: 'line', color: AppState.appConfig.colors.rollAvg, data: rollPts } ]; AppState.cachedChartData[cacheKey] = {orm:ormChartData, vol:volChartData, total:totalChartData}; createSVGChart('exC-orm', ormChartData, {startAtZero:false, allowSinglePoint:true}); createSVGChart('exC-vol', volChartData, {startAtZero:true, allowSinglePoint:true}); createSVGChart('volC', totalChartData, {startAtZero:true, allowSinglePoint:true}); }
+    async function exportData(){ const h = await getHistory(), csv = "Type,Date,Day,Exercise,Sets,Warmups,Cooldowns\n" + h.sort((a,b) => a.rd.localeCompare(b.rd)).map(s => { const esc = (str) => `"${(str || '').toString().replace(/"/g, '""')}"`; if (s.logs.length) { return s.logs.map(l => `Workout,${esc(s.rd)},${esc(s.day)},${esc(l.ex)},${esc(l.sets.map(x => `${x.r}x${x.w}`).join('|'))},"",`).join('\n'); } else { return `Workout,${esc(s.rd)},${esc(s.day)},"Rest Day","",${esc((s.warmups||[]).join('|'))},${esc((s.cooldowns||[]).join('|'))}`; } }).join('\n'); const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "fitness_log.csv"; link.click(); URL.revokeObjectURL(link.href); }
+    function parseCSVLine(line) { const regex = /(?:"((?:[^"]|"")*)"|([^,"]*))(?:,|$)/g; let fields = [], match; while (match = regex.exec(line)) { fields.push(match[1] ? match[1].replace(/""/g, '"') : (match[2] || '')); if (match[0].slice(-1) !== ',') break; } return fields; }
+    async function importData(e){ const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async (ev) => { try { let lines = ev.target.result.split("\n"), headers = lines[0].trim().toLowerCase().split(','), wO={}, skipped=0; for (let i = 1; i < lines.length; i++) { if (!lines[i].trim()) continue; let p = parseCSVLine(lines[i]), entry = headers.reduce((obj, h, idx) => ({ ...obj, [h.trim()]: p[idx] }), {}); if (!entry.date || !/^\d{4}-\d{2}-\d{2}$/.test(entry.date) || await dbGet('sessions', entry.date)) { skipped++; continue; } if(entry.type.toLowerCase() === "workout"){ const key = entry.date; if(!wO[key]) wO[key]={rd:key, day:entry.day, logs:[], warmups:[], cooldowns:[]}; if(entry.exercise && entry.exercise !== "Rest Day" && entry.sets){ let sets = entry.sets.split('|').map(x => { let [r, w] = x.split('x').map(Number); return (isNaN(r) || isNaN(w)) ? null : { r, w, orm: Math.round(w * (1 + r / 30)), status: 'completed' }; }).filter(Boolean); if(sets.length) wO[key].logs.push({ ex: entry.exercise, sets }); } } } if (Object.keys(wO).length > 0) { const tx = AppState.db.transaction('sessions', 'readwrite'); Object.values(wO).forEach(s => tx.objectStore('sessions').put(s)); await new Promise(res => tx.oncomplete = res); invalidateCache(); } showToast(`Import done. ${Object.keys(wO).length} added, ${skipped} skipped.`, 5000); await init(); } catch (error) { console.error("Import failed:", error); showToast(`Import failed: ${error.message}`, 5000); } finally { e.target.value = ''; } }; reader.readAsText(file); }
+    const actions = { closeModal, jumpToProgress, resetTimer, cancelEdit, saveWorkoutSession, addDayToSetup, saveSetup, resetSetup, exportData, toggleMetronome, importData, prevMonth: () => changeMonth(-1), nextMonth: () => changeMonth(1), addTime: (t) => addTime(parseInt(t.dataset.time)), toggleSetup: () => document.getElementById('setup').classList.toggle('hidden'), toggleCheck: (t) => toggleCheck(t), showExerciseInfo: (t) => showExerciseInfo(t.dataset.exName), editWorkout: (t) => editWorkout(t.dataset.rd), deleteWorkout: (t) => deleteWorkout(t.dataset.rd), addSetRow: (t) => addSetRow(t), showHistoryDetail: (t) => showHistoryDetail(t.dataset.date), triggerImport: () => document.getElementById('imp').click(), loadDay: () => { if (AppState.editIndex === null) loadDay(); }, updateCharts };
+    document.addEventListener('click', e => { const target = e.target.closest('[data-action]'); if (target?.dataset.action && actions[target.dataset.action]) { if (target.closest('.modal-content')) e.stopPropagation(); actions[target.dataset.action](target); } });
+    document.addEventListener('change', e => { const target = e.target.closest('[data-action]'); if (target?.dataset.action && actions[target.dataset.action]) actions[target.dataset.action](target); });
+    window.onload = init;
+})();
+</script>
 </body>
 </html>
