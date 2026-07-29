@@ -78,6 +78,35 @@
         .calendar-day .workout-dot { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; background: var(--pur); border-radius: 50%; }
         .setup-block { margin-bottom: 15px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 6px; }
         .setup-block h4 { margin-top:0; margin-bottom:10px; font-size:14px; color:#fff; }
+        .modal-title-style { margin-top:0; color:var(--blu); text-align:left; padding-right:35px; font-size:20px; margin-bottom:10px; }
+        .btn-progress-chart { width:100%; margin-top:15px; padding:12px; border-radius:8px; font-size:15px; background:var(--blu); color:#fff; font-weight:bold; }
+        .metronome-controls { border-left: 1px solid var(--brd); padding-left: 15px; }
+        #bpmDisplay { font-size: 14px; font-family: monospace; color: var(--gold); }
+        #editMode { color:var(--gold); text-align:center; padding:10px; }
+        #editMode button { background:none; color:var(--gold); border:none; }
+        .date-picker-row { margin-bottom:8px; }
+        #saveSessionBtn { background:#27ae60; color:#f0f0f0; min-height:44px; }
+        .chart-legend { font-size:12px; color:var(--dim); text-align:center; margin-top:10px; }
+        .chart-container-small { height:150px; margin-top:10px; }
+        .volume-header { display:flex; justify-content:space-between; align-items:center; }
+        #rollAvgSel { width:auto; padding:4px 8px; margin:0; font-size:12px; background:#333; }
+        .section-card-margin-top { margin-top: 20px; }
+        .setup-toggle { cursor:pointer; padding:10px 0; }
+        .setup-label-flex { font-size:12px; display:flex; align-items:center; gap:10px; color:var(--dim); }
+        .input-bpm { width:80px; padding:4px 8px; margin:0; }
+        .flex-wrap-start { flex-wrap: wrap; gap: 15px; justify-content: flex-start; }
+        .input-color-label { font-size:12px; display:flex; align-items:center; gap:5px; color:var(--dim); }
+        .input-color-swatch { width:25px; height:25px; padding:0; border:none; }
+        .btn-add-day { background:#333; min-height:44px; margin-top:10px; }
+        .btn-save-config { background:var(--pur); min-height:44px; margin-top:10px; }
+        .btn-factory-reset { background:var(--red); margin-top:10px; min-height:44px; }
+        .import-export-row { margin-top:20px; }
+        .btn-import-export { background:#444; min-height:44px; }
+        .volume-header h3 { margin:0; }
+        .ex-block-header { margin-bottom:8px; }
+        .ex-block-title { cursor:pointer; color:var(--pur); text-decoration:underline; font-size:16px; }
+        .ex-block-pr { float:right; font-size:11px; color:var(--gold); }
+        .btn-add-set { width:auto; padding: 4px 10px; font-size:12px; margin-top:5px; background:#333; }
     </style>
     <link rel="manifest" id="manifest-link">
     <meta name="theme-color" content="#1e1e1e">
@@ -106,7 +135,6 @@
                         self.skipWaiting(); 
                         event.waitUntil(
                             caches.open(CACHE_NAME).then(cache => {
-                                console.log('Opened cache');
                                 return cache.addAll(urlsToCache);
                             })
                         );
@@ -126,7 +154,6 @@
                 const swBlob = new Blob([swContent], { type: 'application/javascript' });
                 const swUrl = URL.createObjectURL(swBlob);
                 navigator.serviceWorker.register(swUrl)
-                    .then(registration => console.log('ServiceWorker registration successful with scope: ', registration.scope))
                     .catch(err => console.log('ServiceWorker registration failed: ', err));
             });
         }
@@ -136,12 +163,11 @@
 <div id="exModal" class="modal-overlay hidden" data-action="closeModal">
     <div class="modal-content">
         <button class="close-btn" aria-label="Close Modal" data-action="closeModal">✕</button>
-        <h2 id="modalTitle" style="margin-top:0; color:var(--blu); text-align:left; padding-right:35px; font-size:20px; margin-bottom:10px;">🏋️ Exercise</h2>
-        <div id="modalBadges" class="modal-badges"></div>
-        <div class="modal-section"><h4>📐 Setup</h4><p id="modalSetup"></p></div>
-        <div class="modal-section"><h4>⚙️ Execution</h4><p id="modalExec"></p></div>
-        <div class="modal-section"><h4>⚠️ Mistakes to Avoid</h4><p id="modalMistakes"></p></div>
-        <button data-action="jumpToProgress" style="width:100%; margin-top:15px; padding:12px; border-radius:8px; font-size:15px; background:var(--blu); color:#fff; font-weight:bold;">📈 View Progress Chart</button>
+        <h2 id="modalTitle" class="modal-title-style">🏋️ Exercise</h2>
+        <div id="modal-extra-info"></div>
+        <div class="modal-section"><h4>🔬 Biomechanics</h4><p id="modalBiomechanics"></p></div>
+        <div class="modal-section"><h4>📖 How-To</h4><p id="modalHowTo"></p></div>
+        <button data-action="jumpToProgress" class="btn-progress-chart">📈 View Progress Chart</button>
     </div>
 </div>
 <div class="timer-card">
@@ -152,44 +178,44 @@
             <button data-action="resetTimer">Reset</button>
         </div>
     </div>
-    <div class="flex-row" style="border-left: 1px solid var(--brd); padding-left: 15px;">
+    <div class="flex-row metronome-controls">
         <button id="metronomeToggleBtn" data-action="toggleMetronome">🎵</button>
-        <span id="bpmDisplay" style="font-size: 14px; font-family: monospace; color: var(--gold);">60 BPM</span>
+        <span id="bpmDisplay">60 BPM</span>
     </div>
 </div>
 <div class="container">
     <h1>🏋️ Fitness Log</h1>
     <div class="section-card">
-        <div id="editMode" class="hidden" style="color:var(--gold);text-align:center;padding:10px;">⚠️ EDIT MODE <button data-action="cancelEdit" style="background:none;color:var(--gold);border:none;">Cancel</button></div>
-        <div class="flex-row" style="margin-bottom:8px;">
+        <div id="editMode" class="hidden">⚠️ EDIT MODE <button data-action="cancelEdit">Cancel</button></div>
+        <div class="flex-row date-picker-row">
             <input type="date" id="date">
             <select id="daySel" data-action="loadDay"></select>
         </div>
         <div id="wBox" class="routine-box box-w"></div>
         <div id="form"></div>
         <div id="cBox" class="routine-box box-c"></div>
-        <button id="saveSessionBtn" data-action="saveWorkoutSession" style="background:#27ae60;color:#f0f0f0;min-height:44px;">Save Session</button>
+        <button id="saveSessionBtn" data-action="saveWorkoutSession">Save Session</button>
     </div>
     <div class="section-card">
         <h3 id="progressSection">📈 Progress</h3>
         <select id="cxSel" data-action="updateCharts"></select>
-        <div style="font-size:12px; color:var(--dim); text-align:center; margin-top:10px;">
+        <div class="chart-legend">
             <span id="leg-orm" style="color:var(--gold);">●</span> Est. 1RM (Strength) &nbsp;&nbsp;&nbsp; <span id="leg-exVol" style="color:#009688;">■</span> Total Volume (Workload)
         </div>
-        <div class="chart-container" id="exC-orm" style="height:150px; margin-top:10px;"></div>
-        <div class="chart-container" id="exC-vol" style="height:150px; margin-top:10px;"></div>
+        <div class="chart-container chart-container-small" id="exC-orm"></div>
+        <div class="chart-container chart-container-small" id="exC-vol"></div>
     </div>
     <div class="section-card">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="margin:0;">📊 Volume</h3>
-            <select id="rollAvgSel" data-action="updateCharts" style="width:auto; padding:4px 8px; margin:0; font-size:12px; background:#333;">
+        <div class="volume-header">
+            <h3>📊 Volume</h3>
+            <select id="rollAvgSel" data-action="updateCharts">
                 <option value="2">2-Session</option>
                 <option value="4" selected>4-Session</option>
                 <option value="8">8-Session</option>
                 <option value="16">16-Session</option>
             </select>
         </div>
-        <div style="font-size:12px; color:var(--dim); text-align:center; margin-top:10px;">
+        <div class="chart-legend">
             <span id="leg-dayVol" style="color:#FF7F50;">■</span> Daily Volume &nbsp;&nbsp;&nbsp; <span id="leg-rollAvg" style="color:var(--gold);">●</span> Rolling Avg
         </div>
         <div class="chart-container" id="volC"></div>
@@ -206,34 +232,34 @@
         <div class="calendar-grid" id="calendar-days"></div>
     </div>
     <div id="hist-detail"></div>
-    <div class="section-card" style="margin-top: 20px;">
-        <h3 data-action="toggleSetup" style="cursor:pointer;padding:10px 0;">⚙️ Setup (Click to Expand)</h3>
+    <div class="section-card section-card-margin-top">
+        <h3 data-action="toggleSetup" class="setup-toggle">⚙️ Setup (Click to Expand)</h3>
         <div id="setup" class="hidden">
             <div class="setup-block">
                 <h4>General</h4>
-                <label style="font-size:12px; display:flex; align-items:center; gap:10px; color:var(--dim);">
+                <label class="setup-label-flex">
                     Metronome BPM:
-                    <input type="number" id="setup-bpm" style="width:80px; padding:4px 8px; margin:0;" min="40" max="200">
+                    <input type="number" id="setup-bpm" class="input-bpm" min="40" max="200">
                 </label>
             </div>
             <div class="setup-block">
                 <h4>🎨 Chart Colors</h4>
-                <div class="flex-row" style="flex-wrap: wrap; gap: 15px; justify-content: flex-start;">
-                    <label style="font-size:12px; display:flex; align-items:center; gap:5px; color:var(--dim);">1RM <input type="color" id="c-orm" style="width:25px; height:25px; padding:0; border:none;"></label>
-                    <label style="font-size:12px; display:flex; align-items:center; gap:5px; color:var(--dim);">Ex. Vol <input type="color" id="c-exVol" style="width:25px; height:25px; padding:0; border:none;"></label>
-                    <label style="font-size:12px; display:flex; align-items:center; gap:5px; color:var(--dim);">Daily Vol <input type="color" id="c-dayVol" style="width:25px; height:25px; padding:0; border:none;"></label>
-                    <label style="font-size:12px; display:flex; align-items:center; gap:5px; color:var(--dim);">Roll Avg <input type="color" id="c-rollAvg" style="width:25px; height:25px; padding:0; border:none;"></label>
+                <div class="flex-row flex-wrap-start">
+                    <label class="input-color-label">1RM <input type="color" id="c-orm" class="input-color-swatch"></label>
+                    <label class="input-color-label">Ex. Vol <input type="color" id="c-exVol" class="input-color-swatch"></label>
+                    <label class="input-color-label">Daily Vol <input type="color" id="c-dayVol" class="input-color-swatch"></label>
+                    <label class="input-color-label">Roll Avg <input type="color" id="c-rollAvg" class="input-color-swatch"></label>
                 </div>
             </div>
             <div id="setupInputs"></div>
-            <button data-action="addDayToSetup" style="background:#333; min-height:44px; margin-top:10px;">+ Add New Day</button>
-            <button data-action="saveSetup" style="background:var(--pur);min-height:44px;margin-top:10px;">Save Configuration</button>
-            <button data-action="resetSetup" style="background:var(--red);margin-top:10px;min-height:44px;">Factory Reset</button>
+            <button data-action="addDayToSetup" class="btn-add-day">+ Add New Day</button>
+            <button data-action="saveSetup" class="btn-save-config">Save Configuration</button>
+            <button data-action="resetSetup" class="btn-factory-reset">Factory Reset</button>
         </div>
     </div>
-    <div class="flex-row" style="margin-top:20px;">
-        <button id="exportBtn" data-action="exportData" style="background:#444;min-height:44px;">📤 Export</button>
-        <button id="importBtn" data-action="triggerImport" style="background:#444;min-height:44px;">📥 Import</button>
+    <div class="flex-row import-export-row">
+        <button id="exportBtn" data-action="exportData" class="btn-import-export">📤 Export</button>
+        <button id="importBtn" data-action="triggerImport" class="btn-import-export">📥 Import</button>
         <input type="file" id="imp" class="hidden" data-action="importData">
     </div>
 </div>
@@ -264,11 +290,508 @@
         cooldownPlan: {},
         calendarDate: new Date(),
     };
-    const exerciseInfo = { "Incline Press": { icon:"🏋️", pri:["Upper Chest"], sec:["Front Delts", "Triceps"], setup:"Set bench to 30-45°. Plant feet firmly. Grip slightly wider than shoulders.", exec:"Lower weight to upper chest under control. Press up and slightly back over eyes.", mistakes:"Bouncing weight off chest. Flaring elbows straight out. Lifting glutes off seat." }, "Incline Fly": { icon:"🪢", pri:["Upper Chest"], sec:["Front Delts"], setup:"Set bench to 30-45°. Hold dumbbells or cables with a neutral grip.", exec:"Keep a slight bend in elbows. Open arms wide like hugging a barrel. Squeeze chest to bring hands together.", mistakes:"Bending elbows too much (turns into a press). Going too deep and straining shoulders." }, "Front Raise": { icon:"💪", pri:["Front Delts"], sec:["Core"], setup:"Stand tall holding dumbbells or cable handle. Keep a slight elbow bend.", exec:"Raise weight directly in front of you to shoulder height. Lower slowly.", mistakes:"Using momentum/swinging torso. Raising weight too high above head." }, "Triceps Pushdown": { icon:"🪢", pri:["Triceps"], sec:["Core"], setup:"Attach rope or bar to high cable. Hinge slightly forward at hips. Pin elbows to sides.", exec:"Push weight straight down until arms are fully extended. Squeeze triceps. Return to chest height.", mistakes:"Letting elbows flare or travel forward. Using bodyweight to press down." }, "Overhead Triceps Extension": { icon:"💪", pri:["Triceps"], sec:["Core"], setup:"Sit or stand tall holding one dumbbell with both hands over your head. Can also use a cable rope.", exec:"Lower the weight behind your head by bending your elbows. Extend arms fully to lift the weight back up. Keep upper arms stationary.", mistakes:"Flaring elbows out to the sides. Arching the lower back excessively. Using momentum." }, "Side Lunge": { icon:"🦵", pri:["Quads", "Glutes"], sec:["Adductors"], setup:"Stand with feet wide. Toes pointed slightly out. Keep chest up.", exec:"Push hips back and bend one knee, keeping the trailing leg perfectly straight. Drive through heel to return.", mistakes:"Letting knee collapse inward. Rounding lower back." }, "Leg Extension": { icon:"🦵", pri:["Quadriceps"], sec:[], setup:"Align machine pivot point with your knees. Pad should rest on lower shins.", exec:"Extend legs fully to straight position. Squeeze quads hard. Lower under control.", mistakes:"Using momentum. Not achieving full extension at the top." }, "Hip Adduction": { icon:"🦵", pri:["Adductors (Inner Thigh)"], sec:[], setup:"Sit with pads inside knees. Set starting width to a comfortable stretch.", exec:"Squeeze knees together smoothly. Hold for a split second. Return slowly.", mistakes:"Jerking the weight. Dropping the weight abruptly on the return." }, "Nordic Hamstring Curl": { icon:"🦵", pri:["Hamstrings"], sec:["Calves", "Glutes"], setup:"Lock ankles under a pad or have a partner hold them. Kneel on a soft pad.", exec:"Keep body perfectly straight. Slowly lower torso toward the floor using hamstrings as brakes. Catch with hands.", mistakes:"Bending at the hips to lower faster. Not controlling the descent." }, "Calf Raise": { icon:"🦵", pri:["Calves"], sec:[], setup:"Stand on edge of block/step. Drop heels below parallel.", exec:"Drive up onto the balls of your feet as high as possible. Pause at top. Lower slowly.", mistakes:"Bouncing at the bottom. Bending knees to cheat the weight up." }, "Bent-Over Row": { icon:"🏋️", pri:["Lats", "Mid-Back"], sec:["Biceps", "Core"], setup:"Hinge at hips until torso is roughly 45°. Keep back perfectly flat. Brace core.", exec:"Pull bar or dumbbells toward lower stomach/hips. Squeeze shoulder blades together.", mistakes:"Standing too upright. Yanking weight with lower back. Flaring elbows too wide." }, "Incline Bench Row": { icon:"🏋️", pri:["Lats", "Mid-Back"], sec:["Biceps", "Core"], setup:"Set an incline bench to 30-45 degrees. Lie chest-down on the pad with a dumbbell in each hand.", exec:"Row the dumbbells up toward your hips, squeezing your shoulder blades together at the top. Lower under control.", mistakes:"Lifting chest off the pad. Pulling weights toward armpits instead of hips." }, "Straight-Arm Pulldown": { icon:"🪢", pri:["Lats"], sec:["Triceps"], setup:"Attach straight bar or rope to high cable. Step back. Keep arms straight with tiny elbow bend.", exec:"Pull bar down in an arc motion until it touches your thighs. Squeeze lats hard.", mistakes:"Bending elbows and turning it into a tricep pushdown. Rounding upper back." }, "Lat Pulldown": { icon:"🏋️", pri:["Lats"], sec:["Biceps", "Mid-Back"], setup:"Adjust pad so knees are secure. Grab bar slightly wider than shoulders.", exec:"Pull bar down to upper chest while depressing shoulders. Return under control.", mistakes:"Leaning back excessively to use bodyweight." }, "Prone T Raise": { icon:"💪", pri:["Mid-Back", "Rear Delts"], sec:["Lower Traps"], setup:"Lie face down on a slight incline bench. Hold light weights.", exec:"Raise arms straight out to the sides to form a 'T'. Squeeze shoulder blades.", mistakes:"Using too much weight. Shrugging shoulders up toward ears." }, "Prone Y Raise": { icon:"💪", pri:["Lower Traps", "Upper Back"], sec:["Rear Delts"], setup:"Lie face down on a slight incline bench. Hold light weights.", exec:"Raise arms forward and outward at a 45° angle to form a 'Y'.", mistakes:"Bending elbows. Arching lower back excessively." }, "Face Pull": { icon:"🪢", pri:["Rear Delts", "Rotator Cuff"], sec:["Traps"], setup:"Set cable to upper chest height with rope attachment. Grab ends with thumbs pointing back.", exec:"Pull rope toward face, pulling handles apart so hands end up beside ears. Squeeze upper back.", mistakes:"Pulling to chin instead of face. Using too much weight and falling forward." }, "Reverse Fly": { icon:"💪", pri:["Rear Delts"], sec:["Rhomboids"], setup:"Hinge forward at hips or lay chest-down on incline bench. Slight bend in elbows.", exec:"Raise weights directly out to the sides. Squeeze shoulder blades together.", mistakes:"Swinging the weight. Turning the movement into a rowing motion." }, "Incline Curl": { icon:"💪", pri:["Biceps (Long Head)"], sec:["Forearms"], setup:"Set bench to 45-60°. Sit back and let arms hang straight down toward floor.", exec:"Curl weight up while keeping upper arms completely stationary. Squeeze biceps.", mistakes:"Swinging elbows forward to cheat. Not fully extending at the bottom." }, "Walking Lunge": { icon:"🦵", pri:["Quads", "Glutes"], sec:["Core"], setup:"Stand tall holding dumbbells. Brace core.", exec:"Take a long step forward. Lower hips until both knees are bent 90°. Drive through front heel to step forward.", mistakes:"Letting front knee cave inward. Taking steps that are too short." }, "Back Extension": { icon:"🦵", pri:["Lower Back", "Glutes"], sec:["Hamstrings"], setup:"Position hips at top edge of pad. Lock feet in. Cross arms on chest.", exec:"Hinge down until you feel a hamstring stretch. Squeeze glutes to raise torso back in line with legs.", mistakes:"Hyperextending (arching) lower back at the top. Using momentum." }, "Standing Arnold Press": { icon:"💪", pri:["Front & Side Delts"], sec:["Triceps", "Core"], setup:"Stand tall. Hold dumbbells at shoulder height with palms facing YOU.", exec:"Press weight overhead while simultaneously rotating hands so palms face AWAY at the top.", mistakes:"Leaning back too far. Not completing the full rotation." }, "Lateral Raise": { icon:"💪", pri:["Side Delts"], sec:["Traps"], setup:"Stand tall. Hold dumbbells at sides. Slight bend in elbows.", exec:"Raise arms out to sides until parallel with floor. Lead slightly with elbows, pouring a pitcher of water.", mistakes:"Swinging torso. Shrugging shoulders up to ears to lift the weight." }, "Curtsy Lunge": { icon:"🦵", pri:["Glutes", "Quads"], sec:["Adductors"], setup:"Stand tall. Shift weight to one leg.", exec:"Step other leg behind and across the planted leg. Lower hips into a curtsy. Drive back up.", mistakes:"Twisting hips/torso too much. Letting front knee cave inward." }, "Hip Abduction": { icon:"🦵", pri:["Abductors (Outer Glute)"], sec:[], setup:"Sit in machine with pads outside your knees.", exec:"Push legs outward against pads as far as comfortable. Pause. Return slowly.", mistakes:"Rushing the eccentric (return) portion. Using momentum to bounce out." }, "Pull-Up / Chin-Up": { icon:"🧗", pri:["Lats"], sec:["Biceps", "Core"], setup:"Hang from bar with overhand (pull) or underhand (chin) grip. Brace core.", exec:"Depress shoulders and pull body up until chin clears bar. Lower under control to a dead hang.", mistakes:"Kipping or swinging. Doing half-reps (not fully extending at bottom)." }, "Romanian Deadlift": { icon:"🏋️", pri:["Hamstrings", "Glutes"], sec:["Lower Back"], setup:"Stand holding bar/dumbbells. Keep legs relatively straight with a tiny soft bend in knees.", exec:"Push hips straight back (hinge). Keep weight dragged against your legs. Go until hamstrings stretch, then squeeze glutes to stand.", mistakes:"Bending knees into a squat. Letting bar drift away from legs. Rounding back." }, "Arm Circles": { icon:"🔄", pri:["Shoulders"], sec:[], setup:"Stand tall with arms out to the sides.", exec:"Make small forward and backward circles, gradually increasing in size.", mistakes:"Moving your entire torso." }, "Wall Slides": { icon:"🧱", pri:["Shoulders", "Upper Back"], sec:[], setup:"Stand with back against a wall, arms raised at 90 degrees.", exec:"Slide arms up the wall and back down.", mistakes:"Arching back away from the wall." }, "Gate Swings": { icon:"🦵", pri:["Adductors", "Glutes"], sec:[], setup:"Stand tall.", exec:"Hop into a wide squat, pushing knees out, then hop back up.", mistakes:"Knees caving inward." }, "Lateral Shifts": { icon:"🦵", pri:["Adductors", "Quads"], sec:[], setup:"Take a very wide stance.", exec:"Shift weight side to side, bending one knee while keeping the other straight.", mistakes:"Heel lifting off ground." }, "Light Walk": { icon:"🚶", pri:["Cardio"], sec:[], setup:"Treadmill or open space.", exec:"Walk at a brisk but conversational pace.", mistakes:"Going too fast and tiring out." }, "Dynamic Stretch": { icon:"🤸", pri:["Full Body"], sec:[], setup:"Find open space.", exec:"Perform moving stretches like leg swings and torso twists.", mistakes:"Holding stretches statically before a workout." }, "T-Spine Rotations": { icon:"🔄", pri:["Thoracic Spine"], sec:[], setup:"On all fours or lying on side.", exec:"Rotate your upper back and reach toward the ceiling.", mistakes:"Rotating purely from the lower back." }, "Scapular Retractions": { icon:"💪", pri:["Rhomboids"], sec:[], setup:"Stand tall or hang from a bar.", exec:"Pinch shoulder blades together without bending elbows.", mistakes:"Shrugging shoulders up to ears." }, "Hip Circles": { icon:"🔄", pri:["Hips"], sec:[], setup:"Stand tall, hands on hips.", exec:"Make large, slow circles with your hips in both directions.", mistakes:"Moving upper body instead of hips." }, "Leg Swings": { icon:"🦵", pri:["Hips", "Hamstrings"], sec:[], setup:"Hold onto a wall/rack for balance.", exec:"Swing one leg forward and backward, then side to side.", mistakes:"Swinging wildly and over-arching lower back." }, "Shoulder Halos": { icon:"🔄", pri:["Shoulder Mobility"], sec:[], setup:"Hold a light plate or kettlebell at chest height.", exec:"Circle the weight closely around your head in both directions.", mistakes:"Moving your head around the weight instead of vice versa." }, "Fire Hydrants": { icon:"🐕", pri:["Glutes"], sec:[], setup:"Get on all fours.", exec:"Lift one knee out to the side, keeping it bent at 90 degrees.", mistakes:"Twisting lower back to get the leg higher." }, "Scapular Pull-ups": { icon:"🧗", pri:["Lower Traps"], sec:[], setup:"Hang from a pull-up bar.", exec:"Pull shoulders down and back without bending arms.", mistakes:"Using biceps to bend the arms." }, "Bird-Dog": { icon:"🐕", pri:["Core"], sec:["Lower Back"], setup:"Get on all fours.", exec:"Extend opposite arm and leg straight out. Squeeze core.", mistakes:"Arching back and lifting limbs too high." }, "Cat-Cow": { icon:"🐈", pri:["Spine"], sec:[], setup:"Get on all fours.", exec:"Alternate arching back up to ceiling (cat) and dipping it toward floor (cow).", mistakes:"Forcing the stretch into a painful range." }, "Doorway Chest Stretch": { icon:"🚪", pri:["Chest"], sec:["Front Delts"], setup:"Stand in a doorway. Place forearm against the frame.", exec:"Gently step forward and turn body slightly away until you feel a stretch.", mistakes:"Pushing into pain." }, "Overhead Tricep": { icon:"💪", pri:["Triceps"], sec:[], setup:"Stand tall.", exec:"Reach one arm overhead and bend elbow. Use other hand to gently pull elbow back.", mistakes:"Arching lower back." }, "Anterior Delt": { icon:"💪", pri:["Front Delts"], sec:["Chest"], setup:"Stand tall.", exec:"Clasp hands behind your back and gently lift them upward.", mistakes:"Leaning torso forward." }, "Adductor Stretch": { icon:"🧘", pri:["Adductors"], sec:[], setup:"Sit with soles of feet together (butterfly) or take a wide stance.", exec:"Gently push knees down or shift weight to feel a stretch inside thigh.", mistakes:"Bouncing the stretch aggressively." }, "Calf Stretch": { icon:"🦵", pri:["Calves"], sec:[], setup:"Stand facing a wall.", exec:"Step one foot back, keep heel flat and leg straight, lean forward.", mistakes:"Lifting heel off the ground." }, "Foam Roll": { icon:"🧻", pri:["Myofascial Release"], sec:[], setup:"Lie on a foam roller on target muscle.", exec:"Slowly roll back and forth over tight areas. Pause on knots.", mistakes:"Rolling over joints or directly over lower back spine." }, "Cross-body Rear Delt": { icon:"💪", pri:["Rear Delts"], sec:[], setup:"Stand tall.", exec:"Pull one arm across your chest using the other arm.", mistakes:"Shrugging the stretching shoulder upward." }, "Upper Back": { icon:"🧘", pri:["Upper Back", "Traps"], sec:[], setup:"Stand tall.", exec:"Clasp hands in front of you and push them away, intentionally rounding upper back.", mistakes:"Straining neck forward." }, "Bicep Wall Stretch": { icon:"🧱", pri:["Biceps"], sec:["Chest"], setup:"Stand next to a wall. Extend arm back flat against it.", exec:"Slowly turn body away from wall to stretch bicep.", mistakes:"Over-stretching the shoulder capsule." }, "Kneeling Hip Flexor": { icon:"🧎", pri:["Hip Flexors"], sec:["Quads"], setup:"Kneel on one knee (lunge position).", exec:"Tuck pelvis under and gently lean hips forward until a stretch is felt.", mistakes:"Arching lower back excessively." }, "Standing Quad": { icon:"𦩿", pri:["Quadriceps"], sec:[], setup:"Stand tall, holding a wall for balance.", exec:"Grab your ankle behind you and gently pull heel toward glute.", mistakes:"Letting the knee flare out to the side." }, "Glute Stretch": { icon:"🧘", pri:["Glutes"], sec:[], setup:"Lie on back or sit.", exec:"Cross one ankle over opposite knee and pull thigh toward chest (Figure-Four).", mistakes:"Lifting head/shoulders off ground." }, "Cross-Body Shoulder": { icon:"💪", pri:["Shoulders"], sec:[], setup:"Stand tall.", exec:"Pull arm across body gently.", mistakes:"Shrugging shoulder." }, "Neck Stretch": { icon:"🧘", pri:["Neck"], sec:["Upper Traps"], setup:"Sit or stand tall.", exec:"Gently pull head toward one shoulder. Do not force it.", mistakes:"Pulling too hard." }, "Pigeon Pose": { icon:"🧘", pri:["Glutes"], sec:["Hip Rotators"], setup:"On the floor.", exec:"Bring one knee forward and across your body, extending the other leg back. Lean forward.", mistakes:"Forcing the knee aggressively to the floor." }, "Seated Twist": { icon:"🧘", pri:["Spine"], sec:["Glutes"], setup:"Sit on floor.", exec:"Cross one leg over the other, sit tall, and twist torso toward the bent knee.", mistakes:"Slouching." }, "Hip Flexor": { icon:"🧎", pri:["Hip Flexors"], sec:[], setup:"Get in kneeling lunge position.", exec:"Tuck pelvis and lean forward.", mistakes:"Arching back." }, "Dead Hang": { icon:"🧗", pri:["Spine Decompression"], sec:["Lats", "Grip"], setup:"Grab a pull-up bar.", exec:"Relax body and let it hang completely passive. Breathe deeply.", mistakes:"Holding tension in the shoulders." }, "Doorway Lat Stretch": { icon:"🚪", pri:["Lats"], sec:[], setup:"Grab a doorframe or rack overhead.", exec:"Lean hips back to feel a stretch along the side of your back.", mistakes:"Bending the arms." }, "Chest/Bicep Wall": { icon:"🧱", pri:["Chest", "Biceps"], sec:[], setup:"Stand next to wall.", exec:"Place palm flat on wall behind you, gently turn away.", mistakes:"Forcing the stretch." }, "Lying Hamstring": { icon:"🧘", pri:["Hamstrings"], sec:[], setup:"Lie on back.", exec:"Keep one leg straight on floor, lift other leg straight up, pull gently toward chest.", mistakes:"Bending knee too much." }, "Figure-Four": { icon:"🧘", pri:["Glutes"], sec:[], setup:"Lie on back.", exec:"Cross ankle over knee, grab thigh and pull.", mistakes:"Rounding spine off the floor." }, "Child's Pose": { icon:"🧘", pri:["Lats", "Lower Back"], sec:[], setup:"Kneel on the floor.", exec:"Sit back on heels, stretch arms far forward on floor, drop head.", mistakes:"Not letting the body fully relax." } };
-    const fallbackEx = { icon:"⚙️", pri:["Target Area"], sec:[], setup:"Review machine placards or ask a trainer for proper setup instructions.", exec:"Focus on mind-muscle connection and control.", mistakes:"Using momentum, improper breathing, and pushing into pain." };
-    const defaultPlan = [ { name: "Side Lunge", exercises: ["Side Lunge|3|6|45|65", "Hip Adduction|1|AMRAP|40|55", "Calf Raise|1|AMRAP|20|30"] }, { name: "Incline Press", exercises: ["Incline Press|3|6|65|100", "Incline Fly|1|AMRAP|10|15", "Front Raise|1|AMRAP|10|15", "Triceps Pushdown|1|AMRAP|20|30"] }, { name: "Walking Lunge", exercises: ["Walking Lunge|3|6|45|65", "Back Extension|1|AMRAP|0|10"] }, { name: "Incline Bench Row", exercises: ["Incline Bench Row|3|6|50|75", "Straight-Arm Pulldown|1|AMRAP|25|35", "Incline Curl|1|AMRAP|15|20"] }, { name: "Curtsy Lunge", exercises: ["Curtsy Lunge|3|6|40|60", "Hip Abduction|1|AMRAP|40|55", "Calf Raise|1|AMRAP|20|30"] }, { name: "Arnold Press", exercises: ["Standing Arnold Press|3|6|25|40", "Lateral Raise|1|AMRAP|10|15", "Reverse Fly|1|AMRAP|10|15", "Overhead Triceps Extension|1|AMRAP|20|30"] }, { name: "RDL", exercises: ["Romanian Deadlift|3|6|65|100", "Back Extension|1|AMRAP|0|10"] }, { name: "Lat Pulldown (8a)", exercises: ["Lat Pulldown|3|6|60|90", "Straight-Arm Pulldown|1|AMRAP|25|35", "Incline Curl|1|AMRAP|15|20", "Prone Y Raise|1|AMRAP|5|10"] }, { name: "Pull-Up (8b)", exercises: ["Pull-Up / Chin-Up|3|6|0|0", "Straight-Arm Pulldown|1|AMRAP|25|35", "Incline Curl|1|AMRAP|15|20", "Prone Y Raise|1|AMRAP|5|10"] } ];
-    const defaultWarmups = { "Side Lunge": ["Gate Swings: 6 reps","Lateral Shifts: 6 reps"], "Incline Press": ["Arm Circles: 6 reps","Wall Slides: 6 reps"], "Walking Lunge": ["Hip Circles: 6 reps","Leg Swings: 6 reps"], "Incline Bench Row": ["T-Spine Rotations: 6 reps","Scapular Retractions: 6 reps"], "Curtsy Lunge": ["Fire Hydrants: 6 reps","Leg Swings: 6 reps"], "Arnold Press": ["Shoulder Halos: 6 reps","Wall Slides: 6 reps", "T-Spine Rotations: 6 reps"], "RDL": ["Bird-Dog: 6 reps","Cat-Cow: 6 reps", "Leg Swings (Front/Back): 10 reps"], "Lat Pulldown (8a)": ["Scapular Retractions: 6 reps","Arm Circles: 6 reps"], "Pull-Up (8b)": ["Scapular Pull-ups: 6 reps","Arm Circles: 6 reps"] };
-    const defaultCooldowns = { "Side Lunge": ["Adductor Stretch (30s)","Calf Stretch (30s)"], "Incline Press": ["Doorway Chest Stretch (30s)","Overhead Tricep (30s)","Anterior Delt (30s)"], "Walking Lunge": ["Kneeling Hip Flexor (30s)","Standing Quad (30s)","Glute Stretch (30s)"], "Incline Bench Row": ["Cross-body Rear Delt (30s)","Upper Back (30s)","Bicep Wall Stretch (30s)"], "Curtsy Lunge": ["Pigeon Pose (30s)","Seated Twist (30s)","Hip Flexor (30s)"], "Arnold Press": ["Cross-Body Shoulder (30s)","Overhead Tricep (30s)","Neck Stretch (30s/side)"], "RDL": ["Lying Hamstring (30s)","Figure-Four (30s)","Child's Pose (30s)"], "Lat Pulldown (8a)": ["Child's Pose (30s)","Doorway Lat Stretch (30s)","Chest/Bicep Wall (30s)"], "Pull-Up (8b)": ["Dead Hang (Passive) (30s)","Doorway Lat Stretch (30s)","Chest/Bicep Wall (30s)"] };
+    const exerciseInfo = {
+    "Lateral Lunge Weight Shifts": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Hip Adductors (origin: pubis; insertion: femur) and Gluteus Medius/Maximus.",
+        "biomechanics": "Gently shifts weight side-to-side in the frontal plane to lubricate hip joints and safely stretch musculotendinous junctions.",
+        "how_to": "1. Stand with feet significantly wider than shoulder-width. 2. Push hips back, keeping back flat. 3. Bend right knee, shifting weight to the right foot while left leg stays straight. 4. Push off right foot to center, then shift left.",
+        "cue": "Imagine sliding side-to-side on a slippery floor."
+    },
+    "Dynamic Leg Swings": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Hip Flexors (Iliopsoas, Rectus Femoris) and Hip Extensors (Hamstrings, Gluteus Maximus).",
+        "biomechanics": "Dynamically warms the femoral head in the acetabulum (hip socket) and stretches the attaching tendons like a pendulum.",
+        "how_to": "1. Stand sideways to a wall or rack for balance. 2. Keeping the outside leg relatively straight, swing it forward in a controlled arc. 3. Allow gravity to bring the leg back and through into a stretch. 4. Gradually increase ROM.",
+        "cue": "Feel the stretch at the top of the forward and backward swing."
+    },
+    "Side Lunge": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Primary: Quadriceps (femur/ilium to tibial tuberosity) and Gluteus Maximus (posterior ilium/sacrum to gluteal tuberosity). Secondary/Stabilizers: Gluteus Medius and Adductor Magnus.",
+        "biomechanics": "Frontal-plane unilateral movement that creates a powerful eccentric and concentric contraction in the primary hip stabilizers.",
+        "how_to": "1. Stand with feet together. 2. Take a large lateral step directly to your right side. 3. As the foot plants, hinge hips back and bend the right knee. 4. Drive forcefully off the right heel and midfoot to return to the start.",
+        "cue": "Push the floor away with your bent leg to return to center."
+    },
+    "Unilateral Cable Adduction": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Adductor Group (pubic bone/ischium inserting along the inner femur).",
+        "biomechanics": "Provides constant medial cable tension to isolate pure hip adduction against resistance.",
+        "how_to": "1. Attach cuff to a low pulley around your right ankle. 2. Stand with right side to the machine. 3. Keeping torso stable, engage inner thigh to pull the right leg across the front of your standing leg. 4. Squeeze powerfully, then return.",
+        "cue": "Imagine squeezing a ball between your thighs."
+    },
+    "Glute Bridge Pulses & Butterfly Stretch": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Gluteus Maximus and Adductor complex.",
+        "biomechanics": "Combines a low-intensity active muscle pump to flush metabolic waste, followed by a passive static stretch to restore adductor resting length.",
+        "how_to": "1. Perform 15 slow bodyweight glute bridges. 2. Sit on the floor, bring the soles of your feet together. 3. Let your knees fall open wide towards the floor and breathe deeply.",
+        "cue": "Pulse gently to pump the muscles, then breathe deep and melt into the static stretch."
+    },
+    "Kneeling Quad Stretch": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Quadriceps (Rectus Femoris: AIIS of pelvis to patellar tendon) and Hip Flexors.",
+        "biomechanics": "Passive static hip extension to manually stretch and restore the resting length of the anterior thigh muscles.",
+        "how_to": "1. Kneel on one knee (use a pad if needed). 2. Reach back and grab the ankle of your back leg. 3. Gently pull the heel toward your glute while keeping your torso upright.",
+        "cue": "Tuck your tailbone under for a deeper stretch."
+    },
+    "Arm Circles": {
+        "icon": "\ud83d\udcaa",
+        "targets": "Deltoid Complex (clavicle/scapula to deltoid tuberosity).",
+        "biomechanics": "Dynamic circumduction of the humerus to lubricate the glenohumeral joint and warm synovial fluid.",
+        "how_to": "1. Stand tall and extend arms straight out to your sides. 2. Make small, controlled forward circles. 3. Gradually increase the size of the circles. 4. Reverse direction after 30 seconds.",
+        "cue": "Draw perfect circles with your fingertips."
+    },
+    "Prone Y-Raises (Bodyweight)": {
+        "icon": "\ud83e\uddd7",
+        "targets": "Lower Trapezius (thoracic vertebrae to scapular spine) and Rotator Cuff.",
+        "biomechanics": "Active shoulder flexion paired with external rotation to secure the scapula against the ribcage.",
+        "how_to": "1. Lie face down on the floor or an incline bench. 2. Extend arms in a \"Y\" shape with thumbs pointing up to the ceiling. 3. Lift arms by pinching shoulder blades together and down. 4. Lower with control.",
+        "cue": "Initiate the lift by pulling your shoulder blades down and together."
+    },
+    "30-Degree Incline DB Press": {
+        "icon": "\ud83d\udcaa",
+        "targets": "Clavicular head of Pectoralis Major (clavicle to bicipital groove), Anterior Deltoid, and Triceps.",
+        "biomechanics": "Pushing from a 30-degree incline shifts the mechanical tension to bias the upper pectoral fibers over the mid/lower chest.",
+        "how_to": "1. Set bench to 30 degrees. 2. Kick dumbbells up to shoulder height. 3. Press the weights up and slightly inward over your upper chest. 4. Lower under control until dumbbells are near chest level.",
+        "cue": "Drive your biceps towards each other at the top."
+    },
+    "Unilateral Low-to-High Cable Crossover": {
+        "icon": "\ud83d\udcaa",
+        "targets": "Upper chest (Clavicular Pectoralis fibers).",
+        "biomechanics": "Provides constant upward and inward arc tension that perfectly mirrors the fiber alignment of the upper chest.",
+        "how_to": "1. Set cables to the lowest position. 2. Grab D-handles and stand slightly forward to create tension. 3. With a slight bend in the elbows, sweep the handles upward and together until they meet at face height. 4. Lower slowly.",
+        "cue": "Scoop the air up and in."
+    },
+    "Unilateral Overhead Cable Triceps Ext.": {
+        "icon": "\ud83d\udcaa",
+        "targets": "Triceps Brachii Long Head (infraglenoid tubercle of scapula to olecranon of ulna).",
+        "biomechanics": "Secures the shoulder in flexion to put the long head of the triceps under a deep mechanical stretch during extension.",
+        "how_to": "1. Set cable high with a rope attachment. 2. Face away from the machine, hinging forward slightly, hands behind your head. 3. Extend your elbows to press the rope forward and out. 4. Control the eccentric back.",
+        "cue": "Pin elbows to your head; only move forearms."
+    },
+    "Unilateral Cable Front Raise": {
+        "icon": "\ud83d\udcaa",
+        "targets": "Anterior Deltoid (lateral clavicle to deltoid tuberosity).",
+        "biomechanics": "Applies constant cable tension specifically isolating shoulder flexion in the sagittal plane.",
+        "how_to": "1. Set a low cable with a straight bar or rope. 2. Stand facing away from the machine, cable running between your legs. 3. Keeping arms straight, raise the handle to eye level. 4. Lower with control.",
+        "cue": "Lift the weight using the front of your shoulder, keeping arms straight."
+    },
+    "Arm Hug Flutters & Doorway Chest Stretch": {
+        "icon": "\ud83d\udcaa",
+        "targets": "Pectoralis Major/Minor and Anterior Deltoids.",
+        "biomechanics": "Dynamic horizontal adduction to flush lactic acid, followed by a passive horizontal abduction to stretch tight pectoral fascia.",
+        "how_to": "1. Rapidly and gently cross your arms over your chest for 1 minute. 2. Place your forearm against a doorway frame with elbow at 90 degrees. 3. Gently step through the doorway to stretch the chest.",
+        "cue": "Hug yourself slowly to flush the chest, then lean forward to statically stretch the pecs."
+    },
+    "Overhead Triceps Stretch": {
+        "icon": "\ud83d\udcaa",
+        "targets": "Triceps Brachii and Latissimus Dorsi.",
+        "biomechanics": "Passive elbow flexion paired with extreme shoulder elevation to maximize the stretch on the triceps long head.",
+        "how_to": "1. Raise one arm straight up, then bend the elbow so your hand drops behind your neck. 2. Use your opposite hand to gently pull the elbow back and down.",
+        "cue": "Reach your hand down your spine."
+    },
+    "Bodyweight Forward Lunges": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Quadriceps and Gluteus Maximus.",
+        "biomechanics": "Unloaded sagittal plane movement to lubricate the knee and hip joints and groove the exact motor pattern for the workout.",
+        "how_to": "1. Stand tall. 2. Take a controlled step forward. 3. Lower your hips until both knees are bent at a 90-degree angle. 4. Push off the front foot to return to the start.",
+        "cue": "Keep front knee aligned with second toe."
+    },
+    "Bodyweight Clamshells": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Gluteus Medius and deep external rotators.",
+        "biomechanics": "Direct lateral hip external rotation to actively prime the pelvic stabilizers and prevent knee valgus (caving inward) under load.",
+        "how_to": "1. Lie on your side with hips and knees bent. 2. Keep your feet glued together. 3. Lift your top knee as high as you can without rolling your pelvis backward. 4. Lower slowly.",
+        "cue": "Imagine hips stacked against a wall; open knee using only the side glute."
+    },
+    "Walking Lunge": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Quadriceps (femur to tibial tuberosity), Gluteus Maximus, and Hamstrings.",
+        "biomechanics": "Dynamic, unilateral sagittal plane extension of the hip and knee requiring significant core and pelvic stability.",
+        "how_to": "1. Hold dumbbells at your sides. 2. Step forward and drop your back knee toward the floor. 3. Push entirely through the front foot to stand up and immediately step into the next rep with the opposite leg.",
+        "cue": "Fall forward with control."
+    },
+    "Unilateral Seated Leg Curl": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Hamstrings.",
+        "biomechanics": "The seated position puts the hips in flexion, pre-stretching the hamstrings and isolating pure knee flexion.",
+        "how_to": "1. Sit in the machine with the pad resting just above your Achilles tendons. 2. Lock the thigh pad down tight. 3. Curl the weight down and back as far as possible. 4. Control the weight on the way up.",
+        "cue": "Squeeze the hamstring to move the weight, controlling the release."
+    },
+    "Unilateral Seated Calf Raise": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Soleus (posterior tibia/fibula inserting into the calcaneus/heel).",
+        "biomechanics": "Sitting with a bent knee puts the larger gastrocnemius in active insufficiency, purely isolating the underlying soleus muscle.",
+        "how_to": "1. Sit on a bench and place the ball of one foot on a block. 2. Place a heavy dumbbell on that thigh near the knee. 3. Lower the heel to a deep stretch. 4. Press up onto the toes as high as possible.",
+        "cue": "Push through the ball of your foot."
+    },
+    "Ankle Pumps & Seated Toe Touch": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Hamstrings and Calves (Gastrocnemius/Soleus).",
+        "biomechanics": "Active ankle pumping clears pooled venous blood from the lower extremities, followed by a passive posterior chain stretch.",
+        "how_to": "1. Sit with legs straight. 2. Actively point and flex your toes 20 times. 3. Hinge forward at the hips, keeping your back relatively straight, and reach for your toes.",
+        "cue": "Pump the ankles to drain the legs, then melt into the hamstring fold."
+    },
+    "Pigeon Pose": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Gluteus Maximus and external rotators.",
+        "biomechanics": "Deep passive external rotation of the hip joint.",
+        "how_to": "1. From a plank, bring one knee forward behind your wrist, rotating the lower leg inward. 2. Slide the back leg straight back. 3. Sink your hips toward the floor.",
+        "cue": "Try to square your hips to the front."
+    },
+    "Cat-Cow": {
+        "icon": "\ud83e\uddd7",
+        "targets": "Erector Spinae (spine/sacrum to ribs/vertebrae) and Rectus Abdominis.",
+        "biomechanics": "Controlled spinal flexion and extension to lubricate intervertebral discs and prime the core.",
+        "how_to": "1. Get on hands and knees. 2. Inhale and arch your back, dropping your belly and lifting your head. 3. Exhale and round your spine upward, tucking your chin to your chest.",
+        "cue": "Initiate movement from your tailbone."
+    },
+    "Bent-Over T-Raises (Unweighted)": {
+        "icon": "\ud83e\uddd7",
+        "targets": "Rhomboids (thoracic spinous processes to medial scapular border) and Mid-Traps.",
+        "biomechanics": "Pure, unweighted scapular retraction against gravity to neurologically prime the upper back before heavy pulling.",
+        "how_to": "1. Hinge at the hips with a flat back. 2. Let arms hang straight down. 3. Keep arms straight and raise them straight out to your sides to form a \"T\". 4. Squeeze shoulder blades, then lower.",
+        "cue": "Pinch a coin between your shoulder blades at the top."
+    },
+    "Bent-Over DB Row": {
+        "icon": "\ud83e\uddd7",
+        "targets": "Latissimus Dorsi (thoracolumbar fascia to bicipital groove of humerus), Biceps, and Rear Deltoids.",
+        "biomechanics": "Heavy sagittal/transverse plane pulling requiring intense isometric contraction of the erector spinae and hamstrings to hold the hinge.",
+        "how_to": "1. Hinge forward at the hips until your torso is nearly parallel to the floor. 2. Let dumbbells hang down. 3. Row the weights up toward your hip crease/ribcage, keeping elbows close to the body. 4. Lower with control.",
+        "cue": "Pull your elbows into your back pockets."
+    },
+    "Unilateral Standing Cable Bicep Curl": {
+        "icon": "\ud83e\uddd7",
+        "targets": "Biceps Brachii Long Head (supraglenoid tubercle of scapula to radial tuberosity).",
+        "biomechanics": "Standing next to a low pulley with the shoulder slightly extended behind the body places the long head of the biceps under an optimal active stretch during elbow flexion.",
+        "how_to": "1. Stand facing away from a low cable pulley, holding a D-handle. 2. Step forward so your working arm is drawn slightly behind your torso into shoulder extension. 3. Keeping your elbow pinned stationary behind your torso, curl the cable handle up toward your chest.",
+        "cue": "Keep your elbow pinned back to isolate the stretched bicep."
+    },
+    "Unilateral Cable Rear Delt Fly": {
+        "icon": "\ud83e\uddd7",
+        "targets": "Posterior Deltoid (spine of scapula to deltoid tuberosity).",
+        "biomechanics": "Constant cable tension applied directly against horizontal shoulder abduction.",
+        "how_to": "1. Stand facing a high dual cable setup. 2. Grab the left cable with your right hand and right cable with your left hand (crossing them). 3. Keep arms slightly bent and pull them apart and backward.",
+        "cue": "Keep your shoulders depressed; push the walls away."
+    },
+    "Wall Slide Mimics & Child's Pose": {
+        "icon": "\ud83e\uddd7",
+        "targets": "Latissimus Dorsi and Scapular Stabilizers.",
+        "biomechanics": "Gentle, unloaded active arm elevations flush the mid-back, followed by profound passive spinal decompression.",
+        "how_to": "1. Stand against a wall and slowly slide the backs of your hands up and down it 10 times. 2. Kneel on the floor, sit back onto your heels, and stretch your arms far forward on the floor.",
+        "cue": "Flush the upper back with wall slides, then decompress and breathe into Child's Pose."
+    },
+    "Cross-Body Shoulder Stretch": {
+        "icon": "\ud83d\udcaa",
+        "targets": "Posterior and Lateral Deltoids.",
+        "biomechanics": "Passive horizontal adduction to lengthen the posterior shoulder tissues heavily utilized during the pressing phase.",
+        "how_to": "1. Bring one arm straight across your chest. 2. Use your opposite arm to gently hook the elbow and pull it tighter to your body.",
+        "cue": "Look over the shoulder you are stretching."
+    },
+    "Glute Bridges": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Gluteus Maximus.",
+        "biomechanics": "Pure, unloaded bilateral hip extension to activate the primary hip extensors without loading the spine.",
+        "how_to": "1. Lie on your back with knees bent and feet flat on the floor. 2. Squeeze your glutes and drive your hips up toward the ceiling until your body forms a straight line. 3. Lower with control.",
+        "cue": "Drive through your heels."
+    },
+    "Fire Hydrants": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Gluteus Medius and Minimus.",
+        "biomechanics": "Active hip abduction and external rotation in the transverse/frontal planes to prime the lateral hip.",
+        "how_to": "1. Get on your hands and knees. 2. Keeping your knee bent at 90 degrees, lift one leg straight out to the side. 3. Avoid rotating your lower back or shifting your weight heavily.",
+        "cue": "Don't spill the glass of water on your lower back."
+    },
+    "Goblet Curtsy Lunge": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Gluteus Medius, Gluteus Maximus, and Adductors.",
+        "biomechanics": "A multi-planar lunge that forces the lateral hip stabilizers (Glute Medius) to work intensely to maintain pelvic alignment while crossing the midline.",
+        "how_to": "1. Stand tall. 2. Step one foot diagonally behind the other leg as if doing a curtsy. 3. Bend both knees until the front thigh is parallel to the floor. 4. Drive through the front heel to stand back up.",
+        "cue": "Push off the front foot to return to start."
+    },
+    "Unilateral Cable Hip Abduction": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Gluteus Medius.",
+        "biomechanics": "Constant resistance against pure lateral hip abduction, completely removing quadriceps or hamstring assistance.",
+        "how_to": "1. Attach an ankle cuff to a low pulley around your right ankle. 2. Stand with your left side to the machine. 3. Keeping torso upright, use outer hip muscles to pull your right leg directly out to the side.",
+        "cue": "Squeeze from the outside of your hips."
+    },
+    "Quadruped Hip Rocks & Figure-4 Stretch": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Gluteus Maximus, Piriformis, and deep hip rotators.",
+        "biomechanics": "Dynamic rock-backs flush blood into the deep rotators, followed by a targeted static stretch for the piriformis.",
+        "how_to": "1. On hands and knees, slowly rock your hips back to your heels 10 times. 2. Lie on your back, cross one ankle over the opposite knee, grab the back of the bottom thigh, and pull to your chest.",
+        "cue": "Rock slowly to flush the hips, then hold the Figure-4 stretch to release the glutes."
+    },
+    "Scapular Wall Push-ups": {
+        "icon": "\ud83d\udcaa",
+        "targets": "Serratus Anterior (ribs 1-8 to medial border of scapula).",
+        "biomechanics": "Unweighted scapular protraction and upward rotation to ensure healthy tracking of the scapula before pressing overhead.",
+        "how_to": "1. Stand facing a wall, arms straight out with palms flat against it. 2. Keep arms straight and let your chest sink toward the wall (scapulae pinch). 3. Push the wall away, rounding your upper back (scapulae spread).",
+        "cue": "Push the wall away to hollow out your chest."
+    },
+    "Wall Angels": {
+        "icon": "\ud83d\udcaa",
+        "targets": "Rotator Cuff (Infraspinatus, Teres Minor) and Trapezius.",
+        "biomechanics": "Strict, active upward rotation of the shoulder blades against a fixed vertical plane to improve overhead mobility.",
+        "how_to": "1. Stand with your back, head, and heels flat against a wall. 2. Bring arms up to a 90-degree goalpost position against the wall. 3. Slowly slide your hands up the wall into a \"Y\", keeping contact. 4. Pull back down.",
+        "cue": "Keep lower back flat against the wall."
+    },
+    "Standing Arnold Press": {
+        "icon": "\ud83d\udcaa",
+        "targets": "Anterior Deltoid (front shoulder), Lateral Deltoid, and Triceps.",
+        "biomechanics": "Combines overhead elbow extension with transverse plane shoulder rotation (supination to pronation), heavily taxing the anterior and lateral deltoid heads.",
+        "how_to": "1. Hold dumbbells at shoulder height with palms facing your face (supinated). 2. As you press the weights overhead, rotate your hands so your palms face forward at the top (pronated). 3. Reverse the motion on the way down.",
+        "cue": "Uncork your shoulders as you press."
+    },
+    "Unilateral Cable Lateral Raise": {
+        "icon": "\ud83d\udcaa",
+        "targets": "Lateral Deltoid (acromion to deltoid tuberosity).",
+        "biomechanics": "Leaning away from the pulley alters the resistance curve, shifting the point of maximum tension to the bottom/mid-range of the lateral raise.",
+        "how_to": "1. Stand next to a low cable, holding the machine with your inner hand. 2. Lean your body weight away from the machine. 3. With the outer arm, raise the cable handle straight out to the side. 4. Lower with control.",
+        "cue": "Lead with the elbow and push the weight away from you."
+    },
+    "Unilateral Cable Triceps Pushdown": {
+        "icon": "\ud83d\udcaa",
+        "targets": "Triceps Brachii (Lateral and Medial Heads).",
+        "biomechanics": "Pure elbow extension isolating the triceps against constant downward cable tension.",
+        "how_to": "1. Face a high cable with a rope or straight bar. 2. Tuck your elbows tightly against your ribs. 3. Push the attachment straight down toward the floor until arms are fully extended. 4. Control the return to 90 degrees.",
+        "cue": "Imagine your elbows are nailed to your ribs."
+    },
+    "Shoulder Rolls & Behind-the-Back Stretch": {
+        "icon": "\ud83d\udcaa",
+        "targets": "Deltoids, Upper Trapezius, and Pectorals.",
+        "biomechanics": "Active circumduction flushes metabolic waste from the shoulder girdle, followed by a passive stretch opening the anterior chest fascia.",
+        "how_to": "1. Slowly roll your shoulders forward in circles for 30 seconds, then backward for 30 seconds. 2. Clasp your hands behind your back, keep arms straight, and gently lift them away from your torso.",
+        "cue": "Roll the shoulders to clear tension, then clasp hands and open the chest."
+    },
+    "Bodyweight Good Mornings": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Hamstrings and Erector Spinae.",
+        "biomechanics": "Unloaded hip hinge to actively groove the exact posterior chain mechanics required for heavy deadlifts.",
+        "how_to": "1. Stand with hands gently behind your head. 2. Keeping a slight bend in your knees and a perfectly flat back, push your hips as far back as possible. 3. Squeeze glutes to stand back up.",
+        "cue": "Push your butt to the wall behind you."
+    },
+    "Leg Swings (Front-to-Back)": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Hamstrings and Hip Flexors.",
+        "biomechanics": "Dynamic stretching of the hamstring insertion at the ischial tuberosity to safely prepare for heavy eccentric loading.",
+        "how_to": "1. Stand sideways to a wall for balance. 2. Keep the working leg relatively straight and swing it forward and backward. 3. Gradually increase the height of the swing.",
+        "cue": "Feel the stretch at the end of each swing."
+    },
+    "Romanian Deadlift (RDL)": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Hamstrings (Primary), Gluteus Maximus (Primary), and Erector Spinae (Secondary).",
+        "biomechanics": "A heavy, compound hip hinge where the knees remain fixed in a slightly bent position, heavily loading the hamstrings during the eccentric phase.",
+        "how_to": "1. Hold a barbell or heavy dumbbells with a shoulder-width stance. 2. Keeping legs nearly straight, push your hips straight back. 3. Lower the weight down the front of your legs until you feel a deep hamstring stretch. 4. Drive hips forward to stand.",
+        "cue": "Scrape your shins with the bar."
+    },
+    "Unilateral Standing Calf Raise": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Gastrocnemius (femoral condyles to calcaneus via Achilles tendon).",
+        "biomechanics": "Keeping the knee fully extended (straight) perfectly isolates and optimally loads the biarticular gastrocnemius muscle.",
+        "how_to": "1. Stand on one foot with the ball of the foot on the edge of a block. 2. Keep the knee locked straight. 3. Drop the heel down for a deep stretch. 4. Press explosively through the ball of the foot to lift the heel high. 5. Lower slowly.",
+        "cue": "Drive your body straight up to the ceiling."
+    },
+    "Dynamic Hip Rocks & Downward Facing Dog": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Posterior Chain (Hamstrings, Glutes, Calves, Erectors).",
+        "biomechanics": "Gentle active lumbar flushing followed by a global, full-body passive stretch of the entire posterior fascial line.",
+        "how_to": "1. On all fours, gently rock hips side-to-side and back-to-front for 1 minute. 2. Tuck toes, straighten legs, and push your hips high into the air into an inverted \"V\", driving heels toward the floor.",
+        "cue": "Rock the hips to flush the lower back, then push up into Downward Dog."
+    },
+    "Supine Knee-to-Chest": {
+        "icon": "\ud83e\uddb5",
+        "targets": "Gluteus Maximus and Lumbar Erector Spinae.",
+        "biomechanics": "Passive, deep lumbar spinal flexion to decompress the lower back erectors that were heavily taxed holding the RDL hinge.",
+        "how_to": "1. Lie flat on your back. 2. Pull both knees into your chest and wrap your arms around your shins. 3. Gently pull the knees tighter, letting your lower back round slightly into the floor.",
+        "cue": "Keep your tailbone on the floor."
+    },
+    "Light Scapular Pulldowns": {
+        "icon": "\ud83e\uddd7",
+        "targets": "Lower Trapezius and Latissimus Dorsi.",
+        "biomechanics": "Pure, active scapular depression without elbow flexion to neurologically prime the lats before initiating the full pull.",
+        "how_to": "1. Grab a pulldown bar with a wide grip and sit down. 2. Keeping your elbows perfectly locked and straight, shrug your shoulders up to your ears. 3. Pull the shoulder blades hard down and together to move the bar just a few inches.",
+        "cue": "Put your shoulder blades in your back pockets."
+    },
+    "Dead Hang": {
+        "icon": "\ud83e\uddd7",
+        "targets": "Latissimus Dorsi and Shoulder Capsule.",
+        "biomechanics": "Passive vertical suspension to stretch the lats to their full anatomical length and safely decompress the thoracic/lumbar spine.",
+        "how_to": "1. Grab a pull-up bar with an overhand grip. 2. Let your feet hang free off the floor. 3. Completely relax your shoulders and back, letting gravity pull your body downward. Hold for 15-30 seconds.",
+        "cue": "Let gravity pull your hips down and stretch your lats."
+    },
+    "Lat Pulldown": {
+        "icon": "\ud83e\uddd7",
+        "targets": "Latissimus Dorsi (Primary), Brachialis, and Biceps Brachii.",
+        "biomechanics": "A vertical pulling motion combining shoulder adduction and elbow flexion to heavily target the width of the back.",
+        "how_to": "1. Take a wide grip on the pulldown bar and sit down, locking knees under the pads. 2. Lean back slightly. 3. Pull the bar smoothly down to your upper collarbone. 4. Control the bar back up until arms are fully extended.",
+        "cue": "Drive your elbows down towards the floor; pull your ribs to your hips, not your hands to your chest."
+    },
+    "Straight Arm Unilateral Cable Pulldown": {
+        "icon": "\ud83e\uddd7",
+        "targets": "Latissimus Dorsi (thoracolumbar fascia to bicipital groove).",
+        "biomechanics": "Pure shoulder extension against constant tension, entirely removing the biceps from the movement.",
+        "how_to": "1. Stand facing a high cable with a straight bar. 2. Grab the bar with straight arms, hinge slightly forward. 3. Push the bar in an arc down to your thighs using only your lats. 4. Resist the weight on the way up.",
+        "cue": "Hinge only at the shoulder."
+    },
+    "Standing Unilateral Cable Hammer Curl": {
+        "icon": "\ud83e\uddd7",
+        "targets": "Brachialis (distal half of anterior humerus to ulnar tuberosity) and Brachioradialis.",
+        "biomechanics": "Utilizing a neutral (hammer) grip functionally disadvantages the biceps brachii, forcing the underlying brachialis to take the load during elbow flexion.",
+        "how_to": "1. Attach a D-handle to a low cable. 2. Stand facing the machine, holding the handle with a neutral grip (palm facing in). 3. Keeping elbow glued to your ribs, curl the handle up. 4. Lower with control.",
+        "cue": "Keep your wrist locked in a neutral hammer position."
+    },
+    "Active Hand Flips & Wrist Stretch": {
+        "icon": "\ud83e\uddd7",
+        "targets": "Forearm Flexors, Extensors, and Lats.",
+        "biomechanics": "Rhythmic finger/wrist movement acts as a vascular pump to clear forearm lactic acid, followed by a passive wrist extension stretches.",
+        "how_to": "1. Extend arms straight out and rapidly open/close your fists 20 times. 2. Hold one arm straight out, palm facing up, and use the other hand to gently pull the fingers down toward the floor. Switch sides.",
+        "cue": "Pump the hands to clear forearm burning, then hold the wrist stretch."
+    },
+    "Overhead Lat Stretch": {
+        "icon": "\ud83e\uddd7",
+        "targets": "Latissimus Dorsi.",
+        "biomechanics": "Passive lateral flexion of the spine combined with shoulder elevation to stretch the entire lateral fascial line.",
+        "how_to": "1. Stand tall and reach your right arm straight up overhead. 2. Grab your right wrist with your left hand. 3. Gently pull the right arm over to the left side while slightly pushing your right hip out. Switch sides.",
+        "cue": "Reach up before you reach over."
+    }
+};
+    const fallbackEx = { icon:"⚙️", pri:["Target Area"], sec:[], how_to:"Review machine placards or ask a trainer for proper setup instructions.", biomechanics:"Focus on mind-muscle connection and control.", mistakes:"Using momentum, improper breathing, and pushing into pain." };
+    const defaultPlan = [
+    {
+        "name": "Side Lunge",
+        "exercises": [
+            "Side Lunge|3|5|100|150",
+            "Hip Abduction|2|10|40|60",
+            "Hip Adduction|2|10|40|60"
+        ]
+    },
+    {
+        "name": "Incline Dumbbell Press",
+        "exercises": [
+            "Incline Dumbbell Press|3|5|100|150",
+            "Low-to-High Cable Crossover|2|10|40|60",
+            "Overhead Triceps Ext.|2|10|40|60",
+            "Front Raise|2|10|40|60"
+        ]
+    },
+    {
+        "name": "Walking Lunge",
+        "exercises": [
+            "Walking Lunge|3|5|100|150",
+            "Seated Leg Curl|2|10|40|60",
+            "Seated Calf Raise|2|10|40|60"
+        ]
+    },
+    {
+        "name": "Bent-Over Row",
+        "exercises": [
+            "Bent-Over Row|3|5|100|150",
+            "Bicep Curl|2|10|40|60",
+            "Rear Delt Fly|2|10|40|60"
+        ]
+    },
+    {
+        "name": "Curtsy Lunge",
+        "exercises": [
+            "Curtsy Lunge|3|5|100|150",
+            "Hip Abduction|2|10|40|60",
+            "Hip Adduction|2|10|40|60"
+        ]
+    },
+    {
+        "name": "Arnold Press",
+        "exercises": [
+            "Arnold Press|3|5|100|150",
+            "Lateral Raise|2|10|40|60",
+            "Triceps Pushdown|2|10|40|60"
+        ]
+    },
+    {
+        "name": "Romanian Deadlift",
+        "exercises": [
+            "Romanian Deadlift|3|5|100|150",
+            "Seated Leg Curl|2|10|40|60",
+            "Standing Calf Raise|2|10|40|60"
+        ]
+    },
+    {
+        "name": "Lat Pulldown",
+        "exercises": [
+            "Lat Pulldown|3|5|100|150",
+            "Straight Arm Pulldown|2|10|40|60",
+            "Hammer Curl|2|10|40|60"
+        ]
+    }
+];
+    const defaultWarmups = {
+    "Side Lunge": [
+        "Lateral Weight Shifts: 6 reps",
+        "Leg Swings: 6 reps"
+    ],
+    "Incline Dumbbell Press": [
+        "Arm Circles: 6 reps",
+        "Prone Y-Raises: 6 reps"
+    ],
+    "Walking Lunge": [
+        "Forward Lunges: 6 reps",
+        "High Knees: 6 reps"
+    ],
+    "Bent-Over Row": [
+        "Cat-Cow: 6 reps",
+        "Bent-Over T-Raises: 6 reps"
+    ],
+    "Curtsy Lunge": [
+        "Hip Abductions: 6 reps",
+        "Fire Hydrants: 6 reps"
+    ],
+    "Arnold Press": [
+        "Scapular Wall Press: 6 reps",
+        "Wall Angels: 6 reps"
+    ],
+    "Romanian Deadlift": [
+        "Good Mornings: 6 reps",
+        "Leg Swings: 6 reps"
+    ],
+    "Lat Pulldown": [
+        "Scapular Retractions: 6 reps",
+        "Dead Hang: 6 reps"
+    ]
+};
+    const defaultCooldowns = {
+    "Side Lunge": [
+        "Butterfly Stretch (30s)",
+        "Kneeling Quad Stretch (30s)"
+    ],
+    "Incline Dumbbell Press": [
+        "Doorway Chest Stretch (30s)",
+        "Overhead Triceps Stretch (30s)"
+    ],
+    "Walking Lunge": [
+        "Seated Toe Touch (30s)",
+        "Pigeon Pose (30s)"
+    ],
+    "Bent-Over Row": [
+        "Child's Pose (30s)",
+        "Cross-Body Shoulder Stretch (30s)"
+    ],
+    "Curtsy Lunge": [
+        "Figure-4 Stretch (30s)",
+        "Pigeon Pose (30s)"
+    ],
+    "Arnold Press": [
+        "Behind-the-Back Stretch (30s)",
+        "Cross-Body Shoulder Stretch (30s)"
+    ],
+    "Romanian Deadlift": [
+        "Downward Facing Dog (30s)",
+        "Supine Knee-to-Chest (30s)"
+    ],
+    "Lat Pulldown": [
+        "Wrist Stretch (30s)",
+        "Overhead Lat Stretch (30s)"
+    ]
+};
     const defaultColors = { orm: "#FFD700", exVol: "#009688", dayVol: "#FF7F50", rollAvg: "#FFD700" };
     function openDB() { return new Promise((resolve, reject) => { const request = indexedDB.open(constants.DB_NAME, constants.DB_VERSION); request.onerror = e => reject(new Error("DB Error: " + e.target.errorCode)); request.onsuccess = e => resolve(e.target.result); request.onupgradeneeded = e => { const db = e.target.result; if (!db.objectStoreNames.contains('sessions')) db.createObjectStore('sessions', { keyPath: 'rd' }); if (!db.objectStoreNames.contains('config')) db.createObjectStore('config', { keyPath: 'id' }); }; }); }
     function dbGet(storeName, key) { return new Promise((resolve, reject) => { const tx = AppState.db.transaction(storeName, 'readonly'); tx.objectStore(storeName).get(key).onsuccess = e => resolve(e.target.result); tx.onerror = e => reject(e.target.error); }); }
@@ -280,7 +803,6 @@
     async function getHistory() { if (AppState.cachedHistory) return AppState.cachedHistory; try { AppState.cachedHistory = (await dbGetAll('sessions')).sort((a,b)=> b.rd.localeCompare(a.rd)); } catch (e) { console.error("Could not fetch history:", e); AppState.cachedHistory = []; } return AppState.cachedHistory; }
     async function migrateDataStructures(config) {
         if (config && config.plan && !Array.isArray(config.plan)) {
-            console.log("Migrating config data structure from object to array...");
             try {
                 const newPlan = Object.entries(config.plan).map(([name, exercises]) => ({ name, exercises }));
                 const newWarmups = Object.entries(config.warmups || {}).map(([name, items]) => ({ name, items }));
@@ -289,7 +811,6 @@
                 config.warmups = newWarmups;
                 config.cooldowns = newCooldowns;
                 await dbPut('config', config);
-                console.log("Data structure migration successful.");
                 return config;
             } catch (error) {
                 console.error("Failed to migrate data structures:", error);
@@ -307,14 +828,23 @@
             if(!AppState.appConfig.colors) AppState.appConfig.colors = { ...defaultColors };
             if(!AppState.appConfig.bpm) AppState.appConfig.bpm = constants.DEFAULT_BPM;
         } else {
-            console.log("Setting up default config...");
             AppState.appConfig = { id: 'appConfig', plan: defaultPlan, warmups: Object.entries(defaultWarmups).map(([name, items])=>({name, items})), cooldowns: Object.entries(defaultCooldowns).map(([name, items])=>({name, items})), colors: { ...defaultColors }, bpm: constants.DEFAULT_BPM };
             await dbPut('config', AppState.appConfig);
         }
     }
     async function saveSettings() { await dbPut('config', AppState.appConfig); invalidateCache(); }
     async function resetSetup() { if(confirm("Reset to factory defaults? All custom plans AND workout history will be lost.")) { try { await Promise.all([dbClear('sessions'), dbClear('config')]); location.reload(); } catch (error) { console.error("Factory reset failed:", error); showToast("Error during reset.", 5000); } } }
-    function showExerciseInfo(exName) { const info = exerciseInfo[exName] || fallbackEx; const modal = document.getElementById('exModal'); modal.querySelector('#modalTitle').innerText = `${info.icon} ${exName}`; modal.querySelector('#modalBadges').innerHTML = info.pri.map(m => `<span class="badge badge-pri">${m}</span>`).join('') + info.sec.map(m => `<span class="badge badge-sec">${m}</span>`).join(''); modal.querySelector('#modalSetup').innerText = info.setup; modal.querySelector('#modalExec').innerText = info.exec; modal.querySelector('#modalMistakes').innerText = info.mistakes; modal.dataset.currentEx = exName; modal.classList.remove('hidden'); }
+    function showExerciseInfo(exName) {
+        const info = exerciseInfo[exName] || fallbackEx;
+        const modal = document.getElementById('exModal');
+        modal.querySelector('#modalTitle').innerText = `${info.icon} ${exName}`;
+        const extraInfoHTML = `<div class="modal-section"><h4>🎯 Targets</h4><p>${info.targets || 'N/A'}</p></div><div class="modal-section"><h4>💡 Cue</h4><p><em>${info.cue || 'N/A'}</em></p></div>`;
+        modal.querySelector('#modal-extra-info').innerHTML = extraInfoHTML;
+        modal.querySelector('#modalBiomechanics').innerText = info.biomechanics || 'N/A';
+        modal.querySelector('#modalHowTo').innerText = info.how_to || 'N/A';
+        modal.dataset.currentEx = exName;
+        modal.classList.remove('hidden');
+    }
     function closeModal() { document.getElementById('exModal').classList.add('hidden'); }
     async function jumpToProgress() { const exName = document.getElementById('exModal').dataset.currentEx; closeModal(); const cxSel = document.getElementById('cxSel'); if ([...cxSel.options].some(opt => opt.value === exName)) { cxSel.value = exName; await updateCharts(); document.getElementById('progressSection').scrollIntoView({ behavior: 'smooth', block: 'start' }); } else { showToast("No chart data yet.", 3000); } }
     function renderSetupInputs() { const frag = document.createDocumentFragment(); AppState.appConfig.plan.forEach((day, i) => { const dayName = day.name; const exercises = day.exercises; const id = `setup-day-${i}`, block = document.createElement('div'); block.className = 'ex-block'; block.id = id; const warmupItems = AppState.appConfig.warmups.find(w => w.name === dayName)?.items || []; const cooldownItems = AppState.appConfig.cooldowns.find(c => c.name === dayName)?.items || []; block.innerHTML = `<input data-id="${id}" class="setup-label" value="${dayName}"><textarea data-id="${id}" class="setup-warmup" placeholder="Warmup">${warmupItems.join('\n')}</textarea><textarea data-id="${id}" class="setup-exercises" placeholder="Exercise | Sets | Reps | Lbs | (Optional) Default 1RM">${exercises?.join('\n')||""}</textarea><textarea data-id="${id}" class="setup-cooldown" placeholder="Cooldown">${cooldownItems.join('\n')}</textarea>`; frag.appendChild(block); }); document.getElementById("setupInputs").replaceChildren(frag); }
@@ -387,7 +917,7 @@
                 const actualORM = pbs[name]?.orm, defaultORM = parseInt(defaultOrmStr), ormToUse = actualORM || defaultORM || 0;
                 let setRowsHTML = log ? log.sets.map((s, j) => generateRowHTML(i, `${Date.now()}${j}`, s.r, s.w, false, s.status)).join('') : (() => { const sets = parseInt(setsStr), weight = parseInt(weightStr), isAmrap = repsStr === 'AMRAP'; if (sets === 3 && !isAmrap && ormToUse > 0) { return [generateRowHTML(i,0,repsStr,roundToNearest5(ormToUse*.33)), generateRowHTML(i,1,repsStr,roundToNearest5(ormToUse*.66)), generateRowHTML(i,2,'',roundToNearest5(ormToUse*.8),true)].join(''); } else { return Array.from({length: sets||1}, (_,j)=>generateRowHTML(i,j, isAmrap?'':repsStr, isAmrap?(ormToUse>0?roundToNearest5(ormToUse*0.75):weight):weight, isAmrap)).join(''); } })();
                 exBlock.className = 'ex-block'; exBlock.dataset.exName = name;
-                exBlock.innerHTML = `<div style="margin-bottom:8px;"><b data-action="showExerciseInfo" data-ex-name="${name}" style="cursor:pointer; color:var(--pur); text-decoration:underline; font-size:16px;">${name}</b><span class="orm-header-badge">${actualORM ? `(1RM: ${actualORM}lbs)` : (defaultORM ? `(Default: ${defaultORM}lbs)` : '')}</span><span style="float:right;font-size:11px;color:var(--gold);">${pbs[name] ? `🏆 PR: ${pbs[name].w}x${pbs[name].r}` : ''}</span></div><div id="s-${i}">${setRowsHTML}</div><button data-action="addSetRow" style="width:auto; padding: 4px 10px; font-size:12px; margin-top:5px; background:#333;">+ Add Set</button>`;
+                exBlock.innerHTML = `<div class="ex-block-header"><b class="ex-block-title" data-action="showExerciseInfo" data-ex-name="${name}">${name}</b><span class="orm-header-badge">${actualORM ? `(1RM: ${actualORM}lbs)` : (defaultORM ? `(Default: ${defaultORM}lbs)` : '')}</span><span class="ex-block-pr">${pbs[name] ? `🏆 PR: ${pbs[name].w}x${pbs[name].r}` : ''}</span></div><div id="s-${i}">${setRowsHTML}</div><button data-action="addSetRow" class="btn-add-set">+ Add Set</button>`;
                 frag.appendChild(exBlock);
             });
         }
@@ -415,7 +945,7 @@
             sel.innerHTML = AppState.appConfig.plan.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
         }
      } catch (error) { console.error("Failed to save session:", error); showToast("Error saving session.", 3000); return; } if (AppState.editIndex !== null) cancelEdit(); await Promise.all([loadDay(), renderCalendar(), updateCharts(), renderPRs()]); }
-    function createHistoryCardHTML(session) { let totalVol = session.logs.reduce((v, l) => v + l.sets.reduce((sv, s) => sv + (s.r * s.w), 0), 0); const wu = (session.warmups||[]).filter(i=>i.status==='completed').map(i => `<li><span style="color:var(--red);">🔥 ${i.name}</span></li>`).join(""); const cd = (session.cooldowns||[]).filter(i=>i.status==='completed').map(i => `<li><span style="color:var(--blu);">❄️ ${i.name}</span></li>`).join(""); const logs = session.logs.map(l => { const sets = l.sets.filter(s=>s.status==='completed').map(s => `<span style="color:var(--pur);">${s.r}x${s.w}</span>`).join(", "); return sets ? `<li><b style="color:var(--pur);">${l.ex}</b>: ${sets}</li>` : ''; }).join(""); const volCol = AppState.appConfig.colors.dayVol, card = document.createElement('div'); card.className = 'history-card'; card.dataset.rd = session.rd; card.innerHTML = `<b>📅 ${new Date(session.rd + 'T00:00:00').toLocaleDateString()} - ${session.day}</b><span style="color:${volCol};background:${volCol}33; float:right; padding: 2px 6px; border-radius: 4px;">${totalVol.toLocaleString()} lbs</span><ul>${wu}${logs}${cd}</ul><div class="flex-row" style="margin-top:10px;"><button data-action="editWorkout" data-rd="${session.rd}" style="background:#f39c12;min-height:44px;">Edit</button><button data-action="deleteWorkout" data-rd="${session.rd}" style="background:var(--red);min-height:44px;">Delete</button></div>`; return card; }
+    function createHistoryCardHTML(session) { let totalVol = session.logs.reduce((v, l) => v + l.sets.reduce((sv, s) => sv + (s.r * s.w), 0), 0); const wu = (session.warmups||[]).filter(i=>i.status==='completed').map(i => `<li><span style="color:var(--red);">🔥 ${i.name}</span></li>`).join(""); const cd = (session.cooldowns||[]).filter(i=>i.status==='completed').map(i => `<li><span style="color:var(--blu);">❄️ ${i.name}</span></li>`).join(""); const logs = session.logs.map(l => { const sets = l.sets.filter(s=>s.status==='completed').map(s => `<span style="color:var(--pur);">${s.r}x${s.w}</span>`).join(", "); return sets ? `<li><b style="color:var(--pur);">${l.ex}</b>: ${sets}</li>` : ''; }).join(""); const volCol = AppState.appConfig.colors.dayVol, card = document.createElement('div'); card.className = 'history-card'; card.dataset.rd = session.rd; card.innerHTML = `<b>📅 ${new Date(session.rd + 'T00:00:00').toLocaleDateString()} - ${session.day}</b><span style="color:${volCol};background:${volCol}33; float:right; padding: 2px 6px; border-radius: 4px;">${totalVol.toLocaleString()} lbs</span><ul>${wu}${logs}${cd}</ul><div class="flex-row" style="margin-top:10px;"><button data-action="editWorkout" data-rd="${session.rd}" class="btn-import-export" style="background:#f39c12;">Edit</button><button data-action="deleteWorkout" data-rd="${session.rd}" class="btn-import-export" style="background:var(--red);">Delete</button></div>`; return card; }
     async function renderCalendar() { const history = await getHistory(), workoutDates = new Set(history.map(s => s.rd)), frag = document.createDocumentFragment(), { year, month } = { year: AppState.calendarDate.getFullYear(), month: AppState.calendarDate.getMonth() }; document.getElementById('calendar-month-year').textContent = `${AppState.calendarDate.toLocaleString('default', { month: 'long' })} ${year}`; const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(), todayStr = new Date().toISOString().split('T')[0]; for (let i = 0; i < firstDay; i++) { const el = document.createElement('div'); el.className = 'calendar-day other-month'; frag.appendChild(el); } for (let day = 1; day <= daysInMonth; day++) { const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`, el = document.createElement('div'); el.className = 'calendar-day'; if (dateStr === todayStr) el.classList.add('today'); el.dataset.action = 'showHistoryDetail'; el.dataset.date = dateStr; el.innerHTML = day + (workoutDates.has(dateStr) ? '<div class="workout-dot"></div>' : ''); frag.appendChild(el); } document.getElementById('calendar-days').replaceChildren(frag); }
     async function showHistoryDetail(dateStr) { document.querySelector('.calendar-day.selected')?.classList.remove('selected'); document.querySelector(`.calendar-day[data-date="${dateStr}"]`)?.classList.add('selected'); const detailContainer = document.getElementById('hist-detail'), session = (await getHistory()).find(s => s.rd === dateStr); if (session) detailContainer.replaceChildren(createHistoryCardHTML(session)); else detailContainer.innerHTML = ''; }
     function changeMonth(offset) { AppState.calendarDate.setMonth(AppState.calendarDate.getMonth() + offset); renderCalendar(); document.getElementById('hist-detail').innerHTML = ''; }
