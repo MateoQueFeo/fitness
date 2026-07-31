@@ -362,7 +362,7 @@
         "secondary_muscles": "Rhomboids, Posterior Deltoid",
         "stabilizing_muscles": "Rotator Cuff (O: Scapula; I: Humeral tuberosities), Erector Spinae",
         "biomechanics": "Active shoulder flexion paired with external rotation to secure the scapula against the ribcage.",
-        "how_to": "1. Lie face down on the floor or an incline bench. 2. Extend arms in a "Y" shape with thumbs pointing up to the ceiling. 3. Lift arms by pinching shoulder blades together and down. 4. Lower with control.",
+        "how_to": "1. Lie face down on the floor or an incline bench. 2. Extend arms in a 'Y' shape with thumbs pointing up to the ceiling. 3. Lift arms by pinching shoulder blades together and down. 4. Lower with control.",
         "cue": "Initiate the lift by pulling your shoulder blades down and together."
     },
     "Incline DB Press": {
@@ -498,7 +498,7 @@
         "secondary_muscles": "Posterior Deltoid",
         "stabilizing_muscles": "Erector Spinae, Hamstrings, Glutes",
         "biomechanics": "Pure, unweighted scapular retraction against gravity to neurologically prime the upper back before heavy pulling.",
-        "how_to": "1. Hinge at the hips with a flat back. 2. Let arms hang straight down. 3. Keep arms straight and raise them straight out to your sides to form a "T". 4. Squeeze shoulder blades, then lower.",
+        "how_to": "1. Hinge at the hips with a flat back. 2. Let arms hang straight down. 3. Keep arms straight and raise them straight out to your sides to form a 'T'. 4. Squeeze shoulder blades, then lower.",
         "cue": "Pinch a coin between your shoulder blades at the top."
     },
     "Bent-Over DB Row": {
@@ -610,7 +610,7 @@
         "secondary_muscles": "Rhomboids, Posterior Deltoid",
         "stabilizing_muscles": "Erector Spinae, Core Musculature",
         "biomechanics": "Strict, active upward rotation of the shoulder blades against a fixed vertical plane to improve overhead mobility.",
-        "how_to": "1. Stand with your back, head, and heels flat against a wall. 2. Bring arms up to a 90-degree goalpost position against the wall. 3. Slowly slide your hands up the wall into a "Y", keeping contact. 4. Pull back down.",
+        "how_to": "1. Stand with your back, head, and heels flat against a wall. 2. Bring arms up to a 90-degree goalpost position against the wall. 3. Slowly slide your hands up the wall into a 'Y', keeping contact. 4. Pull back down.",
         "cue": "Keep lower back flat against the wall."
     },
     "Standing Arnold Press": {
@@ -698,7 +698,7 @@
         "secondary_muscles": "Latissimus Dorsi, Shoulders",
         "stabilizing_muscles": "Core Musculature",
         "biomechanics": "Global, full-body passive stretch of the entire posterior fascial line.",
-        "how_to": "2. Tuck toes, straighten legs, and push your hips high into the air into an inverted "V", driving heels toward the floor.",
+        "how_to": "2. Tuck toes, straighten legs, and push your hips high into the air into an inverted 'V', driving heels toward the floor.",
         "cue": "Push up into Downward Dog."
     },
     "Supine Knee-to-Chest": {
@@ -899,7 +899,7 @@
         "Quadruped Hip Rocks",
         "Figure-4 Stretch",
         "Pigeon Pose"
-    },
+    ],
     "Arnold Press": [
         "Shoulder Rolls",
         "Behind-the-Back Stretch",
@@ -952,13 +952,20 @@
     }
     async function loadConfig() {
         let storedConfig = await dbGet('config', 'appConfig');
-        if(storedConfig) storedConfig = await migrateDataStructures(storedConfig);
-        if (storedConfig) {
+        if (storedConfig && typeof storedConfig === 'object' && storedConfig.plan) {
+            storedConfig = await migrateDataStructures(storedConfig);
             AppState.appConfig = storedConfig;
             if(!AppState.appConfig.colors) AppState.appConfig.colors = { ...defaultColors };
             if(!AppState.appConfig.bpm) AppState.appConfig.bpm = constants.DEFAULT_BPM;
         } else {
-            AppState.appConfig = { id: 'appConfig', plan: defaultPlan, warmups: Object.entries(defaultWarmups).map(([name, items])=>({name, items})), cooldowns: Object.entries(defaultCooldowns).map(([name, items])=>({name, items})), colors: { ...defaultColors }, bpm: constants.DEFAULT_BPM };
+            AppState.appConfig = { 
+                id: 'appConfig', 
+                plan: defaultPlan, 
+                warmups: Object.entries(defaultWarmups).map(([name, items])=>({name, items})), 
+                cooldowns: Object.entries(defaultCooldowns).map(([name, items])=>({name, items})), 
+                colors: { ...defaultColors }, 
+                bpm: constants.DEFAULT_BPM 
+            };
             await dbPut('config', AppState.appConfig);
         }
     }
@@ -1033,7 +1040,13 @@
         document.getElementById('setup').classList.add('hidden');
         showToast("Configuration saved!", 2000);
     }
-    function playSound(type, freq, duration, delay=0) { if (!AppState.audioContext) return; const o=AppState.audioContext.createOscillator(), g=AppState.audioContext.createGain(), now = AppState.audioContext.currentTime + delay; o.type = type; o.frequency.setValueAtTime(freq, now); g.gain.setValueAtTime(0.5, now); g.gain.exponentialRampToValueAtTime(.0001, now + duration); o.connect(g); g.connect(AppState.audioContext.destination); o.start(now); o.stop(now + duration); }
+    function playSound(type, freq, duration, delay=0) { 
+        if (!AppState.audioContext) return; 
+        if (AppState.audioContext.state === 'suspended') {
+            AppState.audioContext.resume();
+        }
+        const o=AppState.audioContext.createOscillator(), g=AppState.audioContext.createGain(), now = AppState.audioContext.currentTime + delay; o.type = type; o.frequency.setValueAtTime(freq, now); g.gain.setValueAtTime(0.5, now); g.gain.exponentialRampToValueAtTime(.0001, now + duration); o.connect(g); g.connect(AppState.audioContext.destination); o.start(now); o.stop(now + duration); 
+    }
     function showToast(message, duration = 3000) { const t = document.getElementById('toast-notification'); t.textContent = message; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), duration); }
     function updateTimerDisplay(){document.getElementById("timeDisplay").innerText=`${Math.floor(AppState.timeRemaining/60).toString().padStart(2,'0')}:${(AppState.timeRemaining%60).toString().padStart(2,'0')}`}
     function startTimerFrom(s){ clearInterval(AppState.timerInterval); AppState.timeRemaining=s; localStorage.setItem('timerEndTime', Date.now() + s * 1000); updateTimerDisplay(); startCountdown(); }
