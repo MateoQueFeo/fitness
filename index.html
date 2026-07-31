@@ -112,6 +112,7 @@
     </style>
     <link rel="manifest" id="manifest-link">
     <meta name="theme-color" content="#1e1e1e">
+    <link rel="icon" href="icon-512.png" type="image/png">
     <script>
         const manifest = {
             "name": "Fitness Log",
@@ -122,7 +123,8 @@
             "theme_color": "#1e1e1e",
             "description": "A single-file progressive web app for tracking workouts.",
             "icons": [
-                { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='85' font-size='80'%3E🏋️%3C/text%3E%3C/svg%3E", "sizes": "any", "type": "image/svg+xml" }
+                { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+                { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
             ]
         };
         const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
@@ -132,7 +134,7 @@
             window.addEventListener('load', () => {
                 const swContent = `
                     const CACHE_NAME = 'fitness-log-cache-v1';
-                    const urlsToCache = ['.'];
+                    const urlsToCache = ['.', 'icon-512.png', 'icon-512-maskable.png'];
                     self.addEventListener('install', event => {
                         self.skipWaiting();
                         event.waitUntil(
@@ -164,7 +166,7 @@
 <body>
 <div id="exModal" class="modal-overlay hidden" data-action="closeModal">
     <div class="modal-content">
-        <button class="close-btn" aria-label="Close Modal" data-action="closeModal">✕</button>
+        <button class="close-btn" aria-label="Close Modal" data-action="closeModal">?</button>
         <h2 id="modalTitle" class="modal-title-style">Exercise</h2>
         <div id="modal-extra-info"></div>
         <button data-action="jumpToProgress" class="btn-progress-chart">View Progress Chart</button>
@@ -179,14 +181,14 @@
         </div>
     </div>
     <div class="flex-row metronome-controls">
-        <button id="metronomeToggleBtn" data-action="toggleMetronome">🎵</button>
+        <button id="metronomeToggleBtn" data-action="toggleMetronome">?</button>
         <span id="bpmDisplay">60 BPM</span>
     </div>
 </div>
 <div class="container">
     <h1>Fitness Log</h1>
     <div class="section-card">
-        <div id="editMode" class="hidden">⚠️ EDIT MODE <button data-action="cancelEdit">Cancel</button></div>
+        <div id="editMode" class="hidden">? EDIT MODE <button data-action="cancelEdit">Cancel</button></div>
         <div class="flex-row date-picker-row">
             <input type="date" id="date">
             <select id="daySel" data-action="loadDay"></select>
@@ -200,7 +202,7 @@
         <h3 id="progressSection">Progress</h3>
         <select id="cxSel" data-action="updateCharts"></select>
         <div class="chart-legend">
-            <span id="leg-orm" style="color:var(--gold);">●</span> Est. 1RM (Strength) &nbsp;&nbsp;&nbsp; <span id="leg-exVol" style="color:#009688;">■</span> Total Volume (Workload)
+            <span id="leg-orm" style="color:var(--gold);">?</span> Est. 1RM (Strength) &nbsp;&nbsp;&nbsp; <span id="leg-exVol" style="color:#009688;">?</span> Total Volume (Workload)
         </div>
         <div class="chart-container chart-container-small" id="exC-orm"></div>
         <div class="chart-container chart-container-small" id="exC-vol"></div>
@@ -216,7 +218,7 @@
             </select>
         </div>
         <div class="chart-legend">
-            <span id="leg-dayVol" style="color:#FF7F50;">■</span> Daily Volume &nbsp;&nbsp;&nbsp; <span id="leg-rollAvg" style="color:var(--gold);">●</span> Rolling Avg
+            <span id="leg-dayVol" style="color:#FF7F50;">?</span> Daily Volume &nbsp;&nbsp;&nbsp; <span id="leg-rollAvg" style="color:var(--gold);">?</span> Rolling Avg
         </div>
         <div class="chart-container" id="volC"></div>
     </div>
@@ -224,16 +226,16 @@
     <h2>History</h2>
     <div id="calendar-container">
         <div class="calendar-header">
-            <button data-action="prevMonth">‹</button>
+            <button data-action="prevMonth">?</button>
             <div id="calendar-month-year"></div>
-            <button data-action="nextMonth">›</button>
+            <button data-action="nextMonth">?</button>
         </div>
         <div class="calendar-grid" id="calendar-weekdays"></div>
         <div class="calendar-grid" id="calendar-days"></div>
     </div>
     <div id="hist-detail"></div>
     <div class="section-card section-card-margin-top">
-        <h3 data-action="toggleSetup" class="setup-toggle">⚙️ Setup (Click to Expand)</h3>
+        <h3 data-action="toggleSetup" class="setup-toggle">?? Setup (Click to Expand)</h3>
         <div id="setup" class="hidden">
             <div class="setup-block">
                 <h4>General</h4>
@@ -258,8 +260,8 @@
         </div>
     </div>
     <div class="flex-row import-export-row">
-        <button id="exportBtn" data-action="exportData" class="btn-import-export">📤 Export</button>
-        <button id="importBtn" data-action="triggerImport" class="btn-import-export">📥 Import</button>
+        <button id="exportBtn" data-action="exportData" class="btn-import-export">?? Export</button>
+        <button id="importBtn" data-action="triggerImport" class="btn-import-export">?? Import</button>
         <input type="file" id="imp" class="hidden" data-action="importData">
     </div>
 </div>
@@ -360,7 +362,7 @@
         "secondary_muscles": "Rhomboids, Posterior Deltoid",
         "stabilizing_muscles": "Rotator Cuff (O: Scapula; I: Humeral tuberosities), Erector Spinae",
         "biomechanics": "Active shoulder flexion paired with external rotation to secure the scapula against the ribcage.",
-        "how_to": "1. Lie face down on the floor or an incline bench. 2. Extend arms in a \"Y\" shape with thumbs pointing up to the ceiling. 3. Lift arms by pinching shoulder blades together and down. 4. Lower with control.",
+        "how_to": "1. Lie face down on the floor or an incline bench. 2. Extend arms in a "Y" shape with thumbs pointing up to the ceiling. 3. Lift arms by pinching shoulder blades together and down. 4. Lower with control.",
         "cue": "Initiate the lift by pulling your shoulder blades down and together."
     },
     "Incline DB Press": {
@@ -496,7 +498,7 @@
         "secondary_muscles": "Posterior Deltoid",
         "stabilizing_muscles": "Erector Spinae, Hamstrings, Glutes",
         "biomechanics": "Pure, unweighted scapular retraction against gravity to neurologically prime the upper back before heavy pulling.",
-        "how_to": "1. Hinge at the hips with a flat back. 2. Let arms hang straight down. 3. Keep arms straight and raise them straight out to your sides to form a \"T\". 4. Squeeze shoulder blades, then lower.",
+        "how_to": "1. Hinge at the hips with a flat back. 2. Let arms hang straight down. 3. Keep arms straight and raise them straight out to your sides to form a "T". 4. Squeeze shoulder blades, then lower.",
         "cue": "Pinch a coin between your shoulder blades at the top."
     },
     "Bent-Over DB Row": {
@@ -608,7 +610,7 @@
         "secondary_muscles": "Rhomboids, Posterior Deltoid",
         "stabilizing_muscles": "Erector Spinae, Core Musculature",
         "biomechanics": "Strict, active upward rotation of the shoulder blades against a fixed vertical plane to improve overhead mobility.",
-        "how_to": "1. Stand with your back, head, and heels flat against a wall. 2. Bring arms up to a 90-degree goalpost position against the wall. 3. Slowly slide your hands up the wall into a \"Y\", keeping contact. 4. Pull back down.",
+        "how_to": "1. Stand with your back, head, and heels flat against a wall. 2. Bring arms up to a 90-degree goalpost position against the wall. 3. Slowly slide your hands up the wall into a "Y", keeping contact. 4. Pull back down.",
         "cue": "Keep lower back flat against the wall."
     },
     "Standing Arnold Press": {
@@ -696,7 +698,7 @@
         "secondary_muscles": "Latissimus Dorsi, Shoulders",
         "stabilizing_muscles": "Core Musculature",
         "biomechanics": "Global, full-body passive stretch of the entire posterior fascial line.",
-        "how_to": "2. Tuck toes, straighten legs, and push your hips high into the air into an inverted \"V\", driving heels toward the floor.",
+        "how_to": "2. Tuck toes, straighten legs, and push your hips high into the air into an inverted "V", driving heels toward the floor.",
         "cue": "Push up into Downward Dog."
     },
     "Supine Knee-to-Chest": {
@@ -897,7 +899,7 @@
         "Quadruped Hip Rocks",
         "Figure-4 Stretch",
         "Pigeon Pose"
-    ],
+    },
     "Arnold Press": [
         "Shoulder Rolls",
         "Behind-the-Back Stretch",
@@ -1041,8 +1043,8 @@
     if (isNaN(repVal) && !repInp.dataset.amrap) { repInp.classList.add('error-border'); isValid = false; } else { repInp.classList.remove('error-border'); }
     if (isNaN(wtVal)) { wtInp.classList.add('error-border'); isValid = false; } else { wtInp.classList.remove('error-border'); }
      if (!isValid) { showToast('Enter valid reps & weight.', 2000); return; } } row.querySelectorAll('.btn-act').forEach(b => b.classList.remove('active')); textSpan?.classList.remove('txt-comp', 'txt-skip'); if (!wasActive) { button.classList.add('active'); textSpan?.classList.add(isComplete ? 'txt-comp' : 'txt-skip'); if (isComplete) startTimerFrom(constants.DEFAULT_REST_TIME); } }
-    function generateRowHTML(ei, si, r = '', w = '', am = false, status = '') { const repValue = am ? '' : r, statusClasses = {completed: {comp: ' active', txt: ' txt-comp'}, skipped: {skip: ' active', txt: ' txt-skip'}}[status] || {}; return `<div class="set-row" id="r-${ei}-${si}"><div class="set-row-main"><span style="width:20px;font-size:12px;color:var(--dim);">S<span class="set-num"></span></span><input type="number" min="1" step="1" inputmode="numeric" class="rep-input" placeholder="${am ? 'AMRAP' : 'Reps'}" value="${repValue}" data-amrap="${am}"><input type="number" min="0" step="1" inputmode="numeric" class="weight-input" placeholder="lbs" value="${w}"></div><div class="check-actions"><button type="button" class="btn-act btn-comp${statusClasses.comp||''}" aria-label="Mark Complete" data-action="toggleCheck">✔</button><button type="button" class="btn-act btn-skip${statusClasses.skip||''}" aria-label="Skip" data-action="toggleCheck">✕</button></div></div>`; }
-    function createCheckItemHTML(item, color, status = '') { const baseName = item.split(/[:(]/)[0].trim(), statusClasses = {completed: 'txt-comp', skipped: 'txt-skip'}[status] || ''; return `<div class="chk-item"><span data-action="showExerciseInfo" data-ex-name="${baseName}" style="cursor:pointer; color:var(--${color}); text-decoration:underline; font-size:15px;" class="${statusClasses}">${item}</span><div class="check-actions"><button type="button" class="btn-act btn-comp${status === 'completed'?' active':''}" aria-label="Mark Complete" data-action="toggleCheck">✔</button><button type="button" class="btn-act btn-skip${status === 'skipped'?' active':''}" aria-label="Skip" data-action="toggleCheck">✕</button></div></div>`; }
+    function generateRowHTML(ei, si, r = '', w = '', am = false, status = '') { const repValue = am ? '' : r, statusClasses = {completed: {comp: ' active', txt: ' txt-comp'}, skipped: {skip: ' active', txt: ' txt-skip'}}[status] || {}; return `<div class="set-row" id="r-${ei}-${si}"><div class="set-row-main"><span style="width:20px;font-size:12px;color:var(--dim);">S<span class="set-num"></span></span><input type="number" min="1" step="1" inputmode="numeric" class="rep-input" placeholder="${am ? 'AMRAP' : 'Reps'}" value="${repValue}" data-amrap="${am}"><input type="number" min="0" step="1" inputmode="numeric" class="weight-input" placeholder="lbs" value="${w}"></div><div class="check-actions"><button type="button" class="btn-act btn-comp${statusClasses.comp||''}" aria-label="Mark Complete" data-action="toggleCheck">?</button><button type="button" class="btn-act btn-skip${statusClasses.skip||''}" aria-label="Skip" data-action="toggleCheck">?</button></div></div>`; }
+    function createCheckItemHTML(item, color, status = '') { const baseName = item.split(/[:(]/)[0].trim(), statusClasses = {completed: 'txt-comp', skipped: 'txt-skip'}[status] || ''; return `<div class="chk-item"><span data-action="showExerciseInfo" data-ex-name="${baseName}" style="cursor:pointer; color:var(--${color}); text-decoration:underline; font-size:15px;" class="${statusClasses}">${item}</span><div class="check-actions"><button type="button" class="btn-act btn-comp${status === 'completed'?' active':''}" aria-label="Mark Complete" data-action="toggleCheck">?</button><button type="button" class="btn-act btn-skip${status === 'skipped'?' active':''}" aria-label="Skip" data-action="toggleCheck">?</button></div></div>`; }
     function addSetRow(button) { const setContainer = button.previousElementSibling; setContainer.insertAdjacentHTML('beforeend', generateRowHTML(setContainer.id.split('-')[1], Date.now())); updateSetNumbers(setContainer); }
     function updateSetNumbers(container) { container.querySelectorAll('.set-row .set-num').forEach((span, ix) => span.innerText = ix + 1); }
     function roundToNearest5(n) { return Math.round(n / 5) * 5; }
@@ -1069,10 +1071,10 @@
                             generateRowHTML(i, 1, 6, roundToNearest5(ormToUse * 2 / 3)),
                             generateRowHTML(i, 2, '', roundToNearest5(ormToUse * 0.85), true)
                         ].join('');
-                    } else { // Isolation
+                    } else { 
                         setRowsHTML = generateRowHTML(i, 0, '', roundToNearest5(ormToUse * 0.75), true);
                     }
-                } else { // Fallback if no ORM is available
+                } else { 
                     const numSets = parseInt(setsStr) || 1;
                     const weight = parseInt(weightStr) || '';
                     const reps = repsStr === 'AMRAP' ? '' : (repsStr || '');
@@ -1121,9 +1123,109 @@
     async function renderPRs() { const prs = await getPRs(), pb = document.getElementById("pb"); if (!Object.keys(prs).length) { pb.innerHTML = ""; return; } const table = document.createElement('table'); table.innerHTML = "<tr><th>Lift</th><th>Best Set (lbs x reps)</th><th>Est. 1RM</th></tr>" + Object.keys(prs).sort().map(x => `<tr><td><b>${x}</b></td><td>${prs[x].w} x ${prs[x].r}</td><td style="color:var(--gold);">${prs[x].orm}</td></tr>`).join(''); pb.replaceChildren(table); }
     function createSVGChart(containerId, datasets, options = {}) { const c = document.getElementById(containerId); if (!c) return; const W = c.clientWidth, H = c.clientHeight, P = 30, allPoints = datasets.flatMap(ds => ds.data); if (W === 0 || H === 0 || !allPoints.length || (allPoints.length < 2 && !options.allowSinglePoint)) { c.innerHTML = '<p style="text-align:center;color:var(--dim);margin-top:20%;">Not enough data.</p>'; return; } const maxVal = Math.max(...allPoints.map(d => d.value)), minVal = options.startAtZero ? 0 : Math.min(...allPoints.map(d => d.value)); const xR = W - P - P, yR = H - P - P, getX = i => P + (allPoints.length > 1 ? i * xR / (allPoints.length - 1) : xR / 2), getY = val => H - P - (maxVal === minVal ? yR / 2 : (val - minVal) * yR / (maxVal - minVal)); let svg = `<svg class="svg-chart-container" viewBox="0 0 ${W} ${H}" role="img"><title>${options.title||'Chart'}</title>`; for(let i=0; i<=4; i++) { const val = minVal + i * (maxVal-minVal) / 4, y = getY(val); svg += `<g><line class="grid" x1="${P}" y1="${y}" x2="${W-P}" y2="${y}"></line><text class="label" x="5" y="${y+4}">${Math.round(val)}</text></g>`; } datasets.forEach(ds => { const data = ds.data; if (!data.length) return; if (ds.type === 'line') { svg += `<polyline fill="none" stroke="${ds.color}" stroke-width="2" points="${data.map((d, i) => `${getX(i)},${getY(d.value)}`).join(' ')}"/>`; data.forEach((d, i) => { svg += `<g><circle cx="${getX(i)}" cy="${getY(d.value)}" r="3" fill="${ds.color}"/><text class="tooltip" text-anchor="middle" x="${getX(i)}" y="${getY(d.value)-8}" fill="${ds.color}">${d.value}</text></g>`; }); } else if (ds.type === 'bar') { const barW = Math.max(5, (xR / allPoints.length) * 0.8); data.forEach((d, i) => { const barH = Math.max(1, getY(minVal) - getY(d.value)); svg += `<g><rect x="${getX(i)-barW/2}" y="${getY(d.value)}" width="${barW}" height="${barH}" fill="${ds.color}"/><text class="tooltip" x="${getX(i)}" y="${getY(d.value)-5}" text-anchor="middle" fill="${ds.color}">${d.value}</text></g>`; }); } }); allPoints.forEach((d, i) => { if (allPoints.length < 15 || i % Math.floor(allPoints.length / 8) === 0) { svg += `<text class="label" text-anchor="middle" x="${getX(i)}" y="${H - 5}">${d.label}</text>`; } }); svg += '</svg>'; c.innerHTML = svg; }
     async function updateCharts(){ Object.entries(AppState.appConfig.colors).forEach(([k, v]) => { const el = document.getElementById(`leg-${k}`); if(el) el.style.color = v; }); const ex = document.getElementById("cxSel").value, h = await getHistory(), rollWin = parseInt(document.getElementById("rollAvgSel")?.value || "4"), cacheKey = `${ex}-${rollWin}`; if (AppState.cachedChartData[cacheKey]) { const {orm, vol, total} = AppState.cachedChartData[cacheKey]; createSVGChart('exC-orm', orm, {startAtZero:false, allowSinglePoint:true}); createSVGChart('exC-vol', vol, {startAtZero:true, allowSinglePoint:true}); createSVGChart('volC', total, {startAtZero:true, allowSinglePoint:true}); return; } const exData = h.map(s=>{ const l=s.logs.find(x=>x.ex===ex); return l?.sets.length ? { d:s.rd, lbl:s.rd.substring(5), orm:Math.max(...l.sets.filter(i=>i.status==='completed').map(x=>x.orm)), vol:l.sets.filter(i=>i.status==='completed').reduce((sm,x)=>sm+(x.r*x.w),0) } : null; }).filter(Boolean).sort((a,b)=>a.d.localeCompare(b.d)); const totalData = h.map(s=>{let v=s.logs.reduce((tv,l)=>tv+l.sets.reduce((sv,set)=>sv+(set.r*set.w),0),0); return {d:s.rd,lbl:s.rd.substring(5),v:v};}).filter(s=>s.v > 0).sort((a,b)=>a.d.localeCompare(b.d)); const volPts = totalData.map(d => ({ value: d.v, label: d.lbl })); const rollPts = volPts.map((_, i, arr) => { const subset = arr.slice(Math.max(0, i - rollWin + 1), i + 1); return { value: Math.round(subset.reduce((s, c) => s + c.value, 0) / subset.length), label: arr[i].label }; }); const ormChartData = [{ type: 'line', color: AppState.appConfig.colors.orm, data: exData.map(d => ({ value: d.orm, label: d.lbl })) }]; const volChartData = [{ type: 'bar', color: AppState.appConfig.colors.exVol, data: exData.map(d => ({ value: d.vol, label: d.lbl })) }]; const totalChartData = [ { type: 'bar', color: AppState.appConfig.colors.dayVol + '99', data: volPts }, { type: 'line', color: AppState.appConfig.colors.rollAvg, data: rollPts } ]; AppState.cachedChartData[cacheKey] = {orm:ormChartData, vol:volChartData, total:totalChartData}; createSVGChart('exC-orm', ormChartData, {startAtZero:false, allowSinglePoint:true}); createSVGChart('exC-vol', volChartData, {startAtZero:true, allowSinglePoint:true}); createSVGChart('volC', totalChartData, {startAtZero:true, allowSinglePoint:true}); }
-    async function exportData(){ const h = await getHistory(), csv = "Type,Date,Day,Exercise,Sets,Warmups,Cooldowns\n" + h.sort((a,b) => a.rd.localeCompare(b.rd)).map(s => { const esc = (str) => `"${(str || '').toString().replace(/"/g, '""')}"`; if (s.logs.length) { return s.logs.map(l => `Workout,${esc(s.rd)},${esc(s.day)},${esc(l.ex)},${esc(l.sets.map(x => `${x.r}x${x.w}`).join('|'))},"",""`).join('\n'); } else { return `Workout,${esc(s.rd)},${esc(s.day)},"Rest Day","",${esc((s.warmups||[]).join('|'))},${esc((s.cooldowns||[]).join('|'))}`; } }).join('\n'); const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "fitness_log.csv"; link.click(); URL.revokeObjectURL(link.href); }
+    
+    async function exportData(){ 
+        const h = await getHistory();
+        let csvContent = "date,exercise,reps,weight\n";
+        h.sort((a,b) => a.rd.localeCompare(b.rd)).forEach(s => {
+            s.logs.forEach(l => {
+                const escapedEx = `"${l.ex.replace(/"/g, '""')}"`;
+                l.sets.forEach(st => {
+                    if (st.status === 'completed') {
+                        csvContent += `${s.rd},${escapedEx},${st.r},${st.w}\n`;
+                    }
+                });
+            });
+        });
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); 
+        const link = document.createElement("a"); 
+        link.href = URL.createObjectURL(blob); 
+        link.download = "fitness_log_sets.csv"; 
+        link.click(); 
+        URL.revokeObjectURL(link.href); 
+    }
     function parseCSVLine(line) { const regex = /(?:"((?:[^"]|"")*)"|([^,"]*))(?:,|$)/g; let fields = [], match; while (match = regex.exec(line)) { fields.push(match[1] ? match[1].replace(/""/g, '"') : (match[2] || '')); if (match[0].slice(-1) !== ',') break; } return fields; }
-    async function importData(e){ const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async (ev) => { try { let lines = ev.target.result.split("\n"), headers = lines[0].trim().toLowerCase().split(','), wO={}, skipped=0; for (let i = 1; i < lines.length; i++) { if (!lines[i].trim()) continue; let p = parseCSVLine(lines[i]), entry = headers.reduce((obj, h, idx) => ({ ...obj, [h.trim()]: p[idx] }), {}); if (!entry.date || !/^\d{4}-\d{2}-\d{2}$/.test(entry.date) || await dbGet('sessions', entry.date)) { skipped++; continue; } if(entry.type.toLowerCase() === "workout"){ const key = entry.date; if(!wO[key]) wO[key]={rd:key, day:entry.day, logs:[], warmups:[], cooldowns:[]}; if(entry.exercise && entry.exercise !== "Rest Day" && entry.sets){ let sets = entry.sets.split('|').map(x => { let [r, w] = x.split('x').map(Number); return (isNaN(r) || isNaN(w)) ? null : { r, w, orm: Math.round(w * (1 + r / 30)), status: 'completed' }; }).filter(Boolean); if(sets.length) wO[key].logs.push({ ex: entry.exercise, sets }); } } } if (Object.keys(wO).length > 0) { const tx = AppState.db.transaction('sessions', 'readwrite'); Object.values(wO).forEach(s => tx.objectStore('sessions').put(s)); await new Promise(res => tx.oncomplete = res); invalidateCache(); } showToast(`Import done. ${Object.keys(wO).length} added, ${skipped} skipped.`, 5000); await init(); } catch (error) { console.error("Import failed:", error); showToast(`Import failed: ${error.message}`, 5000); } finally { e.target.value = ''; } }; reader.readAsText(file); }
+    
+    async function importData(e){ 
+        const file = e.target.files[0]; 
+        if(!file) return; 
+        const reader = new FileReader(); 
+        reader.onload = async (ev) => { 
+            try { 
+                let lines = ev.target.result.split("\n");
+                const headersLine = lines.shift().trim().toLowerCase();
+                if (headersLine !== 'date,exercise,reps,weight') {
+                    throw new Error('Invalid CSV format. Expected headers: date,exercise,reps,weight');
+                }
+                
+                let sessionsObj = {}; 
+                let skipped = 0;
+
+                for (const line of lines) {
+                    if (!line.trim()) continue;
+                    
+                    const p = parseCSVLine(line);
+                    const entry = { date: p[0], exercise: p[1], reps: p[2], weight: p[3] };
+
+                    if (!entry.date || !/^\d{4}-\d{2}-\d{2}$/.test(entry.date) || !entry.exercise || entry.reps === undefined || entry.weight === undefined) {
+                        skipped++;
+                        continue;
+                    }
+                    
+                    const originalExerciseName = entry.exercise.trim();
+                    const standardizedExerciseName = originalExerciseName.toLowerCase();
+
+                    const reps = parseInt(entry.reps, 10);
+                    const weight = parseInt(entry.weight, 10);
+
+                    if (isNaN(reps) || isNaN(weight)) {
+                        skipped++;
+                        continue;
+                    }
+
+                    const key = entry.date;
+                    if (!sessionsObj[key]) {
+                        if (await dbGet('sessions', key)) {
+                            continue;
+                        }
+                        sessionsObj[key] = { rd: key, day: "Imported Session", logs: [], warmups: [], cooldowns: [] };
+                    }
+                    
+                    if (!sessionsObj[key]) continue;
+
+                    let log = sessionsObj[key].logs.find(l => l.ex.trim().toLowerCase() === standardizedExerciseName);
+
+                    if (!log) {
+                        log = { ex: originalExerciseName, sets: [] };
+                        sessionsObj[key].logs.push(log);
+                    }
+
+                    log.sets.push({
+                        r: reps,
+                        w: weight,
+                        orm: Math.round(weight * (1 + reps / 30)),
+                        status: 'completed',
+                        amrap: false 
+                    });
+                }
+
+                if (Object.keys(sessionsObj).length > 0) {
+                    const tx = AppState.db.transaction('sessions', 'readwrite');
+                    Object.values(sessionsObj).forEach(s => tx.objectStore('sessions').put(s));
+                    await new Promise(res => tx.oncomplete = res);
+                    invalidateCache();
+                }
+                showToast(`Import done. ${Object.keys(sessionsObj).length} sessions imported/updated, ${skipped} rows skipped.`, 5000);
+                await init();
+            } catch (error) { 
+                console.error("Import failed:", error); 
+                showToast(`Import failed: ${error.message}`, 5000);
+            } finally { 
+                e.target.value = ''; 
+            } 
+        }; 
+        reader.readAsText(file); 
+    }
     const actions = { closeModal, jumpToProgress, resetTimer, cancelEdit, saveWorkoutSession, addDayToSetup, saveSetup, resetSetup, exportData, toggleMetronome, importData, prevMonth: () => changeMonth(-1), nextMonth: () => changeMonth(1), addTime: (t) => addTime(parseInt(t.dataset.time)), toggleSetup: () => document.getElementById('setup').classList.toggle('hidden'), toggleCheck: (t) => toggleCheck(t), showExerciseInfo: (t) => showExerciseInfo(t.dataset.exName), editWorkout: (t) => editWorkout(t.dataset.rd), deleteWorkout: (t) => deleteWorkout(t.dataset.rd), addSetRow: (t) => addSetRow(t), showHistoryDetail: (t) => showHistoryDetail(t.dataset.date), triggerImport: () => document.getElementById('imp').click(), loadDay: () => { if (AppState.editIndex === null) loadDay(); }, updateCharts };
     document.addEventListener('click', e => { const target = e.target.closest('[data-action]'); if (target?.dataset.action && actions[target.dataset.action]) { if (target.closest('.modal-content')) e.stopPropagation(); actions[target.dataset.action](target); } });
     document.addEventListener('change', e => { const target = e.target.closest('[data-action]'); if (target?.dataset.action && actions[target.dataset.action]) actions[target.dataset.action](target); });
