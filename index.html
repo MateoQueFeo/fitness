@@ -15,7 +15,7 @@
         .timer-card{position:sticky;top:10px;z-index:100;max-width:600px;margin:auto;display:flex;justify-content:space-between;align-items:center;background:#121212;padding:5px 10px;border-radius:8px;margin-bottom:20px;flex-wrap: wrap; justify-content: center; gap: 15px;}
         #timeDisplay{font-size:1.8em;font-weight:bold;font-family:monospace;margin:0; color: var(--gold);}
         .timer-controls{display:flex;gap:8px;}
-        .timer-controls button, #metronomeToggleBtn {min-width:44px;min-height:44px;padding:4px 8px;font-size:14px;margin:0; background-color:#121212; color:var(--gold); border:1px solid var(--gold);}
+        .timer-controls button, #metronomeToggleBtn {min-width:44px;min-height:44px;padding:4px 8px;font-size:14px;margin:0; background-color:#121212; color:var(--gold); border:none;}
         .flex-row{display:flex;gap:10px;justify-content:center;align-items:center;}
         .flex-row button,.flex-row select,.flex-row input{margin-top:0;margin-bottom:0;}
         #date{width:150px;}
@@ -83,7 +83,6 @@
         .modal-title-style { margin-top:0; color:var(--blu); text-align:left; padding-right:35px; font-size:20px; margin-bottom:10px; }
         .btn-progress-chart { width:100%; margin-top:15px; padding:12px; border-radius:8px; font-size:15px; background:var(--blu); color:#fff; font-weight:bold; }
         .metronome-controls { border-left: 1px solid var(--brd); padding-left: 15px; }
-        #bpmDisplay { font-size: 14px; font-family: monospace; color: var(--gold); }
         #editMode { color:var(--gold); text-align:center; padding:10px; }
         #editMode button { background:none; color:var(--gold); border:none; }
         .date-picker-row { margin-bottom:8px; }
@@ -182,7 +181,6 @@
     </div>
     <div class="flex-row metronome-controls">
         <button id="metronomeToggleBtn" data-action="toggleMetronome" aria-label="Toggle Metronome">&#x23F1;</button>
-        <span id="bpmDisplay">60 BPM</span>
     </div>
 </div>
 <div class="container">
@@ -1015,7 +1013,6 @@
             cSel.innerHTML = [...new Set((await getHistory()).flatMap(s => s.logs.map(l => l.ex)))].sort().map(ex => `<option value="${ex}">${ex}</option>`).join('');
             Object.entries(AppState.appConfig.colors).forEach(([key, val]) => document.getElementById(`c-${key}`).value = val);
             document.getElementById('setup-bpm').value = AppState.appConfig.bpm;
-            document.getElementById('bpmDisplay').textContent = `${AppState.appConfig.bpm} BPM`;
             document.getElementById('calendar-weekdays').innerHTML = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<div class="calendar-weekday">${d}</div>`).join('');
             renderSetupInputs();
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
@@ -1036,7 +1033,6 @@
         sel.innerHTML = AppState.appConfig.plan.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
         sel.value = currentDay;
         document.getElementById('setup-bpm').value = AppState.appConfig.bpm;
-        document.getElementById('bpmDisplay').textContent = `${AppState.appConfig.bpm} BPM`;
         document.getElementById('setup').classList.add('hidden');
         showToast("Configuration saved!", 2000);
     }
@@ -1053,8 +1049,8 @@
     function addTime(s) { AppState.timeRemaining += s; if (AppState.timeRemaining < 0) AppState.timeRemaining = 0; localStorage.setItem('timerEndTime', Date.now() + AppState.timeRemaining * 1000); updateTimerDisplay(); if (!AppState.timerInterval && AppState.timeRemaining > 0) startCountdown(); }
     function resetTimer(){ clearInterval(AppState.timerInterval); AppState.timerInterval=null; AppState.timeRemaining=0; localStorage.removeItem('timerEndTime'); updateTimerDisplay(); }
     function startCountdown(){if(AppState.timerInterval||AppState.timeRemaining<=0)return;AppState.timerInterval=setInterval(()=>{AppState.timeRemaining--;updateTimerDisplay();if(AppState.timeRemaining<=0){clearInterval(AppState.timerInterval);AppState.timerInterval=null;localStorage.removeItem('timerEndTime');[0,.3,.6].forEach(d=>playSound('sine', 880, 0.2, d));showToast("Time's up!");}},1000);}
-    function startMetronome() { if (AppState.metronomeInterval) clearInterval(AppState.metronomeInterval); const interval = 60000 / AppState.appConfig.bpm; const playTick = () => playSound('sine', 1200, 0.05); AppState.metronomeInterval = setInterval(playTick, interval); playTick(); AppState.isMetronomeOn = true; document.getElementById('metronomeToggleBtn').style.borderColor = 'var(--grn)'; }
-    function stopMetronome() { clearInterval(AppState.metronomeInterval); AppState.metronomeInterval = null; AppState.isMetronomeOn = false; document.getElementById('metronomeToggleBtn').style.borderColor = 'var(--gold)'; }
+    function startMetronome() { if (AppState.metronomeInterval) clearInterval(AppState.metronomeInterval); const interval = 60000 / AppState.appConfig.bpm; const playTick = () => playSound('sine', 1200, 0.05); AppState.metronomeInterval = setInterval(playTick, interval); playTick(); AppState.isMetronomeOn = true; document.getElementById('metronomeToggleBtn').style.color = 'var(--grn)'; }
+    function stopMetronome() { clearInterval(AppState.metronomeInterval); AppState.metronomeInterval = null; AppState.isMetronomeOn = false; document.getElementById('metronomeToggleBtn').style.color = 'var(--gold)'; }
     function toggleMetronome() { AppState.isMetronomeOn ? stopMetronome() : startMetronome(); }
     function toggleCheck(button){ const row = button.closest('.chk-item,.set-row'), isComplete = button.classList.contains('btn-comp'), textSpan = row.querySelector('span:first-child'), wasActive = button.classList.contains('active'); if (isComplete && !wasActive && row.classList.contains('set-row')) { const repInp = row.querySelector('.rep-input'), wtInp = row.querySelector('.weight-input'); let isValid = true;
     const repVal = parseInt(repInp.value.trim());
