@@ -1584,87 +1584,81 @@ select, button, input, textarea {
     async function exportData() { const h = await getHistory(); let csvContent = "date,exercise,reps,weight\n"; h.sort((a, b) => a.rd.localeCompare(b.rd)).forEach(s => { s.logs.forEach(l => { const escapedEx = `"${l.ex.replace(/"/g, '""')}"`; l.sets.forEach(st => { if (st.status === 'completed') { csvContent += `${s.rd},${escapedEx},${st.r},${st.w}\n`; } }); }); }); const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "fitness_log_sets.csv"; link.click(); URL.revokeObjectURL(link.href); }
     function parseCSVLine(line) { const regex = /(?:"((?:[^"]|"")*)"|([^,"]*))(?:,|$)/g; let fields = [], match; while (match = regex.exec(line)) { fields.push(match[1] ? match[1].replace(/""/g, '"') : (match[2] || '')); if (match[0].slice(-1) !== ',') break; } return fields; }
     async function importData(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-        try {
-            const lines = ev.target.result.split("\n");
-            const headersLine = lines.shift().trim().toLowerCase();
-            if (headersLine !== 'date,exercise,reps,weight') {
-                throw new Error('Invalid CSV format. Expected headers: date,exercise,reps,weight');
-            }
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+            try {
+                const lines = ev.target.result.split("\n");
+                const headersLine = lines.shift().trim().toLowerCase();
+                if (headersLine !== 'date,exercise,reps,weight') {
+                    throw new Error('Invalid CSV format. Expected headers: date,exercise,reps,weight');
+                }
 
-            const existingDates = new Set((await getHistory()).map(s => s.rd));
-            const sessionsObj = {};
-            let skippedRows = 0;
-            let totalRows = 0;
+                const existingDates = new Set((await getHistory()).map(s => s.rd));
+                const sessionsObj = {};
+                
+                for (const line of lines) {
+                    if (!line.trim()) continue;
 
-            for (const line of lines) {
-                if (!line.trim()) continue;
-                totalRows++;
+                    const p = parseCSVLine(line);
+                    const entry = { date: p[0], exercise: p[1], reps: p[2], weight: p[3] };
 
-                const p = parseCSVLine(line);
-                const entry = { date: p[0], exercise: p[1], reps: p[2], weight: p[3] };
+                    if (!entry.date || !/^\d{4}-\d{2}-\d{2}$/.test(entry.date) || !entry.exercise || entry.reps === undefined || entry.weight === undefined) {
+                        continue;
+                    }
+                    
+                    const reps = parseInt(entry.reps, 10);
+                    const weight = parseFloat(entry.weight);
 
-                if (!entry.date || !/^\d{4}-\d{2}-\d{2}$/.test(entry.date) || !entry.exercise || entry.reps === undefined || entry.weight === undefined) {
-                    skippedRows++;
-                    continue;
+                    if (isNaN(reps) || isNaN(weight)) {
+                        continue;
+                    }
+
+                    const key = entry.date;
+                    if (!sessionsObj[key]) {
+                        sessionsObj[key] = { rd: key, day: "Imported Session", logs: [], warmups: [], cooldowns: [] };
+                    }
+
+                    const originalExerciseName = entry.exercise.trim();
+                    let log = sessionsObj[key].logs.find(l => l.ex.trim().toLowerCase() === originalExerciseName.toLowerCase());
+
+                    if (!log) {
+                        log = { ex: originalExerciseName, sets: [] };
+                        sessionsObj[key].logs.push(log);
+                    }
+
+                    log.sets.push({
+                        r: reps,
+                        w: weight,
+                        orm: Math.round(weight * (1 + reps / 30)),
+                        status: 'completed',
+                        amrap: false
+                    });
                 }
                 
-                const reps = parseInt(entry.reps, 10);
-                const weight = parseFloat(entry.weight);
+                const sessionsToImport = Object.values(sessionsObj).filter(s => !existingDates.has(s.rd));
+                const skippedSessions = Object.keys(sessionsObj).length - sessionsToImport.length;
 
-                if (isNaN(reps) || isNaN(weight)) {
-                    skippedRows++;
-                    continue;
+                if (sessionsToImport.length > 0) {
+                    const tx = AppState.db.transaction(DB_CONFIG.STORES.SESSIONS, 'readwrite');
+                    sessionsToImport.forEach(s => tx.objectStore(DB_CONFIG.STORES.SESSIONS).put(s));
+                    await new Promise(res => tx.oncomplete = res);
+                    invalidateCache(); // FIX: Invalidate cache after successful import
                 }
+                
+                showToast(`Import done. ${sessionsToImport.length} new sessions imported. ${skippedSessions} sessions were skipped as dates already exist.`, 5000);
+                await init();
 
-                const key = entry.date;
-                if (!sessionsObj[key]) {
-                    sessionsObj[key] = { rd: key, day: "Imported Session", logs: [], warmups: [], cooldowns: [] };
-                }
-
-                const originalExerciseName = entry.exercise.trim();
-                let log = sessionsObj[key].logs.find(l => l.ex.trim().toLowerCase() === originalExerciseName.toLowerCase());
-
-                if (!log) {
-                    log = { ex: originalExerciseName, sets: [] };
-                    sessionsObj[key].logs.push(log);
-                }
-
-                log.sets.push({
-                    r: reps,
-                    w: weight,
-                    orm: Math.round(weight * (1 + reps / 30)),
-                    status: 'completed',
-                    amrap: false
-                });
+            } catch (error) {
+                console.error("Import failed:", error);
+                showToast(`Import failed: ${error.message}`, 5000);
+            } finally {
+                e.target.value = '';
             }
-            
-            const sessionsToImport = Object.values(sessionsObj).filter(s => !existingDates.has(s.rd));
-            const skippedSessions = Object.keys(sessionsObj).length - sessionsToImport.length;
-
-
-            if (sessionsToImport.length > 0) {
-                const tx = AppState.db.transaction(DB_CONFIG.STORES.SESSIONS, 'readwrite');
-                sessionsToImport.forEach(s => tx.objectStore(DB_CONFIG.STORES.SESSIONS).put(s));
-                await new Promise(res => tx.oncomplete = res);
-                invalidateCache();
-            }
-            
-            showToast(`Import done. ${sessionsToImport.length} new sessions imported. ${skippedSessions} sessions were skipped as dates already exist.`, 5000);
-            await init();
-
-        } catch (error) {
-            console.error("Import failed:", error);
-            showToast(`Import failed: ${error.message}`, 5000);
-        } finally {
-            e.target.value = '';
-        }
-    };
-    reader.readAsText(file);
-}
+        };
+        reader.readAsText(file);
+    }
     const actions = { closeModal, jumpToProgress, resetTimer, cancelEdit, saveWorkoutSession, addDayToSetup, saveSetup, resetSetup, exportData, toggleMetronome, importData, prevMonth: () => changeMonth(-1), nextMonth: () => changeMonth(1), addTime: (t) => addTime(parseInt(t.dataset.time)), toggleSetup: () => DOMElements.setupContainer.classList.toggle('hidden'), toggleCheck: (t) => toggleCheck(t), showExerciseInfo: (t) => showExerciseInfo(t.dataset.exName), editWorkout: (t) => editWorkout(t.dataset.rd), deleteWorkout: (t) => deleteWorkout(t.dataset.rd), addSetRow: (t) => addSetRow(t), showHistoryDetail: (t) => showHistoryDetail(t.dataset.date), triggerImport: () => DOMElements.importInput.click(), loadDay: () => { if (AppState.editIndex === null) loadDay(); }, updateCharts };
     function handleDelegatedEvent(e) { const target = e.target.closest('[data-action]'); if (target?.dataset.action && actions[target.dataset.action]) { if (target.closest('.modal-content')) e.stopPropagation(); actions[target.dataset.action](target); } }
     async function init() {
