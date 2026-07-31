@@ -166,7 +166,7 @@
 <body>
 <div id="exModal" class="modal-overlay hidden" data-action="closeModal">
     <div class="modal-content">
-        <button class="close-btn" aria-label="Close Modal" data-action="closeModal">?</button>
+        <button class="close-btn" aria-label="Close Modal" data-action="closeModal">&times;</button>
         <h2 id="modalTitle" class="modal-title-style">Exercise</h2>
         <div id="modal-extra-info"></div>
         <button data-action="jumpToProgress" class="btn-progress-chart">View Progress Chart</button>
@@ -181,14 +181,14 @@
         </div>
     </div>
     <div class="flex-row metronome-controls">
-        <button id="metronomeToggleBtn" data-action="toggleMetronome">?</button>
+        <button id="metronomeToggleBtn" data-action="toggleMetronome" aria-label="Toggle Metronome">&#x23F1;</button>
         <span id="bpmDisplay">60 BPM</span>
     </div>
 </div>
 <div class="container">
     <h1>Fitness Log</h1>
     <div class="section-card">
-        <div id="editMode" class="hidden">? EDIT MODE <button data-action="cancelEdit">Cancel</button></div>
+        <div id="editMode" class="hidden">&#x270F; EDIT MODE <button data-action="cancelEdit">Cancel</button></div>
         <div class="flex-row date-picker-row">
             <input type="date" id="date">
             <select id="daySel" data-action="loadDay"></select>
@@ -202,7 +202,7 @@
         <h3 id="progressSection">Progress</h3>
         <select id="cxSel" data-action="updateCharts"></select>
         <div class="chart-legend">
-            <span id="leg-orm" style="color:var(--gold);">?</span> Est. 1RM (Strength) &nbsp;&nbsp;&nbsp; <span id="leg-exVol" style="color:#009688;">?</span> Total Volume (Workload)
+            <span id="leg-orm" style="color:var(--gold);">&bull;</span> Est. 1RM (Strength) &nbsp;&nbsp;&nbsp; <span id="leg-exVol" style="color:#009688;">&bull;</span> Total Volume (Workload)
         </div>
         <div class="chart-container chart-container-small" id="exC-orm"></div>
         <div class="chart-container chart-container-small" id="exC-vol"></div>
@@ -218,7 +218,7 @@
             </select>
         </div>
         <div class="chart-legend">
-            <span id="leg-dayVol" style="color:#FF7F50;">?</span> Daily Volume &nbsp;&nbsp;&nbsp; <span id="leg-rollAvg" style="color:var(--gold);">?</span> Rolling Avg
+            <span id="leg-dayVol" style="color:#FF7F50;">&bull;</span> Daily Volume &nbsp;&nbsp;&nbsp; <span id="leg-rollAvg" style="color:var(--gold);">&bull;</span> Rolling Avg
         </div>
         <div class="chart-container" id="volC"></div>
     </div>
@@ -226,16 +226,16 @@
     <h2>History</h2>
     <div id="calendar-container">
         <div class="calendar-header">
-            <button data-action="prevMonth">?</button>
+            <button data-action="prevMonth" aria-label="Previous Month">&#9668;</button>
             <div id="calendar-month-year"></div>
-            <button data-action="nextMonth">?</button>
+            <button data-action="nextMonth" aria-label="Next Month">&#9658;</button>
         </div>
         <div class="calendar-grid" id="calendar-weekdays"></div>
         <div class="calendar-grid" id="calendar-days"></div>
     </div>
     <div id="hist-detail"></div>
     <div class="section-card section-card-margin-top">
-        <h3 data-action="toggleSetup" class="setup-toggle">?? Setup (Click to Expand)</h3>
+        <h3 data-action="toggleSetup" class="setup-toggle">&#x2699; Setup (Click to Expand)</h3>
         <div id="setup" class="hidden">
             <div class="setup-block">
                 <h4>General</h4>
@@ -260,8 +260,8 @@
         </div>
     </div>
     <div class="flex-row import-export-row">
-        <button id="exportBtn" data-action="exportData" class="btn-import-export">?? Export</button>
-        <button id="importBtn" data-action="triggerImport" class="btn-import-export">?? Import</button>
+        <button id="exportBtn" data-action="exportData" class="btn-import-export">&#x1F4E4; Export</button>
+        <button id="importBtn" data-action="triggerImport" class="btn-import-export">&#x1F4E5; Import</button>
         <input type="file" id="imp" class="hidden" data-action="importData">
     </div>
 </div>
@@ -926,6 +926,7 @@
     function invalidateCache() { AppState.cachedPRs = null; AppState.cachedHistory = null; AppState.cachedChartData = {}; }
     async function getHistory() { if (AppState.cachedHistory) return AppState.cachedHistory; try { AppState.cachedHistory = (await dbGetAll('sessions')).sort((a,b)=> b.rd.localeCompare(a.rd)); } catch (e) { console.error("Could not fetch history:", e); AppState.cachedHistory = []; } return AppState.cachedHistory; }
     async function migrateDataStructures(config) {
+        let wasMigrated = false;
         if (config && config.plan && !Array.isArray(config.plan)) {
             try {
                 const newPlan = Object.entries(config.plan).map(([name, exercises]) => ({ name, exercises }));
@@ -934,13 +935,18 @@
                 config.plan = newPlan;
                 config.warmups = newWarmups;
                 config.cooldowns = newCooldowns;
-                await dbPut('config', config);
-                return config;
+                wasMigrated = true;
             } catch (error) {
                 console.error("Failed to migrate data structures:", error);
                 showToast("Error migrating data.", 5000);
                 return config;
             }
+        }
+        if (wasMigrated) {
+            const fullDefaultConfig = { id: 'appConfig', plan: defaultPlan, warmups: Object.entries(defaultWarmups).map(([name, items])=>({name, items})), cooldowns: Object.entries(defaultCooldowns).map(([name, items])=>({name, items})), colors: { ...defaultColors }, bpm: constants.DEFAULT_BPM };
+            const mergedConfig = {...fullDefaultConfig, ...config};
+            await dbPut('config', mergedConfig);
+            return mergedConfig;
         }
         return config;
     }
@@ -1043,8 +1049,8 @@
     if (isNaN(repVal) && !repInp.dataset.amrap) { repInp.classList.add('error-border'); isValid = false; } else { repInp.classList.remove('error-border'); }
     if (isNaN(wtVal)) { wtInp.classList.add('error-border'); isValid = false; } else { wtInp.classList.remove('error-border'); }
      if (!isValid) { showToast('Enter valid reps & weight.', 2000); return; } } row.querySelectorAll('.btn-act').forEach(b => b.classList.remove('active')); textSpan?.classList.remove('txt-comp', 'txt-skip'); if (!wasActive) { button.classList.add('active'); textSpan?.classList.add(isComplete ? 'txt-comp' : 'txt-skip'); if (isComplete) startTimerFrom(constants.DEFAULT_REST_TIME); } }
-    function generateRowHTML(ei, si, r = '', w = '', am = false, status = '') { const repValue = am ? '' : r, statusClasses = {completed: {comp: ' active', txt: ' txt-comp'}, skipped: {skip: ' active', txt: ' txt-skip'}}[status] || {}; return `<div class="set-row" id="r-${ei}-${si}"><div class="set-row-main"><span style="width:20px;font-size:12px;color:var(--dim);">S<span class="set-num"></span></span><input type="number" min="1" step="1" inputmode="numeric" class="rep-input" placeholder="${am ? 'AMRAP' : 'Reps'}" value="${repValue}" data-amrap="${am}"><input type="number" min="0" step="1" inputmode="numeric" class="weight-input" placeholder="lbs" value="${w}"></div><div class="check-actions"><button type="button" class="btn-act btn-comp${statusClasses.comp||''}" aria-label="Mark Complete" data-action="toggleCheck">?</button><button type="button" class="btn-act btn-skip${statusClasses.skip||''}" aria-label="Skip" data-action="toggleCheck">?</button></div></div>`; }
-    function createCheckItemHTML(item, color, status = '') { const baseName = item.split(/[:(]/)[0].trim(), statusClasses = {completed: 'txt-comp', skipped: 'txt-skip'}[status] || ''; return `<div class="chk-item"><span data-action="showExerciseInfo" data-ex-name="${baseName}" style="cursor:pointer; color:var(--${color}); text-decoration:underline; font-size:15px;" class="${statusClasses}">${item}</span><div class="check-actions"><button type="button" class="btn-act btn-comp${status === 'completed'?' active':''}" aria-label="Mark Complete" data-action="toggleCheck">?</button><button type="button" class="btn-act btn-skip${status === 'skipped'?' active':''}" aria-label="Skip" data-action="toggleCheck">?</button></div></div>`; }
+    function generateRowHTML(ei, si, r = '', w = '', am = false, status = '') { const repValue = am ? '' : r, statusClasses = {completed: {comp: ' active', txt: ' txt-comp'}, skipped: {skip: ' active', txt: ' txt-skip'}}[status] || {}; return `<div class="set-row" id="r-${ei}-${si}"><div class="set-row-main"><span style="width:20px;font-size:12px;color:var(--dim);">S<span class="set-num"></span></span><input type="number" min="1" step="1" inputmode="numeric" class="rep-input" placeholder="${am ? 'AMRAP' : 'Reps'}" value="${repValue}" data-amrap="${am}"><input type="number" min="0" step="1" inputmode="numeric" class="weight-input" placeholder="lbs" value="${w}"></div><div class="check-actions"><button type="button" class="btn-act btn-comp${statusClasses.comp||''}" aria-label="Mark Complete" data-action="toggleCheck">&#x2713;</button><button type="button" class="btn-act btn-skip${statusClasses.skip||''}" aria-label="Skip" data-action="toggleCheck">&#x23ED;</button></div></div>`; }
+    function createCheckItemHTML(item, color, status = '') { const baseName = item.split(/[:(]/)[0].trim(), statusClasses = {completed: 'txt-comp', skipped: 'txt-skip'}[status] || ''; return `<div class="chk-item"><span data-action="showExerciseInfo" data-ex-name="${baseName}" style="cursor:pointer; color:var(--${color}); text-decoration:underline; font-size:15px;" class="${statusClasses}">${item}</span><div class="check-actions"><button type="button" class="btn-act btn-comp${status === 'completed'?' active':''}" aria-label="Mark Complete" data-action="toggleCheck">&#x2713;</button><button type="button" class="btn-act btn-skip${status === 'skipped'?' active':''}" aria-label="Skip" data-action="toggleCheck">&#x23ED;</button></div></div>`; }
     function addSetRow(button) { const setContainer = button.previousElementSibling; setContainer.insertAdjacentHTML('beforeend', generateRowHTML(setContainer.id.split('-')[1], Date.now())); updateSetNumbers(setContainer); }
     function updateSetNumbers(container) { container.querySelectorAll('.set-row .set-num').forEach((span, ix) => span.innerText = ix + 1); }
     function roundToNearest5(n) { return Math.round(n / 5) * 5; }
@@ -1060,7 +1066,6 @@
                 const [ , setsStr, repsStr, weightStr, defaultOrmStr] = line ? line.split('|').map(s => s.trim()) : ['','','','',''];
                 const actualORM = pbs[name]?.orm, defaultORM = parseInt(defaultOrmStr), ormToUse = actualORM || defaultORM || 0;
                 const isCompound = i === 0;
-
                 let setRowsHTML = '';
                 if (log) {
                     setRowsHTML = log.sets.map((s, j) => generateRowHTML(i, `${Date.now()}${j}`, s.r, s.w, s.amrap, s.status)).join('');
@@ -1081,7 +1086,6 @@
                     const isAmrap = repsStr === 'AMRAP';
                     setRowsHTML = Array.from({length: numSets}, (_,j) => generateRowHTML(i, j, reps, weight, isAmrap)).join('');
                 }
-
                 exBlock.className = 'ex-block'; exBlock.dataset.exName = name;
                 exBlock.innerHTML = `<div class="ex-block-header"><b class="ex-block-title" data-action="showExerciseInfo" data-ex-name="${name}">${name}</b><span class="orm-header-badge">${actualORM ? `(1RM: ${actualORM}lbs)` : (defaultORM ? `(Default: ${defaultORM}lbs)` : '')}</span><span class="ex-block-pr">${pbs[name] ? `PR: ${pbs[name].w}x${pbs[name].r}` : ''}</span></div><div id="s-${i}">${setRowsHTML}</div><button data-action="addSetRow" class="btn-add-set">+ Add Set</button>`;
                 frag.appendChild(exBlock);
@@ -1160,6 +1164,7 @@
                 
                 let sessionsObj = {}; 
                 let skipped = 0;
+                let existingDates = new Set((await getHistory()).map(s => s.rd));
 
                 for (const line of lines) {
                     if (!line.trim()) continue;
@@ -1171,12 +1176,16 @@
                         skipped++;
                         continue;
                     }
+                    if (existingDates.has(entry.date)) {
+                        skipped++;
+                        continue;
+                    }
                     
                     const originalExerciseName = entry.exercise.trim();
                     const standardizedExerciseName = originalExerciseName.toLowerCase();
 
                     const reps = parseInt(entry.reps, 10);
-                    const weight = parseInt(entry.weight, 10);
+                    const weight = parseFloat(entry.weight);
 
                     if (isNaN(reps) || isNaN(weight)) {
                         skipped++;
@@ -1185,13 +1194,8 @@
 
                     const key = entry.date;
                     if (!sessionsObj[key]) {
-                        if (await dbGet('sessions', key)) {
-                            continue;
-                        }
                         sessionsObj[key] = { rd: key, day: "Imported Session", logs: [], warmups: [], cooldowns: [] };
                     }
-                    
-                    if (!sessionsObj[key]) continue;
 
                     let log = sessionsObj[key].logs.find(l => l.ex.trim().toLowerCase() === standardizedExerciseName);
 
@@ -1215,7 +1219,7 @@
                     await new Promise(res => tx.oncomplete = res);
                     invalidateCache();
                 }
-                showToast(`Import done. ${Object.keys(sessionsObj).length} sessions imported/updated, ${skipped} rows skipped.`, 5000);
+                showToast(`Import done. ${Object.keys(sessionsObj).length} sessions imported, ${skipped} rows skipped (invalid format or date already exists).`, 5000);
                 await init();
             } catch (error) { 
                 console.error("Import failed:", error); 
