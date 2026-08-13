@@ -18,7 +18,6 @@
     --border-color: #333;
     --gold: #FFD700;
 }
-
 body {
     font-family: sans-serif;
     background: var(--bg);
@@ -26,42 +25,35 @@ body {
     margin: 0;
     padding: 20px;
 }
-
 h1, h2, h3 {
     color: #fff;
     text-align: center;
     margin-top: 0;
 }
-
 button {
     cursor: pointer;
     font-weight: bold;
     border: none;
 }
-
 button:disabled {
     background: #555;
     cursor: not-allowed;
     opacity: 0.6;
 }
-
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
     font-size: 13px;
 }
-
 th, td {
     border: 1px solid var(--border-color);
     padding: 6px;
     text-align: left;
 }
-
 .hidden {
     display: none !important;
 }
-
 select, button, input, textarea {
     width: 100%;
     padding: 10px;
@@ -73,17 +65,14 @@ select, button, input, textarea {
     font-size: 14px;
     box-sizing: border-box;
 }
-
 .flex-row, .timer-controls, .check-actions, .modal-badges, .calendar-header, .setup-label-flex, .input-color-label {
     display: flex;
     align-items: center;
 }
-
 .flex-row {
     gap: 10px;
     justify-content: center;
 }
-
 .container {
     max-width: 600px;
     margin: auto;
@@ -92,7 +81,6 @@ select, button, input, textarea {
     border: 1px solid var(--border-color);
     border-radius: 12px;
 }
-
 .section-card {
     background: var(--card);
     padding: 15px;
@@ -100,11 +88,9 @@ select, button, input, textarea {
     border-radius: 8px;
     margin-bottom: 20px;
 }
-
 .section-card-margin-top {
     margin-top: 20px;
 }
-
 .ex-block {
     background: rgba(155, 89, 182, 0.05);
     padding: 12px;
@@ -112,7 +98,6 @@ select, button, input, textarea {
     border-radius: 6px;
     border-left: 5px solid var(--purple);
 }
-
 .routine-box {
     padding: 12px;
     border-radius: 6px;
@@ -121,17 +106,14 @@ select, button, input, textarea {
     display: flex;
     flex-direction: column;
 }
-
 .box-w {
     background: rgba(255, 77, 77, 0.08);
     border-left: 4px solid var(--red);
 }
-
 .box-c {
     background: rgba(52, 152, 219, 0.08);
     border-left: 4px solid var(--blue);
 }
-
 .timer-card {
     position: sticky;
     top: 10px;
@@ -148,17 +130,14 @@ select, button, input, textarea {
     border-radius: 8px;
     margin-bottom: 20px;
 }
-
 #timeDisplay {
     font: bold 1.8em monospace;
     margin: 0;
     color: var(--gold);
 }
-
 .timer-controls {
     gap: 8px;
 }
-
 .timer-controls button, #metronomeToggleBtn {
     min-width: 44px;
     min-height: 44px;
@@ -169,31 +148,26 @@ select, button, input, textarea {
     color: var(--gold);
     border: none;
 }
-
 .metronome-controls {
     border-left: 1px solid var(--border-color);
     padding-left: 15px;
 }
-
 .chk-item, .set-row {
     display: flex;
     align-items: center;
     gap: 6px;
     margin-bottom: 8px;
 }
-
 .chk-item > span, .set-row-main {
     flex-grow: 1;
     display: flex;
     align-items: center;
     gap: 6px;
 }
-
 .check-actions {
     gap: 4px;
     flex-shrink: 0;
 }
-
 .btn-act {
     min-width: 38px;
     min-height: 38px;
@@ -204,26 +178,21 @@ select, button, input, textarea {
     color: #888;
     border: 1px solid #444;
 }
-
 .btn-comp.active {
     background: var(--green);
     color: #000;
     border-color: var(--green);
 }
-
 .btn-skip.active {
     background: var(--red);
     color: #fff;
     border-color: var(--red);
 }
-
 .txt-comp, .txt-skip {
     text-decoration: line-through;
 }
-
 .txt-comp { color: var(--green); }
 .txt-skip { color: var(--red); opacity: 0.5; }
-
 .set-row { flex-wrap: nowrap; }
 .set-row input {
     width: 50px;
@@ -233,7 +202,6 @@ select, button, input, textarea {
     padding: 8px 4px;
 }
 .set-row .weight-input { width: 75px; }
-
 .chart-container {
     height: 240px;
     width: 100%;
@@ -242,7 +210,6 @@ select, button, input, textarea {
     overflow: hidden;
 }
 .chart-container-small { height: 150px; margin-top: 10px; }
-
 .svg-chart-container {
     display: block;
     width: 100%;
@@ -254,7 +221,6 @@ select, button, input, textarea {
 .svg-chart-container .tooltip { display: none; }
 .svg-chart-container circle:hover + .tooltip, 
 .svg-chart-container rect:hover + .tooltip { display: block; }
-
 .history-card {
     background: #252525;
     padding: 12px;
@@ -262,25 +228,21 @@ select, button, input, textarea {
     border-radius: 8px;
     border: 1px solid #333;
 }
-
 .chart-legend {
     font-size: 12px;
     color: var(--dim);
     text-align: center;
     margin-top: 10px;
 }
-
 #calendar-container {
     padding: 10px;
     background: #252525;
     border-radius: 8px;
 }
-
 .calendar-header {
     justify-content: space-between;
     margin-bottom: 15px;
 }
-
 .calendar-header button {
     width: 44px;
     height: 44px;
@@ -289,18 +251,15 @@ select, button, input, textarea {
     background: #333;
     font-size: 18px;
 }
-
 #calendar-month-year {
     font-size: 1.2em;
     font-weight: bold;
 }
-
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
 }
-
 .calendar-day, .calendar-weekday {
     display: flex;
     justify-content: center;
@@ -308,13 +267,11 @@ select, button, input, textarea {
     height: 38px;
     border-radius: 50%;
 }
-
 .calendar-weekday {
     font-size: 0.8em;
     font-weight: bold;
     color: var(--dim);
 }
-
 .calendar-day {
     cursor: pointer;
     position: relative;
@@ -335,7 +292,6 @@ select, button, input, textarea {
     background: var(--purple);
     border-radius: 50%;
 }
-
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -348,7 +304,6 @@ select, button, input, textarea {
     justify-content: center;
     align-items: center;
 }
-
 .modal-content {
     background: var(--card);
     padding: 20px 25px;
@@ -361,7 +316,6 @@ select, button, input, textarea {
     max-height: 85vh;
     overflow-y: auto;
 }
-
 .modal-section { margin-bottom: 12px; }
 .modal-section h4 {
     color: #fff;
@@ -389,7 +343,6 @@ select, button, input, textarea {
     display: block;
     margin-left: 10px;
 }
-
 .close-btn {
     position: absolute;
     top: 8px;
@@ -414,7 +367,6 @@ select, button, input, textarea {
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
 }
-
 #toast-notification {
     position: fixed;
     bottom: 20px;
@@ -435,32 +387,25 @@ select, button, input, textarea {
     opacity: 1;
     visibility: visible;
 }
-
 .setup-block {
     margin-bottom: 15px;
     background: rgba(0, 0, 0, 0.2);
     padding: 12px;
     border-radius: 6px;
 }
-
 .setup-block h4, .volume-header h3, .ex-block-header {
     margin: 0;
 }
 .ex-block-header { margin-bottom: 8px; }
-
-
 .setup-toggle { cursor: pointer; padding: 10px 0; }
 .setup-label-flex { gap: 10px; font-size: 12px; color: var(--dim); }
-
 .flex-wrap-start {
     flex-wrap: wrap;
     gap: 15px;
     justify-content: flex-start;
 }
-
 .input-color-label { font-size:12px; gap:5px; color:var(--dim); }
 .input-color-swatch { width:25px; height:25px; padding:0; border:none; }
-
 .btn-add-day, .btn-save-config, .btn-factory-reset, .btn-import-export {
     min-height: 44px;
     margin-top: 10px;
@@ -469,7 +414,6 @@ select, button, input, textarea {
 .btn-save-config { background:var(--purple); }
 .btn-factory-reset { background:var(--red); }
 .btn-import-export { background:#444; }
-
 #date { width: 150px; }
 #daySel { flex-grow: 1; }
 .flex-row button { width: auto; padding: 8px 15px; margin: 0; }
@@ -1108,7 +1052,6 @@ select, button, input, textarea {
         }
     };
     const fallbackEx = { how_to:"Review machine placards or ask a trainer for proper setup instructions.", biomechanics:"Focus on mind-muscle connection and control.", mistakes:"Using momentum, improper breathing, and pushing into pain." };
-
     const defaultPlan = [
         {"name": "Arnold Press", "exercises": ["Standing Arnold Press|3|6|0|150", "Cable Lateral Raise|1|AMRAP|0|60", "One Arm Triceps Rope Pushdown|1|AMRAP|0|60"]},
         {"name": "Bent-Over Row", "exercises": ["Bent-Over DB Row|3|6|0|150", "One Arm Cable Bicep Curl|1|AMRAP|0|60", "One Arm Cable Reverse Fly|1|AMRAP|0|60"]},
@@ -1119,7 +1062,6 @@ select, button, input, textarea {
         {"name": "Lat Pulldown", "exercises": ["Lat Pulldown|3|6|0|150", "One Arm Straight Arm Pulldown|1|AMRAP|0|60", "One Arm Rope Hammer Curl|1|AMRAP|0|60"]},
         {"name": "Walking Lunge", "exercises": ["Walking Lunge|3|6|0|150", "Single Leg Seated Leg Curl|1|AMRAP|0|60", "Single Leg Seated Calf Raise|1|AMRAP|0|60"]}
     ];
-
     const defaultWarmups = {
         "Arnold Press": ["Arm Circles", "Wall Angels", "Scapular Wall Presses"],
         "Bent-Over Row": ["Arm Circles", "Cat-Cow", "Bent-Over T-Raises"],
@@ -1130,7 +1072,6 @@ select, button, input, textarea {
         "Lat Pulldown": ["Arm Circles", "Scapular Retractions", "Dead Hang"],
         "Walking Lunge": ["Leg Swings", "Forward Lunge Shifts", "Clamshells"]
     };
-
     const defaultCooldowns = {
         "Arnold Press": ["Shoulder Rolls", "Behind-the-Back Stretch", "Cross-Body Shoulder Stretch"],
         "Bent-Over Row": ["Wall Slides", "Child's Pose", "Cross-Body Shoulder Stretch"],
@@ -1141,7 +1082,6 @@ select, button, input, textarea {
         "Lat Pulldown": ["Fist Pumps", "Wrist Stretch", "Overhead Lat Stretch"],
         "Walking Lunge": ["Ankle Pumps", "Seated Toe Touch", "Pigeon Pose"]
     };
-
     const AppState = {
         db: null,
         editIndex: null,
@@ -1346,12 +1286,13 @@ select, button, input, textarea {
     }
     function showExerciseInfo(exName) {
         const info = exerciseInfo[exName] || fallbackEx;
+        const formattedHowTo = (info.how_to || 'N/A').replace(/(\s\d+\.\s)/g, '<br><br>$1');
         DOMElements.modalTitle.innerText = exName;
         let targetsHTML = '';
         if (info.primary_muscles) targetsHTML += `<b>Primary</b><span style="color:var(--red);">${info.primary_muscles}</span>`;
         if (info.secondary_muscles) targetsHTML += `<b>Secondary</b><span style="color:var(--gold);">${info.secondary_muscles}</span>`;
         if (info.stabilizing_muscles) targetsHTML += `<b>Stabilizers</b><span style="color:var(--txt);">${info.stabilizing_muscles}</span>`;
-        const extraInfoHTML = `<div class="modal-section"><h4>Muscle Engagement</h4><p>${targetsHTML || 'Details not available.'}</p></div><div class="modal-section"><h4>Biomechanics</h4><p>${info.biomechanics || 'N/A'}</p></div><div class="modal-section"><h4>How-To</h4><p>${info.how_to || 'N/A'}</p></div><div class="modal-section"><h4>Cue</h4><p><em>${info.cue || 'N/A'}</em></p></div>`;
+        const extraInfoHTML = `<div class="modal-section"><h4>Muscle Engagement</h4><p>${targetsHTML || 'Details not available.'}</p></div><div class="modal-section"><h4>Biomechanics</h4><p>${info.biomechanics || 'N/A'}</p></div><div class="modal-section"><h4>How-To</h4><p>${formattedHowTo}</p></div><div class="modal-section"><h4>Cue</h4><p><em>${info.cue || 'N/A'}</em></p></div>`;
         DOMElements.modalExtraInfo.innerHTML = extraInfoHTML;
         DOMElements.exModal.dataset.currentEx = exName;
         DOMElements.exModal.classList.remove('hidden');
