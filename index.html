@@ -335,6 +335,9 @@ select, button, input, textarea {
 .modal-section-p {
     color: var(--text) !important;
 }
+.how-to-text {
+    font-size: 15px !important;
+}
 .modal-section p b {
     font-size: 11px;
     text-transform: uppercase;
@@ -1292,15 +1295,27 @@ select, button, input, textarea {
         const formattedHowTo = (info.how_to || 'N/A').replace(/(\s\d+\.\s)/g, '<br><br>$1');
         DOMElements.modalTitle.innerText = exName;
         
+        const formatMuscle = (muscleString, color) => {
+            return muscleString.split(', ').map(part => {
+                const firstParen = part.indexOf(' (');
+                if (firstParen === -1) {
+                    return `<b style="color:var(--${color});">${part}</b>`;
+                }
+                const name = part.substring(0, firstParen);
+                const details = part.substring(firstParen);
+                return `<b style="color:var(--${color});">${name}</b><span style="color:var(--${color}); font-weight:normal;">${details}</span>`;
+            }).join(', ');
+        };
+
         let targetsHTML = '<ul>';
         if (info.primary_muscles) {
-            targetsHTML += `<li><b style="color:var(--red);">Primary:</b> <b style="color:var(--red);">${info.primary_muscles}</b></li>`;
+            targetsHTML += `<li><b style="color:var(--red);">Primary:</b> ${formatMuscle(info.primary_muscles, 'red')}</li>`;
         }
         if (info.secondary_muscles) {
-            targetsHTML += `<li><b style="color:var(--gold);">Secondary:</b> <b style="color:var(--gold);">${info.secondary_muscles}</b></li>`;
+            targetsHTML += `<li><b style="color:var(--gold);">Secondary:</b> ${formatMuscle(info.secondary_muscles, 'gold')}</li>`;
         }
         if (info.stabilizing_muscles) {
-            targetsHTML += `<li><b style="color:var(--text);">Stabilizers:</b> <b style="color:var(--text);">${info.stabilizing_muscles}</b></li>`;
+            targetsHTML += `<li><b style="color:var(--text);">Stabilizers:</b> ${formatMuscle(info.stabilizing_muscles, 'text')}</li>`;
         }
         targetsHTML += '</ul>';
 
@@ -1308,7 +1323,7 @@ select, button, input, textarea {
             targetsHTML = '<p>Details not available.</p>';
         }
 
-        const extraInfoHTML = `<div class="modal-section"><h4>Muscle Engagement</h4>${targetsHTML}</div><div class="modal-section"><h4>Biomechanics</h4><ul class="modal-section-p"><li>${info.biomechanics || 'N/A'}</li></ul></div><div class="modal-section"><h4>How-To</h4><p class="modal-section-p">${formattedHowTo}</p></div><div class="modal-section"><h4>Cue</h4><ul class="modal-section-p"><li><em>${info.cue || 'N/A'}</em></li></ul></div>`;
+        const extraInfoHTML = `<div class="modal-section"><h4>Muscle Engagement</h4>${targetsHTML}</div><div class="modal-section"><h4>Biomechanics</h4><ul class="modal-section-p"><li>${info.biomechanics || 'N/A'}</li></ul></div><div class="modal-section"><h4>How-To</h4><p class="modal-section-p how-to-text">${formattedHowTo}</p></div><div class="modal-section"><h4>Cue</h4><ul class="modal-section-p"><li><em>${info.cue || 'N/A'}</em></li></ul></div>`;
         DOMElements.modalExtraInfo.innerHTML = extraInfoHTML;
         DOMElements.exModal.dataset.currentEx = exName;
         DOMElements.exModal.classList.remove('hidden');
