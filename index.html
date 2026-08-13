@@ -1297,13 +1297,13 @@ select, button, input, textarea {
         
         const formatMuscle = (muscleString, color) => {
             return muscleString.split(', ').map(part => {
-                const firstParen = part.indexOf(' (');
-                if (firstParen === -1) {
-                    return `<b style="color:var(--${color});">${part}</b>`;
+                const match = part.match(/^([\w\s-]+)(\s\(.*\))?$/);
+                if (match) {
+                    const name = match[1];
+                    const details = match[2] || '';
+                    return `<b style="color:var(--${color});">${name}</b><span style="color:var(--${color}); font-weight:normal;">${details}</span>`;
                 }
-                const name = part.substring(0, firstParen);
-                const details = part.substring(firstParen);
-                return `<b style="color:var(--${color});">${name}</b><span style="color:var(--${color}); font-weight:normal;">${details}</span>`;
+                return `<span style="color:var(--${color}); font-weight:normal;">${part}</span>`;
             }).join(', ');
         };
 
