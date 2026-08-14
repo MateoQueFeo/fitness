@@ -436,7 +436,7 @@ select, button, input, textarea {
 .btn-add-set { width:auto; padding: 4px 10px; font-size:12px; margin-top:5px; background:#333; }
 .error-border { border: 1px solid var(--red) !important; }
     </style>
-    <link rel="manifest" id="manifest-link">
+    <link lang="en" rel="manifest" id="manifest-link">
     <meta name="theme-color" content="#1e1e1e">
     <link rel="icon" href="icon-512.png" type="image/png">
     <script>
@@ -608,485 +608,453 @@ select, button, input, textarea {
         COLORS: { orm: "#FFD700", exVol: "#009688", dayVol: "#FF7F50", rollAvg: "#FFD700" },
     };
     const exerciseInfo = {
-        "Arm Circles": {
-            "primary_muscles": "Deltoids (All Heads) (O: Clavicle, Acromion, Scapular Spine; I: Deltoid Tuberosity)",
-            "secondary_muscles": "Supraspinatus (O: Supraspinous Fossa; I: Greater Tubercle)",
-            "stabilizing_muscles": "Rotator Cuff (O: Scapula; I: Humeral Tuberosities), Trapezius (O: Occipital Bone, C7-T12; I: Clavicle, Scapula)",
-            "biomechanics": "Dynamic circumduction of the humerus to lubricate the glenohumeral joint and warm synovial fluid.",
-            "how_to": "1. Stand tall and extend arms straight out to your sides. 2. Make small, controlled forward circles. 3. Gradually increase the size of the circles. 4. Reverse direction after 30 seconds.",
-            "cue": "Draw perfect circles with your fingertips."
-        },
-        "Arm Hugs": {
-            "primary_muscles": "Pectoralis Major (O: Sternum, Clavicle; I: Bicipital Groove of Humerus), Anterior Deltoid (O: Lateral Clavicle; I: Deltoid Tuberosity)",
-            "secondary_muscles": "Coracobrachialis (O: Coracoid Process; I: Medial Humerus), Biceps Brachii (Short Head) (O: Coracoid Process; I: Radial Tuberosity)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Dynamic horizontal adduction to flush lactic acid.",
-            "how_to": "1. Rapidly and gently cross your arms over your chest for 1 minute.",
-            "cue": "Hug yourself slowly to flush the chest."
-        },
-        "Behind-the-Back Stretch": {
-            "primary_muscles": "Pectoralis Major (O: Sternum, Clavicle; I: Bicipital Groove of Humerus)",
-            "secondary_muscles": "Anterior Deltoid (O: Lateral Clavicle; I: Deltoid Tuberosity), Biceps Brachii (O: Scapula; I: Radial Tuberosity)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Passive stretch opening the anterior chest fascia.",
-            "how_to": "1. Clasp your hands behind your back, keep arms straight, and gently lift them away from your torso.",
-            "cue": "Clasp hands and open the chest."
-        },
-        "Bent-Over DB Row": {
-            "primary_muscles": "Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus), Rhomboids (O: C7-T5; I: Medial Border of Scapula)",
-            "secondary_muscles": "Biceps Brachii (Long Head bias) (O: Supraglenoid Tubercle; I: Radial Tuberosity), Posterior Deltoid (O: Scapular Spine; I: Deltoid Tuberosity)",
-            "stabilizing_muscles": "Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs), Hamstrings (O: Ischial Tubosity; I: Proximal Tibia/Fibula), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Heavy sagittal/transverse plane pulling requiring intense isometric contraction of the erector spinae and hamstrings to hold the hinge.",
-            "how_to": "1. Hinge forward at the hips until your torso is nearly parallel to the floor. 2. Let dumbbells hang down. 3. Row the weights up toward your hip crease/ribcage, keeping elbows close to the body. 4. Lower with control.",
-            "cue": "Pull your elbows into your back pockets."
-        },
-        "Bent-Over T-Raises": {
-            "primary_muscles": "Rhomboids (O: C7-T5; I: Medial Border of Scapula), Middle Trapezius (O: C7-T3; I: Scapular Spine)",
-            "secondary_muscles": "Posterior Deltoid (O: Scapular Spine; I: Deltoid Tuberosity)",
-            "stabilizing_muscles": "Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs), Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity)",
-            "biomechanics": "Pure, unweighted scapular retraction against gravity to neurologically prime the upper back before heavy pulling.",
-            "how_to": "1. Hinge at the hips with a flat back. 2. Let arms hang straight down. 3. Keep arms straight and raise them straight out to your sides to form a \"T\". 4. Squeeze shoulder blades, then lower.",
-            "cue": "Pinch a coin between your shoulder blades at the top."
-        },
-        "Butterfly Stretch": {
-            "primary_muscles": "Adductor Group (O: Pubis; I: Linea Aspera of Femur)",
-            "secondary_muscles": "Gracilis (O: Pubis; I: Medial Proximal Tibia), Pectineus (O: Pectineal Line of Pubis; I: Pectineal Line of Femur)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "A passive static stretch to restore adductor resting length.",
-            "how_to": "1. Sit on the floor, bring the soles of your feet together. 2. Let your knees fall open wide towards the floor and breathe deeply.",
-            "cue": "Breathe deep and melt into the static stretch."
-        },
-        "Cable Hip Abduction": {
-            "primary_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter)",
-            "secondary_muscles": "Tensor Fasciae Latae (TFL) (O: ASIS; I: IT Band)",
-            "stabilizing_muscles": "Core Musculature (QL bias) (O: Iliac Crest; I: Rib 12, L1-L4 Transverse Processes)",
-            "biomechanics": "Constant resistance against pure lateral hip abduction, completely removing quadriceps or hamstring assistance.",
-            "how_to": "1. Attach an ankle cuff to a low pulley around your right ankle. 2. Stand with your left side to the machine. 3. Keeping torso upright, use outer hip muscles to pull your right leg directly out to the side.",
-            "cue": "Squeeze from the outside of your hips."
-        },
-        "Cable Hip Adduction": {
-            "primary_muscles": "Adductor Longus (O: Pubic Crest and Symphysis; I: Linea Aspera (Middle Third of Femur))",
-            "secondary_muscles": "Pectineus (O: Pectineal Line of Pubis; I: Pectineal Line of Femur)",
-            "stabilizing_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Provides constant medial cable tension to isolate pure hip adduction against resistance.",
-            "how_to": "1. Attach cuff to a low pulley around your right ankle. 2. Stand with right side to the machine. 3. Keeping torso stable, engage inner thigh to pull the right leg across the front of your standing leg. 4. Squeeze powerfully, then return.",
-            "cue": "Imagine squeezing a ball between your thighs."
-        },
-        "Cable Lateral Raise": {
-            "primary_muscles": "Lateral Deltoid (O: Acromion Process of Scapula; I: Deltoid Tuberosity of Humerus)",
-            "secondary_muscles": "Anterior Deltoid (O: Lateral Clavicle; I: Deltoid Tuberosity), Upper Trapezius (O: Occipital Bone, C7; I: Lateral Clavicle)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Leaning away from the pulley alters the resistance curve, shifting the point of maximum tension to the bottom/mid-range of the lateral raise.",
-            "how_to": "1. Stand next to a low cable, holding the machine with your inner hand. 2. Lean your body weight away from the machine. 3. With the outer arm, raise the cable handle straight out to the side. 4. Lower with control.",
-            "cue": "Lead with the elbow and push the weight away from you."
-        },
-        "Cat-Cow": {
-            "primary_muscles": "Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs), Rectus Abdominis (O: Pubic Crest; I: Xiphoid Process)",
-            "secondary_muscles": "Transversus Abdominis (O: Iliac Crest; I: Linea Alba), Multifidus (O: Sacrum, Transverse Processes; I: Spinous Processes)",
-            "stabilizing_muscles": "Deltoids (O: Clavicle, Scapula; I: Deltoid Tuberosity), Rotator Cuff (O: Scapula; I: Humeral Tuberosities)",
-            "biomechanics": "Controlled spinal flexion and extension to lubricate intervertebral discs and prime the core.",
-            "how_to": "1. Get on hands and knees. 2. Inhale and arch your back, dropping your belly and lifting your head. 3. Exhale and round your spine upward, tucking your chin to your chest.",
-            "cue": "Initiate movement from your tailbone."
-        },
-        "Child's Pose": {
-            "primary_muscles": "Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus)",
-            "secondary_muscles": "Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
-            "stabilizing_muscles": "N/A",
-            "biomechanics": "Profound passive spinal decompression.",
-            "how_to": "1. Kneel on the floor, sit back onto your heels, and stretch your arms far forward on the floor.",
-            "cue": "Decompress and breathe into Child's Pose."
-        },
-        "Clamshells": {
-            "primary_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter)",
-            "secondary_muscles": "Gluteus Minimus (O: Lower Lateral Ilium; I: Greater Trochanter)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Direct lateral hip external rotation to actively prime the pelvic stabilizers and prevent knee valgus (caving inward) under load.",
-            "how_to": "1. Lie on your side with hips and knees bent. 2. Keep your feet glued together. 3. Lift your top knee as high as you can without rolling your pelvis backward. 4. Lower slowly.",
-            "cue": "Imagine hips stacked against a wall; open knee using only the side glute."
-        },
-        "Cross-Body Shoulder Stretch": {
-            "primary_muscles": "Posterior Deltoid, Lateral Deltoid (O: Scapular Spine, Acromion; I: Deltoid Tuberosity)",
-            "secondary_muscles": "Rhomboids (O: C7-T5; I: Medial Border of Scapula), Middle Trapezius (O: C7-T3; I: Scapular Spine)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Passive horizontal adduction to lengthen the posterior shoulder tissues heavily utilized during the pressing phase.",
-            "how_to": "1. Bring one arm straight across your chest. 2. Use your opposite arm to gently hook the elbow and pull it tighter to your body.",
-            "cue": "Look over the shoulder you are stretching."
-        },
-        "Dead Hang": {
-            "primary_muscles": "Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus)",
-            "secondary_muscles": "Pectoralis Minor (O: Ribs 3-5; I: Coracoid Process), Forearm Flexors (O: Medial Epicondyle; I: Carpals/Phalanges)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Passive vertical suspension to stretch the lats to their full anatomical length and safely decompress the thoracic/lumbar spine.",
-            "how_to": "1. Grab a pull-up bar with an overhand grip. 2. Let your feet hang free off the floor. 3. Completely relax your shoulders and back, letting gravity pull your body downward. Hold for 15-30 seconds.",
-            "cue": "Let gravity pull your hips down and stretch your lats."
-        },
-        "Doorway Chest Stretch": {
-            "primary_muscles": "Pectoralis Major (O: Sternum, Clavicle; I: Bicipital Groove of Humerus), Anterior Deltoid (O: Lateral Clavicle; I: Deltoid Tuberosity)",
-            "secondary_muscles": "Coracobrachialis (O: Coracoid Process; I: Medial Humerus)",
-            "stabilizing_muscles": "Rhomboids (O: C7-T5; I: Medial Border of Scapula)",
-            "biomechanics": "Passive horizontal abduction to stretch tight pectoral fascia.",
-            "how_to": "1. Place your forearm against a doorway frame with elbow at 90 degrees. 2. Gently step through the doorway to stretch the chest.",
-            "cue": "Lean forward to statically stretch the pecs."
-        },
-        "Downward Dog": {
-            "primary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity), Gastrocnemius (O: Femoral Condyles; I: Calcaneus), Soleus (O: Posterior Tibia/Fibula; I: Calcaneus), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
-            "secondary_muscles": "Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus), Deltoids (O: Clavicle, Scapula; I: Deltoid Tuberosity)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Global, full-body passive stretch of the entire posterior fascial line.",
-            "how_to": "1. Tuck toes, straighten legs, and push your hips high into the air into an inverted \"V\", driving heels toward the floor.",
-            "cue": "Push up into Downward Dog."
-        },
-        "Dumbbell Curtsy Lunge": {
-            "primary_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity)",
-            "secondary_muscles": "Adductor Group (O: Pubis; I: Linea Aspera of Femur), Quadriceps (O: AIIS, Anterior Femur; I: Tibial Tuberosity)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "A multi-planar lunge that forces the lateral hip stabilizers (Glute Medius) to work intensely to maintain pelvic alignment while crossing the midline.",
-            "how_to": "1. Stand tall. 2. Step one foot diagonally behind the other leg as if doing a curtsy. 3. Bend both knees until the front thigh is parallel to the floor. 4. Drive through the front heel to stand back up.",
-            "cue": "Push off the front foot to return to start."
-        },
-        "Fire Hydrants": {
-            "primary_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter), Gluteus Minimus (O: Lower Lateral Ilium; I: Greater Trochanter)",
-            "secondary_muscles": "Tensor Fasciae Latae (TFL) (O: ASIS; I: IT Band)",
-            "stabilizing_muscles": "Core Musculature (Obliques bias) (O: Ribs 5-12, Iliac Crest; I: Linea Alba, Pubis)",
-            "biomechanics": "Active hip abduction and external rotation in the transverse/frontal planes to prime the lateral hip.",
-            "how_to": "1. Get on your hands and knees. 2. Keeping your knee bent at 90 degrees, lift one leg straight out to the side. 3. Avoid rotating your lower back or shifting your weight heavily.",
-            "cue": "Don't spill the glass of water on your lower back."
-        },
-        "Fist Pumps": {
-            "primary_muscles": "Forearm Flexors (O: Medial Epicondyle; I: Phalanges), Forearm Extensors (O: Lateral Epicondyle; I: Phalanges)",
-            "secondary_muscles": "Brachioradialis (O: Lateral Supracondylar Ridge of Humerus; I: Styloid Process of Radius)",
-            "stabilizing_muscles": "Deltoids (Isometric Hold) (O: Clavicle, Scapula; I: Deltoid Tuberosity)",
-            "biomechanics": "Rhythmic finger/wrist movement acts as a vascular pump to clear forearm lactic acid.",
-            "how_to": "1. Extend arms straight out and rapidly open/close your fists 20 times.",
-            "cue": "Pump the hands to clear forearm burning."
-        },
-        "Forward Lunge Shifts": {
-            "primary_muscles": "Quadriceps (O: AIIS, Anterior Femur; I: Tibial Tuberosity), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity)",
-            "secondary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula)",
-            "stabilizing_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter), Adductor Group (O: Pubis; I: Linea Aspera of Femur)",
-            "biomechanics": "Unloaded sagittal plane movement to lubricate the knee and hip joints and groove the exact motor pattern for the workout.",
-            "how_to": "1. Stand tall. 2. Take a controlled step forward. 3. Lower your hips until both knees are bent at a 90-degree angle. 4. Push off the front foot to return to the start.",
-            "cue": "Keep front knee aligned with second toe."
-        },
-        "Glute Bridge Pulses": {
-            "primary_muscles": "Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity, IT Band)",
-            "secondary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
-            "biomechanics": "A low-intensity active muscle pump to flush metabolic waste.",
-            "how_to": "1. Perform 15 slow bodyweight glute bridges.",
-            "cue": "Pulse gently to pump the muscles."
-        },
-        "Glute Bridges": {
-            "primary_muscles": "Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity, IT Band)",
-            "secondary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula)",
-            "stabilizing_muscles": "Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Pure, unloaded bilateral hip extension to activate the primary hip extensors without loading the spine.",
-            "how_to": "1. Lie on your back with knees bent and feet flat on the floor. 2. Squeeze your glutes and drive your hips up toward the ceiling until your body forms a straight line. 3. Lower with control.",
-            "cue": "Drive through your heels."
-        },
-        "Goblet Side Lunge": {
-            "primary_muscles": "Quadriceps (O: AIIS, Anterior Femur; I: Tibial Tuberosity), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity, IT Band)",
-            "secondary_muscles": "Adductor Magnus (Ischiocondylar portion) (O: Ischial Tuberosity; I: Adductor Tubercle of Femur)",
-            "stabilizing_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Frontal-plane unilateral movement that creates a powerful eccentric and concentric contraction in the primary hip stabilizers.",
-            "how_to": "1. Stand with feet together. 2. Take a large lateral step directly to your right side. 3. As the foot plants, hinge hips back and bend the right knee. 4. Drive forcefully off the right heel and midfoot to return to the start.",
-            "cue": "Push the floor away with your bent leg to return to center."
-        },
-        "Good Mornings": {
-            "primary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity)",
-            "secondary_muscles": "Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Unloaded hip hinge to actively groove the exact posterior chain mechanics required for heavy deadlifts.",
-            "how_to": "1. Stand with hands gently behind your head. 2. Keeping a slight bend in your knees and a perfectly flat back, push your hips as far back as possible. 3. Squeeze glutes to stand back up.",
-            "cue": "Push your butt to the wall behind you."
-        },
-        "Hip Rocks": {
-            "primary_muscles": "Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity), Piriformis (O: Anterior Sacrum; I: Greater Trochanter)",
-            "secondary_muscles": "Iliopsoas (O: T12-L5 Vertebrae, Iliac Fossa; I: Lesser Trochanter)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba), Deltoids (O: Clavicle, Scapula; I: Deltoid Tuberosity)",
-            "biomechanics": "Dynamic rock-backs flush blood into the deep rotators.",
-            "how_to": "1. On hands and knees, slowly rock your hips back to your heels 10 times.",
-            "cue": "Rock slowly to flush the hips."
-        },
-        "Incline DB Press": {
-            "primary_muscles": "Pectoralis Major (Clavicular Head) (O: Anterior Surface of Medial Half of Clavicle; I: Lateral Lip of Bicipital Groove of Humerus)",
-            "secondary_muscles": "Anterior Deltoid (O: Lateral Third of Clavicle; I: Deltoid Tuberosity), Triceps Brachii (Lateral & Medial Heads) (O: Posterior Humerus; I: Olecranon of Ulna)",
-            "stabilizing_muscles": "Rotator Cuff (O: Scapula; I: Humeral Tuberosities), Serratus Anterior (O: Ribs 1-8; I: Medial Border of Scapula)",
-            "biomechanics": "Pushing from a 30-degree incline shifts the mechanical tension to bias the upper pectoral fibers over the mid/lower chest.",
-            "how_to": "1. Set bench to 30 degrees. 2. Kick dumbbells up to shoulder height. 3. Press the weights up and slightly inward over your upper chest. 4. Lower under control until dumbbells are near chest level.",
-            "cue": "Drive your biceps towards each other at the top."
-        },
-        "Kneeling Quad Stretch": {
-            "primary_muscles": "Quadriceps (Rectus Femoris bias) (O: AIIS; I: Tibial Tuberosity), Iliopsoas (O: T12-L5 Vertebrae, Iliac Fossa; I: Lesser Trochanter)",
-            "secondary_muscles": "N/A",
-            "stabilizing_muscles": "Gluteus Maximus (Isometric tuck) (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Passive static hip extension to manually stretch and restore the resting length of the anterior thigh muscles.",
-            "how_to": "1. Kneel on one knee (use a pad if needed). 2. Reach back and grab the ankle of your back leg. 3. Gently pull the heel toward your glute while keeping your torso upright.",
-            "cue": "Tuck your tailbone under for a deeper stretch."
-        },
-        "Knees-to-Chest": {
-            "primary_muscles": "Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
-            "secondary_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter)",
-            "stabilizing_muscles": "N/A",
-            "biomechanics": "Passive, deep lumbar spinal flexion to decompress the lower back erectors that were heavily taxed holding the RDL hinge.",
-            "how_to": "1. Lie flat on your back. 2. Pull both knees into your chest and wrap your arms around your shins. 3. Gently pull the knees tighter, letting your lower back round slightly into the floor.",
-            "cue": "Keep your tailbone on the floor."
-        },
-        "Lat Pulldown": {
-            "primary_muscles": "Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus)",
-            "secondary_muscles": "Biceps Brachii (O: Supraglenoid Tubercle, Coracoid Process; I: Radial Tuberosity), Brachialis (O: Distal Half of Anterior Humerus; I: Coronoid Process and Tuberosity of Ulna), Rhomboids (O: Spinous Processes of C7-T5; I: Medial Border of Scapula)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs), Lower Trapezius (O: T4-T12; I: Scapular Spine)",
-            "biomechanics": "A vertical pulling motion combining shoulder adduction and elbow flexion to heavily target the width of the back.",
-            "how_to": "1. Take a wide grip on the pulldown bar and sit down, locking knees under the pads. 2. Lean back slightly. 3. Pull the bar smoothly down to your upper collarbone. 4. Control the bar back up until arms are fully extended.",
-            "cue": "Drive your elbows down towards the floor; pull your ribs to your hips, not your hands to your chest."
-        },
-        "Lateral Shifts": {
-            "primary_muscles": "Adductor Longus & Brevis (O: Pubic Body & Inferior Pubic Ramus; I: Linea Aspera of Femur), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity, IT Band)",
-            "secondary_muscles": "Quadriceps (O: AIIS, Anterior Femur; I: Tibial Tuberosity)",
-            "stabilizing_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Gently shifts weight side-to-side in the frontal plane to lubricate hip joints and safely stretch musculotendinous junctions.",
-            "how_to": "1. Stand with feet significantly wider than shoulder-width. 2. Push hips back, keeping back flat. 3. Bend right knee, shifting weight to the right foot while left leg stays straight. 4. Push off right foot to center, then shift left.",
-            "cue": "Imagine sliding side-to-side on a slippery floor."
-        },
-        "Leg Swings": {
-            "primary_muscles": "Iliopsoas (O: T12-L5 Vertebrae, Iliac Fossa; I: Lesser Trochanter), Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula)",
-            "secondary_muscles": "Quadriceps (O: AIIS, Anterior Femur; I: Tibial Tuberosity)",
-            "stabilizing_muscles": "Gluteus Medius (stance leg) (O: Lateral Ilium; I: Greater Trochanter), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Dynamically warms the femoral head in the acetabulum (hip socket) and stretches the attaching tendons like a pendulum.",
-            "how_to": "1. Stand sideways to a wall or rack for balance. 2. Keeping the outside leg relatively straight, swing it forward in a controlled arc. 3. Allow gravity to bring the leg back and through into a stretch. 4. Gradually increase ROM.",
-            "cue": "Feel the stretch at the top of the forward and backward swing."
-        },
-        "One Arm Cable Bicep Curl": {
-            "primary_muscles": "Biceps Brachii (Long Head) (O: Supraglenoid Tubercle of Scapula; I: Radial Tuberosity, Bicipital Aponeurosis)",
-            "secondary_muscles": "Brachialis (O: Anterior Distal Half of Humerus; I: Coronoid Process and Ulnar Tuberosity)",
-            "stabilizing_muscles": "Anterior Deltoid (O: Lateral Clavicle; I: Deltoid Tuberosity), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Standing next to a low pulley with the shoulder slightly extended behind the body places the long head of the biceps under an optimal active stretch during elbow flexion.",
-            "how_to": "1. Stand facing away from a low cable pulley, holding a D-handle. 2. Step forward so your working arm is drawn slightly behind your torso into shoulder extension. 3. Keeping your elbow pinned stationary behind your torso, curl the cable handle up toward your chest.",
-            "cue": "Keep your elbow pinned back to isolate the stretched bicep."
-        },
-        "One Arm Cable Fly": {
-            "primary_muscles": "Pectoralis Major (Sternal Head) (O: Anterior Surface of Sternum, Superior 6 Costal Cartilages; I: Lateral Lip of Bicipital Groove of Humerus)",
-            "secondary_muscles": "Anterior Deltoid (O: Lateral Third of Clavicle; I: Deltoid Tuberosity)",
-            "stabilizing_muscles": "Biceps Brachii (Short Head) (O: Coracoid Process of Scapula; I: Radial Tuberosity), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Provides constant upward and inward arc tension that perfectly mirrors the fiber alignment of the upper chest.",
-            "how_to": "1. Set cables to the lowest position. 2. Grab D-handles and stand slightly forward to create tension. 3. With a slight bend in the elbows, sweep the handles upward and together until they meet at face height. 4. Lower slowly.",
-            "cue": "Scoop the air up and in."
-        },
-        "One Arm Cable Reverse Fly": {
-            "primary_muscles": "Posterior Deltoid (O: Scapular Spine; I: Deltoid Tuberosity)",
-            "secondary_muscles": "Rhomboids (O: C7-T5; I: Medial Border of Scapula), Middle Trapezius (O: C7-T3; I: Scapular Spine)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
-            "biomechanics": "Constant cable tension applied directly against horizontal shoulder abduction.",
-            "how_to": "1. Stand facing a high dual cable setup. 2. Grab the left cable with your right hand and right cable with your left hand (crossing them). 3. Keep arms slightly bent and pull them apart and backward.",
-            "cue": "Keep your shoulders depressed; push the walls away."
-        },
-        "One Arm Overhead Triceps Ext.": {
-            "primary_muscles": "Triceps Brachii (Long Head) (O: Infraglenoid Tubercle of Scapula; I: Olecranon Process of Ulna)",
-            "secondary_muscles": "Triceps Brachii (Lateral & Medial Heads) (O: Posterior Shaft of Humerus; I: Olecranon Process of Ulna)",
-            "stabilizing_muscles": "Deltoids (O: Clavicle, Scapula; I: Deltoid Tuberosity), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Secures the shoulder in flexion to put the long head of the triceps under a deep mechanical stretch during extension.",
-            "how_to": "1. Set cable high with a rope attachment. 2. Face away from the machine, hinging forward slightly, hands behind your head. 3. Extend your elbows to press the rope forward and out. 4. Control the eccentric back.",
-            "cue": "Pin elbows to your head; only move forearms."
-        },
-        "One Arm Rope Hammer Curl": {
-            "primary_muscles": "Brachialis (O: Distal Half of Anterior Humerus; I: Coronoid Process and Ulnar Tuberosity), Brachioradialis (O: Proximal Two-Thirds of Lateral Supracondylar Ridge of Humerus; I: Styloid Process of Radius)",
-            "secondary_muscles": "Biceps Brachii (Long Head) (O: Supraglenoid Tubercle of Scapula; I: Radial Tuberosity)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Utilizing a neutral (hammer) grip functionally disadvantages the biceps brachii, forcing the underlying brachialis and brachioradialis to take the load during elbow flexion.",
-            "how_to": "1. Attach a D-handle to a low cable. 2. Stand facing the machine, holding the handle with a neutral grip (palm facing in). 3. Keeping elbow glued to your ribs, curl the handle up. 4. Lower with control.",
-            "cue": "Keep your wrist locked in a neutral hammer position."
-        },
-        "One Arm Straight Arm Pulldown": {
-            "primary_muscles": "Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus)",
-            "secondary_muscles": "Teres Major (O: Inferior Angle of Scapula; I: Bicipital Groove of Humerus), Posterior Deltoid (O: Scapular Spine; I: Deltoid Tuberosity)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Pure shoulder extension against constant tension, entirely removing the biceps from the movement.",
-            "how_to": "1. Stand facing a high cable with a straight bar. 2. Grab the bar with straight arms, hinge slightly forward. 3. Push the bar in an arc down to your thighs using only your lats. 4. Resist the weight on the way up.",
-            "cue": "Hinge only at the shoulder."
-        },
-        "One Arm Triceps Rope Pushdown": {
-            "primary_muscles": "Triceps Brachii (Lateral & Medial Heads) (O: Posterior Humerus; I: Olecranon Process of Ulna)",
-            "secondary_muscles": "Anconeus (O: Lateral Epicondyle; I: Olecranon Process of Ulna)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba), Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus)",
-            "biomechanics": "Pure elbow extension isolating the triceps against constant downward cable tension.",
-            "how_to": "1. Face a high cable with a rope or straight bar. 2. Tuck your elbows tightly against your ribs. 3. Push the attachment straight down toward the floor until arms are fully extended. 4. Control the return to 90 degrees.",
-            "cue": "Imagine your elbows are nailed to your ribs."
-        },
-        "Overhead Lat Stretch": {
-            "primary_muscles": "Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus)",
-            "secondary_muscles": "Teres Major (O: Inferior Angle of Scapula; I: Bicipital Groove of Humerus), Obliques (O: Ribs 5-12, Iliac Crest; I: Linea Alba, Pubis)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Passive lateral flexion of the spine combined with shoulder elevation to stretch the entire lateral fascial line.",
-            "how_to": "1. Stand tall and reach your right arm straight up overhead. 2. Grab your right wrist with your left hand. 3. Gently pull the right arm over to the left side while slightly pushing your right hip out. Switch sides.",
-            "cue": "Reach up before you reach over."
-        },
-        "Overhead Triceps Stretch": {
-            "primary_muscles": "Triceps Brachii (O: Scapula, Posterior Humerus; I: Olecranon Process of Ulna), Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus)",
-            "secondary_muscles": "Teres Major (O: Inferior Angle of Scapula; I: Bicipital Groove of Humerus), Posterior Deltoid (O: Scapular Spine; I: Deltoid Tuberosity)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Passive elbow flexion paired with extreme shoulder elevation to maximize the stretch on the triceps long head.",
-            "how_to": "1. Raise one arm straight up, then bend the elbow so your hand drops behind your neck. 2. Use your opposite hand to gently pull the elbow back and down.",
-            "cue": "Reach your hand down your spine."
-        },
-        "Pigeon Pose": {
-            "primary_muscles": "Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity), Piriformis (O: Anterior Sacrum; I: Greater Trochanter)",
-            "secondary_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter), Gluteus Minimus (O: Lower Lateral Ilium; I: Greater Trochanter)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
-            "biomechanics": "Deep passive external rotation of the hip joint.",
-            "how_to": "1. From a plank, bring one knee forward behind your wrist, rotating the lower leg inward. 2. Slide the back leg straight back. 3. Sink your hips toward the floor.",
-            "cue": "Try to square your hips to the front."
-        },
-        "Prone Y-Raises": {
-            "primary_muscles": "Lower Trapezius (O: T4-T12 Spinous Processes; I: Scapular Spine)",
-            "secondary_muscles": "Rhomboids (O: C7-T5; I: Medial Border of Scapula), Posterior Deltoid (O: Scapular Spine; I: Deltoid Tuberosity)",
-            "stabilizing_muscles": "Rotator Cuff (O: Scapula; I: Humeral Tuberosities), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
-            "biomechanics": "Active shoulder flexion paired with external rotation to secure the scapula against the ribcage.",
-            "how_to": "1. Lie face down on the floor or an incline bench. 2. Extend arms in a \"Y\" shape with thumbs pointing up to the ceiling. 3. Lift arms by pinching shoulder blades together and down. 4. Lower with control.",
-            "cue": "Initiate the lift by pulling your shoulder blades down and together."
-        },
-        "Romanian Deadlift": {
-            "primary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity)",
-            "secondary_muscles": "Adductor Magnus (O: Pubis, Ischium; I: Linea Aspera of Femur)",
-            "stabilizing_muscles": "Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "A heavy, compound hip hinge where the knees remain fixed in a slightly bent position, heavily loading the hamstrings during the eccentric phase.",
-            "how_to": "1. Hold a barbell or heavy dumbbells with a shoulder-width stance. 2. Keeping legs nearly straight, push your hips straight back. 3. Lower the weight down the front of your legs until you feel a deep hamstring stretch. 4. Drive hips forward to stand.",
-            "cue": "Scrape your shins with the bar."
-        },
-        "Scapular Retractions": {
-            "primary_muscles": "Lower Trapezius (O: T4-T12; I: Scapular Spine), Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus)",
-            "secondary_muscles": "Rhomboids (O: C7-T5; I: Medial Border of Scapula)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Pure, active scapular depression without elbow flexion to neurologically prime the lats before initiating the full pull.",
-            "how_to": "1. Grab a pulldown bar with a wide grip and sit down. 2. Keeping your elbows perfectly locked and straight, shrug your shoulders up to your ears. 3. Pull the shoulder blades hard down and together to move the bar just a few inches.",
-            "cue": "Put your shoulder blades in your back pockets."
-        },
-        "Scapular Wall Presses": {
-            "primary_muscles": "Serratus Anterior (O: Ribs 1-8; I: Medial Border of Scapula)",
-            "secondary_muscles": "Pectoralis Minor (O: Ribs 3-5; I: Coracoid Process)",
-            "stabilizing_muscles": "Trapezius (O: Occipital Bone, C7-T12; I: Clavicle, Scapula), Rhomboids (O: C7-T5; I: Medial Border of Scapula)",
-            "biomechanics": "Unweighted scapular protraction and upward rotation to ensure healthy tracking of the scapula before pressing overhead.",
-            "how_to": "1. Stand facing a wall, arms straight out with palms flat against it. 2. Keep arms straight and let your chest sink toward the wall (scapulae pinch). 3. Push the wall away, rounding your upper back (scapulae spread).",
-            "cue": "Push the wall away to hollow out your chest."
-        },
-        "Seated Toe Touch": {
-            "primary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula)",
-            "secondary_muscles": "Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs), Gastrocnemius / Soleus (O: Femur, Tibia/Fibula; I: Calcaneus)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Passive posterior chain stretch.",
-            "how_to": "1. Hinge forward at the hips, keeping your back relatively straight, and reach for your toes.",
-            "cue": "Melt into the hamstring fold."
-        },
-        "Shoulder Rolls": {
-            "primary_muscles": "Deltoids (O: Clavicle, Scapula; I: Deltoid Tuberosity), Upper Trapezius (O: Occipital Bone, C7; I: Lateral Clavicle)",
-            "secondary_muscles": "Rhomboids (O: C7-T5; I: Medial Border of Scapula), Levator Scapulae (O: C1-C4; I: Superior Angle of Scapula)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Active circumduction flushes metabolic waste from the shoulder girdle.",
-            "how_to": "1. Slowly roll your shoulders forward in circles for 30 seconds, then backward for 30 seconds.",
-            "cue": "Roll the shoulders to clear tension."
-        },
-        "Single Leg Seated Calf Raise": {
-            "primary_muscles": "Soleus (O: Soleal Line of Tibia, Posterior Fibular Head; I: Calcaneus via Achilles Tendon)",
-            "secondary_muscles": "Tibialis Posterior (O: Posterior Tibia/Fibula; I: Navicular and Cuneiform Bones)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Sitting with a bent knee puts the larger gastrocnemius in active insufficiency, purely isolating the underlying soleus muscle.",
-            "how_to": "1. Sit on a bench and place the ball of one foot on a block. 2. Place a heavy dumbbell on that thigh near the knee. 3. Lower the heel to a deep stretch. 4. Press up onto the toes as high as possible.",
-            "cue": "Push through the ball of your foot."
-        },
-        "Single Leg Seated Leg Curl": {
-            "primary_muscles": "Hamstrings (Semitendinosus & Semimembranosus) (O: Ischial Tuberosity; I: Medial Condyle of Tibia, Pes Anserinus)",
-            "secondary_muscles": "Biceps Femoris (Short Head) (O: Linea Aspera of Femur; I: Lateral Head of Fibula)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba), Tibialis Anterior (O: Lateral Tibia; I: Medial Cuneiform)",
-            "biomechanics": "The seated position puts the hips in flexion, pre-stretching the hamstrings and isolating pure knee flexion.",
-            "how_to": "1. Sit in the machine with the pad resting just above your Achilles tendons. 2. Lock the thigh pad down tight. 3. Curl the weight down and back as far as possible. 4. Control the weight on the way up.",
-            "cue": "Squeeze the hamstring to move the weight, controlling the release."
-        },
-        "Single Leg Standing Calf Raise": {
-            "primary_muscles": "Gastrocnemius (Medial & Lateral Heads) (O: Medial and Lateral Condyles of Femur; I: Posterior Surface of Calcaneus via Achilles Tendon)",
-            "secondary_muscles": "Soleus (O: Soleal Line and Fibular Head; I: Calcaneus via Achilles Tendon)",
-            "stabilizing_muscles": "Gluteus Medius (Stance leg) (O: Lateral Ilium; I: Greater Trochanter), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Keeping the knee fully extended (straight) perfectly isolates and optimally loads the biarticular gastrocnemius muscle.",
-            "how_to": "1. Stand on one foot with the ball of the foot on the edge of a block. 2. Keep the knee locked straight. 3. Drop the heel down for a deep stretch. 4. Press explosively through the ball of the foot to lift the heel high. 5. Lower slowly.",
-            "cue": "Drive your body straight up to the ceiling."
-        },
-        "Standing Arnold Press": {
-            "primary_muscles": "Anterior Deltoid, Lateral Deltoid (O: Clavicle, Acromion; I: Deltoid Tuberosity)",
-            "secondary_muscles": "Triceps Brachii (Lateral & Medial Heads) (O: Posterior Humerus; I: Olecranon Process of Ulna), Upper Trapezius (O: Occipital Bone, C7; I: Lateral Clavicle)",
-            "stabilizing_muscles": "Rotator Cuff (O: Scapula; I: Humeral Tuberosities), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Combines overhead elbow extension with transverse plane shoulder rotation (supination to pronation), heavily taxing the anterior and lateral deltoid heads.",
-            "how_to": "1. Hold dumbbells at shoulder height with palms facing your face (supinated). 2. As you press the weights overhead, rotate your hands so your palms face forward at the top (pronated). 3. Reverse the motion on the way down.",
-            "cue": "Uncork your shoulders as you press."
-        },
-        "Standing IT Band & TFL Stretch": {
-            "primary_muscles": "Tensor Fasciae Latae (O: Anterior Superior Iliac Spine ASIS and Outer Iliac Crest; I: Iliotibial IT Band/Lateral Condyle of Tibia)",
-            "secondary_muscles": "Gluteus Medius (O: Lateral Surface of Ilium; I: Lateral Aspect of Greater Trochanter of Femur), Obliques (O: External Surfaces of Ribs 5-12; I: Anterior Half of Iliac Crest, Linea Alba)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Combines hip adduction with lateral trunk flexion to stretch the stubborn lateral hip fascia and TFL at their maximum anatomical length.",
-            "how_to": "1. Stand tall and cross your target leg behind your front leg, keeping both feet flat on the floor. 2. Reach the arm on your target side overhead and lean your torso to the opposite side. 3. Push your hips laterally toward the target side to deepen the stretch.",
-            "cue": "Reach up, push your hip to the side, and breathe into your outer hip."
-        },
-        "Walking Lunge": {
-            "primary_muscles": "Quadriceps (O: AIIS, Anterior Femur; I: Tibial Tuberosity), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity)",
-            "secondary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula), Adductor Group (O: Pubis; I: Linea Aspera of Femur)",
-            "stabilizing_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter), Gastrocnemius (O: Femoral Condyles; I: Calcaneus), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Dynamic, unilateral sagittal plane extension of the hip and knee requiring significant core and pelvic stability.",
-            "how_to": "1. Hold dumbbells at your sides. 2. Step forward and drop your back knee toward the floor. 3. Push entirely through the front foot to stand up and immediately step into the next rep with the opposite leg.",
-            "cue": "Fall forward with control."
-        },
-        "Wall Angels": {
-            "primary_muscles": "Rotator Cuff (Infraspinatus, Teres Minor) (O: Scapula; I: Greater Tubercle), Lower Trapezius (O: T4-T12; I: Scapular Spine)",
-            "secondary_muscles": "Rhomboids (O: C7-T5; I: Medial Border of Scapula), Posterior Deltoid (O: Scapular Spine; I: Deltoid Tuberosity)",
-            "stabilizing_muscles": "Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Strict, active upward rotation of the shoulder blades against a fixed vertical plane to improve overhead mobility.",
-            "how_to": "1. Stand with your back, head, and heels flat against a wall. 2. Bring arms up to a 90-degree goalpost position against the wall. 3. Slowly slide your hands up the wall into a \"Y\", keeping contact. 4. Pull back down.",
-            "cue": "Keep lower back flat against the wall."
-        },
-        "Wall Slides": {
-            "primary_muscles": "Serratus Anterior (O: Ribs 1-8; I: Medial Border of Scapula), Rhomboids (O: C7-T5; I: Medial Border of Scapula)",
-            "secondary_muscles": "Lower Trapezius (O: T4-T12; I: Scapular Spine)",
-            "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
-            "biomechanics": "Gentle, unloaded active arm elevations flush the mid-back.",
-            "how_to": "1. Stand against a wall and slowly slide the backs of your hands up and down it 10 times.",
-            "cue": "Flush the upper back with wall slides."
-        },
-        "Wrist Stretch": {
-            "primary_muscles": "Forearm Flexors (O: Medial Epicondyle; I: Carpals/Metacarpals), Forearm Extensors (O: Lateral Epicondyle; I: Carpals/Metacarpals)",
-            "secondary_muscles": "Brachioradialis (O: Lateral Supracondylar Ridge of Humerus; I: Styloid Process of Radius)",
-            "stabilizing_muscles": "Deltoids (Isometric Hold) (O: Clavicle, Scapula; I: Deltoid Tuberosity)",
-            "biomechanics": "Passive wrist extension stretches.",
-            "how_to": "1. Hold one arm straight out, palm facing up, and use the other hand to gently pull the fingers down toward the floor. Switch sides.",
-            "cue": "Hold the wrist stretch."
-        }
-    };
+    "Leg Swings": {
+        "primary_muscles": "Iliopsoas (O: T12-L5 Vertebrae, Iliac Fossa; I: Lesser Trochanter), Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula)",
+        "secondary_muscles": "Quadriceps (O: AIIS, Anterior Femur; I: Tibial Tuberosity)",
+        "stabilizing_muscles": "Gluteus Medius (stance leg) (O: Lateral Ilium; I: Greater Trochanter), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Dynamically warms the femoral head in the acetabulum (hip socket) and stretches the attaching tendons like a pendulum.",
+        "how_to": "1. Stand sideways to a wall or rack for balance. 2. Keeping the outside leg relatively straight, swing it forward in a controlled arc. 3. Allow gravity to bring the leg back and through into a stretch. 4. Gradually increase ROM.",
+        "cue": "Feel the stretch at the top of the forward and backward swing."
+    },
+    "Lateral Shifts": {
+        "primary_muscles": "Adductor Longus & Brevis (O: Pubic Body & Inferior Pubic Ramus; I: Linea Aspera of Femur), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity, IT Band)",
+        "secondary_muscles": "Quadriceps (O: AIIS, Anterior Femur; I: Tibial Tuberosity)",
+        "stabilizing_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Gently shifts weight side-to-side in the frontal plane to lubricate hip joints and safely stretch musculotendinous junctions.",
+        "how_to": "1. Stand with feet significantly wider than shoulder-width. 2. Push hips back, keeping back flat. 3. Bend right knee, shifting weight to the right foot while left leg stays straight. 4. Push off right foot to center, then shift left.",
+        "cue": "Imagine sliding side-to-side on a slippery floor."
+    },
+    "Goblet Side Lunge": {
+        "primary_muscles": "Quadriceps (O: AIIS, Anterior Femur; I: Tibial Tuberosity), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity, IT Band)",
+        "secondary_muscles": "Adductor Magnus (Ischiocondylar portion) (O: Ischial Tuberosity; I: Adductor Tubercle of Femur)",
+        "stabilizing_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Frontal-plane unilateral movement that creates a powerful eccentric and concentric contraction in the primary hip stabilizers.",
+        "how_to": "1. Stand with feet together. 2. Take a large lateral step directly to your right side. 3. As the foot plants, hinge hips back and bend the right knee. 4. Drive forcefully off the right heel and midfoot to return to the start.",
+        "cue": "Push the floor away with your bent leg to return to center."
+    },
+    "Cable Hip Adduction": {
+        "primary_muscles": "Adductor Longus (O: Pubic Crest and Symphysis; I: Linea Aspera (Middle Third of Femur))",
+        "secondary_muscles": "Pectineus (O: Pectineal Line of Pubis; I: Pectineal Line of Femur)",
+        "stabilizing_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Provides constant medial cable tension to isolate pure hip adduction against resistance.",
+        "how_to": "1. Attach cuff to a low pulley around your right ankle. 2. Stand with right side to the machine. 3. Keeping torso stable, engage inner thigh to pull the right leg across the front of your standing leg. 4. Squeeze powerfully, then return.",
+        "cue": "Imagine squeezing a ball between your thighs."
+    },
+    "Glute Bridge Pulses": {
+        "primary_muscles": "Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity, IT Band)",
+        "secondary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
+        "biomechanics": "A low-intensity active muscle pump to flush metabolic waste.",
+        "how_to": "1. Perform 15 slow bodyweight glute bridges.",
+        "cue": "Pulse gently to pump the muscles."
+    },
+    "Butterfly Stretch": {
+        "primary_muscles": "Adductor Group (O: Pubis; I: Linea Aspera of Femur)",
+        "secondary_muscles": "Gracilis (O: Pubis; I: Medial Proximal Tibia), Pectineus (O: Pectineal Line of Pubis; I: Pectineal Line of Femur)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "A passive static stretch to restore adductor resting length.",
+        "how_to": "1. Sit on the floor, bring the soles of your feet together. 2. Let your knees fall open wide towards the floor and breathe deeply.",
+        "cue": "Breathe deep and melt into the static stretch."
+    },
+    "Kneeling Quad Stretch": {
+        "primary_muscles": "Quadriceps (Rectus Femoris bias) (O: AIIS; I: Tibial Tuberosity), Iliopsoas (O: T12-L5 Vertebrae, Iliac Fossa; I: Lesser Trochanter)",
+        "secondary_muscles": "N/A",
+        "stabilizing_muscles": "Gluteus Maximus (Isometric tuck) (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Passive static hip extension to manually stretch and restore the resting length of the anterior thigh muscles.",
+        "how_to": "1. Kneel on one knee (use a pad if needed). 2. Reach back and grab the ankle of your back leg. 3. Gently pull the heel toward your glute while keeping your torso upright.",
+        "cue": "Tuck your tailbone under for a deeper stretch."
+    },
+    "Glute Bridges": {
+        "primary_muscles": "Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity, IT Band)",
+        "secondary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula)",
+        "stabilizing_muscles": "Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Pure, unloaded bilateral hip extension to activate the primary hip extensors without loading the spine.",
+        "how_to": "1. Lie on your back with knees bent and feet flat on the floor. 2. Squeeze your glutes and drive your hips up toward the ceiling until your body forms a straight line. 3. Lower with control.",
+        "cue": "Drive through your heels."
+    },
+    "Dumbbell Curtsy Lunge": {
+        "primary_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity)",
+        "secondary_muscles": "Adductor Group (O: Pubis; I: Linea Aspera of Femur), Quadriceps (O: AIIS, Anterior Femur; I: Tibial Tuberosity)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "A multi-planar lunge that forces the lateral hip stabilizers (Glute Medius) to work intensely to maintain pelvic alignment while crossing the midline.",
+        "how_to": "1. Stand tall. 2. Step one foot diagonally behind the other leg as if doing a curtsy. 3. Bend both knees until the front thigh is parallel to the floor. 4. Drive through the front heel to stand back up.",
+        "cue": "Push off the front foot to return to start."
+    },
+    "Cable Hip Abduction": {
+        "primary_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter)",
+        "secondary_muscles": "Tensor Fasciae Latae (TFL) (O: ASIS; I: IT Band)",
+        "stabilizing_muscles": "Core Musculature (QL bias) (O: Iliac Crest; I: Rib 12, L1-L4 Transverse Processes)",
+        "biomechanics": "Constant resistance against pure lateral hip abduction, completely removing quadriceps or hamstring assistance.",
+        "how_to": "1. Attach an ankle cuff to a low pulley around your right ankle. 2. Stand with your left side to the machine. 3. Keeping torso upright, use outer hip muscles to pull your right leg directly out to the side.",
+        "cue": "Squeeze from the outside of your hips."
+    },
+    "Hip Rocks": {
+        "primary_muscles": "Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity), Piriformis (O: Anterior Sacrum; I: Greater Trochanter)",
+        "secondary_muscles": "Iliopsoas (O: T12-L5 Vertebrae, Iliac Fossa; I: Lesser Trochanter)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba), Deltoids (O: Clavicle, Scapula; I: Deltoid Tuberosity)",
+        "biomechanics": "Dynamic rock-backs flush blood into the deep rotators.",
+        "how_to": "1. On hands and knees, slowly rock your hips back to your heels 10 times.",
+        "cue": "Rock slowly to flush the hips."
+    },
+    "Standing IT Band & TFL Stretch": {
+        "primary_muscles": "Tensor Fasciae Latae (O: Anterior Superior Iliac Spine ASIS and Outer Iliac Crest; I: Iliotibial IT Band/Lateral Condyle of Tibia)",
+        "secondary_muscles": "Gluteus Medius (O: Lateral Surface of Ilium; I: Lateral Aspect of Greater Trochanter of Femur), Obliques (O: External Surfaces of Ribs 5-12; I: Anterior Half of Iliac Crest, Linea Alba)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Combines hip adduction with lateral trunk flexion to stretch the stubborn lateral hip fascia and TFL at their maximum anatomical length.",
+        "how_to": "1. Stand tall and cross your target leg behind your front leg, keeping both feet flat on the floor. 2. Reach the arm on your target side overhead and lean your torso to the opposite side. 3. Push your hips laterally toward the target side to deepen the stretch.",
+        "cue": "Reach up, push your hip to the side, and breathe into your outer hip."
+    },
+    "Pigeon Pose": {
+        "primary_muscles": "Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity), Piriformis (O: Anterior Sacrum; I: Greater Trochanter)",
+        "secondary_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter), Gluteus Minimus (O: Lower Lateral Ilium; I: Greater Trochanter)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
+        "biomechanics": "Deep passive external rotation of the hip joint.",
+        "how_to": "1. From a plank, bring one knee forward behind your wrist, rotating the lower leg inward. 2. Slide the back leg straight back. 3. Sink your hips toward the floor.",
+        "cue": "Try to square your hips to the front."
+    },
+    "Arm Circles": {
+        "primary_muscles": "Deltoids (All Heads) (O: Clavicle, Acromion, Scapular Spine; I: Deltoid Tuberosity)",
+        "secondary_muscles": "Supraspinatus (O: Supraspinous Fossa; I: Greater Tubercle)",
+        "stabilizing_muscles": "Rotator Cuff (O: Scapula; I: Humeral Tuberosities), Trapezius (O: Occipital Bone, C7-T12; I: Clavicle, Scapula)",
+        "biomechanics": "Dynamic circumduction of the humerus to lubricate the glenohumeral joint and warm synovial fluid.",
+        "how_to": "1. Stand tall and extend arms straight out to your sides. 2. Make small, controlled forward circles. 3. Gradually increase the size of the circles. 4. Reverse direction after 30 seconds.",
+        "cue": "Draw perfect circles with your fingertips."
+    },
+    "Prone Y-Raises": {
+        "primary_muscles": "Lower Trapezius (O: T4-T12 Spinous Processes; I: Scapular Spine)",
+        "secondary_muscles": "Rhomboids (O: C7-T5; I: Medial Border of Scapula), Posterior Deltoid (O: Scapular Spine; I: Deltoid Tuberosity)",
+        "stabilizing_muscles": "Rotator Cuff (O: Scapula; I: Humeral Tuberosities), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
+        "biomechanics": "Active shoulder flexion paired with external rotation to secure the scapula against the ribcage.",
+        "how_to": "1. Lie face down on the floor or an incline bench. 2. Extend arms in a \"Y\" shape with thumbs pointing up to the ceiling. 3. Lift arms by pinching shoulder blades together and down. 4. Lower with control.",
+        "cue": "Initiate the lift by pulling your shoulder blades down and together."
+    },
+    "Incline DB Press": {
+        "primary_muscles": "Pectoralis Major (Clavicular Head) (O: Anterior Surface of Medial Half of Clavicle; I: Lateral Lip of Bicipital Groove of Humerus)",
+        "secondary_muscles": "Anterior Deltoid (O: Lateral Third of Clavicle; I: Deltoid Tuberosity), Triceps Brachii (Lateral & Medial Heads) (O: Posterior Humerus; I: Olecranon of Ulna)",
+        "stabilizing_muscles": "Rotator Cuff (O: Scapula; I: Humeral Tuberosities), Serratus Anterior (O: Ribs 1-8; I: Medial Border of Scapula)",
+        "biomechanics": "Pushing from a 30-degree incline shifts the mechanical tension to bias the upper pectoral fibers over the mid/lower chest.",
+        "how_to": "1. Set bench to 30 degrees. 2. Kick dumbbells up to shoulder height. 3. Press the weights up and slightly inward over your upper chest. 4. Lower under control until dumbbells are near chest level.",
+        "cue": "Drive your biceps towards each other at the top."
+    },
+    "One Arm Low-to-High Cable Fly": {
+        "primary_muscles": "Pectoralis Major (Clavicular Head) (O: Anterior Surface of Medial Half of Clavicle; I: Lateral Lip of Bicipital Groove of Humerus)",
+        "secondary_muscles": "Anterior Deltoid (O: Lateral Third of Clavicle; I: Deltoid Tuberosity)",
+        "stabilizing_muscles": "Biceps Brachii (Short Head) (O: Coracoid Process of Scapula; I: Radial Tuberosity), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Provides constant upward and inward arc tension that perfectly mirrors the fiber alignment of the upper chest.",
+        "how_to": "1. Set the cable to the lowest position. 2. Grab a D-handle and stand slightly forward from the machine. 3. Sweep the hand in a wide, upward, and inward arc until it reaches collarbone height. 4. Lower slowly, returning to a deep stretch.",
+        "cue": "Scoop the air up and across, driving your inner bicep against your upper chest."
+    },
+    "One Arm Overhead Triceps Ext.": {
+        "primary_muscles": "Triceps Brachii (Long Head) (O: Infraglenoid Tubercle of Scapula; I: Olecranon Process of Ulna)",
+        "secondary_muscles": "Triceps Brachii (Lateral & Medial Heads) (O: Posterior Shaft of Humerus; I: Olecranon Process of Ulna)",
+        "stabilizing_muscles": "Deltoids (O: Clavicle, Scapula; I: Deltoid Tuberosity), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Secures the shoulder in flexion to put the long head of the triceps under a deep mechanical stretch during extension.",
+        "how_to": "1. Set cable high with a rope attachment. 2. Face away from the machine, hinging forward slightly, hands behind your head. 3. Extend your elbows to press the rope forward and out. 4. Control the eccentric back.",
+        "cue": "Pin elbows to your head; only move forearms."
+    },
+    "Arm Hugs": {
+        "primary_muscles": "Pectoralis Major (O: Sternum, Clavicle; I: Bicipital Groove of Humerus), Anterior Deltoid (O: Lateral Clavicle; I: Deltoid Tuberosity)",
+        "secondary_muscles": "Coracobrachialis (O: Coracoid Process; I: Medial Humerus), Biceps Brachii (Short Head) (O: Coracoid Process; I: Radial Tuberosity)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Dynamic horizontal adduction to flush lactic acid.",
+        "how_to": "1. Rapidly and gently cross your arms over your chest for 1 minute.",
+        "cue": "Hug yourself slowly to flush the chest."
+    },
+    "Doorway Chest Stretch": {
+        "primary_muscles": "Pectoralis Major (O: Sternum, Clavicle; I: Bicipital Groove of Humerus), Anterior Deltoid (O: Lateral Clavicle; I: Deltoid Tuberosity)",
+        "secondary_muscles": "Coracobrachialis (O: Coracoid Process; I: Medial Humerus)",
+        "stabilizing_muscles": "Rhomboids (O: C7-T5; I: Medial Border of Scapula)",
+        "biomechanics": "Passive horizontal abduction to stretch tight pectoral fascia.",
+        "how_to": "1. Place your forearm against a doorway frame with elbow at 90 degrees. 2. Gently step through the doorway to stretch the chest.",
+        "cue": "Lean forward to statically stretch the pecs."
+    },
+    "Overhead Triceps Stretch": {
+        "primary_muscles": "Triceps Brachii (O: Scapula, Posterior Humerus; I: Olecranon Process of Ulna), Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus)",
+        "secondary_muscles": "Teres Major (O: Inferior Angle of Scapula; I: Bicipital Groove of Humerus), Posterior Deltoid (O: Scapular Spine; I: Deltoid Tuberosity)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Passive elbow flexion paired with extreme shoulder elevation to maximize the stretch on the triceps long head.",
+        "how_to": "1. Raise one arm straight up, then bend the elbow so your hand drops behind your neck. 2. Use your opposite hand to gently pull the elbow back and down.",
+        "cue": "Reach your hand down your spine."
+    },
+    "Good Mornings": {
+        "primary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity)",
+        "secondary_muscles": "Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Unloaded hip hinge to actively groove the exact posterior chain mechanics required for heavy deadlifts.",
+        "how_to": "1. Stand with hands gently behind your head. 2. Keeping a slight bend in your knees and a perfectly flat back, push your hips as far back as possible. 3. Squeeze glutes to stand back up.",
+        "cue": "Push your butt to the wall behind you."
+    },
+    "Romanian Deadlift": {
+        "primary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity)",
+        "secondary_muscles": "Adductor Magnus (O: Pubis, Ischium; I: Linea Aspera of Femur)",
+        "stabilizing_muscles": "Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "A heavy, compound hip hinge where the knees remain fixed in a slightly bent position, heavily loading the hamstrings during the eccentric phase.",
+        "how_to": "1. Hold a barbell or heavy dumbbells with a shoulder-width stance. 2. Keeping legs nearly straight, push your hips straight back. 3. Lower the weight down the front of your legs until you feel a deep hamstring stretch. 4. Drive hips forward to stand.",
+        "cue": "Scrape your shins with the bar."
+    },
+    "Single Leg Seated Leg Curl": {
+        "primary_muscles": "Hamstrings (Semitendinosus & Semimembranosus) (O: Ischial Tuberosity; I: Medial Condyle of Tibia, Pes Anserinus)",
+        "secondary_muscles": "Biceps Femoris (Short Head) (O: Linea Aspera of Femur; I: Lateral Head of Fibula)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba), Tibialis Anterior (O: Lateral Tibia; I: Medial Cuneiform)",
+        "biomechanics": "The seated position puts the hips in flexion, pre-stretching the hamstrings and isolating pure knee flexion.",
+        "how_to": "1. Sit in the machine with the pad resting just above your Achilles tendons. 2. Lock the thigh pad down tight. 3. Curl the weight down and back as far as possible. 4. Control the weight on the way up.",
+        "cue": "Squeeze the hamstring to move the weight, controlling the release."
+    },
+    "Single Leg Standing Calf Raise": {
+        "primary_muscles": "Gastrocnemius (Medial & Lateral Heads) (O: Medial and Lateral Condyles of Femur; I: Posterior Surface of Calcaneus via Achilles Tendon)",
+        "secondary_muscles": "Soleus (O: Soleal Line and Fibular Head; I: Calcaneus via Achilles Tendon)",
+        "stabilizing_muscles": "Gluteus Medius (Stance leg) (O: Lateral Ilium; I: Greater Trochanter), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Keeping the knee fully extended (straight) perfectly isolates and optimally loads the biarticular gastrocnemius muscle.",
+        "how_to": "1. Stand on one foot with the ball of the foot on the edge of a block. 2. Keep the knee locked straight. 3. Drop the heel down for a deep stretch. 4. Press explosively through the ball of the foot to lift the heel high. 5. Lower slowly.",
+        "cue": "Drive your body straight up to the ceiling."
+    },
+    "Knees-to-Chest": {
+        "primary_muscles": "Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
+        "secondary_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter)",
+        "stabilizing_muscles": "N/A",
+        "biomechanics": "Passive, deep lumbar spinal flexion to decompress the lower back erectors that were heavily taxed holding the RDL hinge.",
+        "how_to": "1. Lie flat on your back. 2. Pull both knees into your chest and wrap your arms around your shins. 3. Gently pull the knees tighter, letting your lower back round slightly into the floor.",
+        "cue": "Keep your tailbone on the floor."
+    },
+    "Downward Dog": {
+        "primary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity), Gastrocnemius (O: Femoral Condyles; I: Calcaneus), Soleus (O: Posterior Tibia/Fibula; I: Calcaneus), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
+        "secondary_muscles": "Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus), Deltoids (O: Clavicle, Scapula; I: Deltoid Tuberosity)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Global, full-body passive stretch of the entire posterior fascial line.",
+        "how_to": "1. Tuck toes, straighten legs, and push your hips high into the air into an inverted \"V\", driving heels toward the floor.",
+        "cue": "Push up into Downward Dog."
+    },
+    "Wall Angels": {
+        "primary_muscles": "Rotator Cuff (Infraspinatus, Teres Minor) (O: Scapula; I: Greater Tubercle), Lower Trapezius (O: T4-T12; I: Scapular Spine)",
+        "secondary_muscles": "Rhomboids (O: C7-T5; I: Medial Border of Scapula), Posterior Deltoid (O: Scapular Spine; I: Deltoid Tuberosity)",
+        "stabilizing_muscles": "Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Strict, active upward rotation of the shoulder blades against a fixed vertical plane to improve overhead mobility.",
+        "how_to": "1. Stand with your back, head, and heels flat against a wall. 2. Bring arms up to a 90-degree goalpost position against the wall. 3. Slowly slide your hands up the wall into a \"Y\", keeping contact. 4. Pull back down.",
+        "cue": "Keep lower back flat against the wall."
+    },
+    "Standing Arnold Press": {
+        "primary_muscles": "Anterior Deltoid, Lateral Deltoid (O: Clavicle, Acromion; I: Deltoid Tuberosity)",
+        "secondary_muscles": "Triceps Brachii (Lateral & Medial Heads) (O: Posterior Humerus; I: Olecranon Process of Ulna), Upper Trapezius (O: Occipital Bone, C7; I: Lateral Clavicle)",
+        "stabilizing_muscles": "Rotator Cuff (O: Scapula; I: Humeral Tuberosities), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Combines overhead elbow extension with transverse plane shoulder rotation (supination to pronation), heavily taxing the anterior and lateral deltoid heads.",
+        "how_to": "1. Hold dumbbells at shoulder height with palms facing your face (supinated). 2. As you press the weights overhead, rotate your hands so your palms face forward at the top (pronated). 3. Reverse the motion on the way down.",
+        "cue": "Uncork your shoulders as you press."
+    },
+    "Cable Lateral Raise": {
+        "primary_muscles": "Lateral Deltoid (O: Acromion Process of Scapula; I: Deltoid Tuberosity of Humerus)",
+        "secondary_muscles": "Anterior Deltoid (O: Lateral Clavicle; I: Deltoid Tuberosity), Upper Trapezius (O: Occipital Bone, C7; I: Lateral Clavicle)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Leaning away from the pulley alters the resistance curve, shifting the point of maximum tension to the bottom/mid-range of the lateral raise.",
+        "how_to": "1. Stand next to a low cable, holding the machine with your inner hand. 2. Lean your body weight away from the machine. 3. With the outer arm, raise the cable handle straight out to the side. 4. Lower with control.",
+        "cue": "Lead with the elbow and push the weight away from you."
+    },
+    "One Arm Triceps Cable Pushdown": {
+        "primary_muscles": "Triceps Brachii (Lateral & Medial Heads) (O: Posterior Humerus; I: Olecranon Process of Ulna)",
+        "secondary_muscles": "Anconeus (O: Lateral Epicondyle; I: Olecranon Process of Ulna)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba), Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus)",
+        "biomechanics": "Pure elbow extension isolating the triceps against constant downward cable tension.",
+        "how_to": "1. Face a high cable with a rope or straight bar. 2. Tuck your elbows tightly against your ribs. 3. Push the attachment straight down toward the floor until arms are fully extended. 4. Control the return to 90 degrees.",
+        "cue": "Imagine your elbows are nailed to your ribs."
+    },
+    "Shoulder Rolls": {
+        "primary_muscles": "Deltoids (O: Clavicle, Scapula; I: Deltoid Tuberosity), Upper Trapezius (O: Occipital Bone, C7; I: Lateral Clavicle)",
+        "secondary_muscles": "Rhomboids (O: C7-T5; I: Medial Border of Scapula), Levator Scapulae (O: C1-C4; I: Superior Angle of Scapula)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Active circumduction flushes metabolic waste from the shoulder girdle.",
+        "how_to": "1. Slowly roll your shoulders forward in circles for 30 seconds, then backward for 30 seconds.",
+        "cue": "Roll the shoulders to clear tension."
+    },
+    "Behind-the-Back Stretch": {
+        "primary_muscles": "Pectoralis Major (O: Sternum, Clavicle; I: Bicipital Groove of Humerus)",
+        "secondary_muscles": "Anterior Deltoid (O: Lateral Clavicle; I: Deltoid Tuberosity), Biceps Brachii (O: Scapula; I: Radial Tuberosity)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Passive stretch opening the anterior chest fascia.",
+        "how_to": "1. Clasp your hands behind your back, keep arms straight, and gently lift them away from your torso.",
+        "cue": "Clasp hands and open the chest."
+    },
+    "Cross-Body Shoulder Stretch": {
+        "primary_muscles": "Posterior Deltoid, Lateral Deltoid (O: Scapular Spine, Acromion; I: Deltoid Tuberosity)",
+        "secondary_muscles": "Rhomboids (O: C7-T5; I: Medial Border of Scapula), Middle Trapezius (O: C7-T3; I: Scapular Spine)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Passive horizontal adduction to lengthen the posterior shoulder tissues heavily utilized during the pressing phase.",
+        "how_to": "1. Bring one arm straight across your chest. 2. Use your opposite arm to gently hook the elbow and pull it tighter to your body.",
+        "cue": "Look over the shoulder you are stretching."
+    },
+    "Forward Lunge Shifts": {
+        "primary_muscles": "Quadriceps (O: AIIS, Anterior Femur; I: Tibial Tuberosity), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity)",
+        "secondary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula)",
+        "stabilizing_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter), Adductor Group (O: Pubis; I: Linea Aspera of Femur)",
+        "biomechanics": "Unloaded sagittal plane movement to lubricate the knee and hip joints and groove the exact motor pattern for the workout.",
+        "how_to": "1. Stand tall. 2. Take a controlled step forward. 3. Lower your hips until both knees are bent at a 90-degree angle. 4. Push off the front foot to return to the start.",
+        "cue": "Keep front knee aligned with second toe."
+    },
+    "Walking Lunge": {
+        "primary_muscles": "Quadriceps (O: AIIS, Anterior Femur; I: Tibial Tuberosity), Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity)",
+        "secondary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula), Adductor Group (O: Pubis; I: Linea Aspera of Femur)",
+        "stabilizing_muscles": "Gluteus Medius (O: Lateral Ilium; I: Greater Trochanter), Gastrocnemius (O: Femoral Condyles; I: Calcaneus), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Dynamic, unilateral sagittal plane extension of the hip and knee requiring significant core and pelvic stability.",
+        "how_to": "1. Hold dumbbells at your sides. 2. Step forward and drop your back knee toward the floor. 3. Push entirely through the front foot to stand up and immediately step into the next rep with the opposite leg.",
+        "cue": "Fall forward with control."
+    },
+    "Single Leg Seated Calf Raise": {
+        "primary_muscles": "Soleus (O: Soleal Line of Tibia, Posterior Fibular Head; I: Calcaneus via Achilles Tendon)",
+        "secondary_muscles": "Tibialis Posterior (O: Posterior Tibia/Fibula; I: Navicular and Cuneiform Bones)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Sitting with a bent knee puts the larger gastrocnemius in active insufficiency, purely isolating the underlying soleus muscle.",
+        "how_to": "1. Sit on a bench and place the ball of one foot on a block. 2. Place a heavy dumbbell on that thigh near the knee. 3. Lower the heel to a deep stretch. 4. Press up onto the toes as high as possible.",
+        "cue": "Push through the ball of your foot."
+    },
+    "Ankle Pumps": {
+        "primary_muscles": "Gastrocnemius (O: Femoral Condyles; I: Calcaneus), Soleus (O: Posterior Tibia/Fibula; I: Calcaneus)",
+        "secondary_muscles": "Tibialis Anterior (O: Lateral Tibia; I: Medial Cuneiform)",
+        "stabilizing_muscles": "N/A",
+        "biomechanics": "Active ankle pumping clears pooled venous blood from the lower extremities.",
+        "how_to": "1. Sit with legs straight. 2. Actively point and flex your toes 20 times.",
+        "cue": "Pump the ankles to drain the legs."
+    },
+    "Seated Toe Touch": {
+        "primary_muscles": "Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula)",
+        "secondary_muscles": "Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs), Gastrocnemius / Soleus (O: Femur, Tibia/Fibula; I: Calcaneus)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Passive posterior chain stretch.",
+        "how_to": "1. Hinge forward at the hips, keeping your back relatively straight, and reach for your toes.",
+        "cue": "Melt into the hamstring fold."
+    },
+    "Cat-Cow": {
+        "primary_muscles": "Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs), Rectus Abdominis (O: Pubic Crest; I: Xiphoid Process)",
+        "secondary_muscles": "Transversus Abdominis (O: Iliac Crest; I: Linea Alba), Multifidus (O: Sacrum, Transverse Processes; I: Spinous Processes)",
+        "stabilizing_muscles": "Deltoids (O: Clavicle, Scapula; I: Deltoid Tuberosity), Rotator Cuff (O: Scapula; I: Humeral Tuberosities)",
+        "biomechanics": "Controlled spinal flexion and extension to lubricate intervertebral discs and prime the core.",
+        "how_to": "1. Get on hands and knees. 2. Inhale and arch your back, dropping your belly and lifting your head. 3. Exhale and round your spine upward, tucking your chin to your chest.",
+        "cue": "Initiate movement from your tailbone."
+    },
+    "Bent-Over DB Row": {
+        "primary_muscles": "Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus), Rhomboids (O: C7-T5; I: Medial Border of Scapula)",
+        "secondary_muscles": "Biceps Brachii (Long Head bias) (O: Supraglenoid Tubercle; I: Radial Tuberosity), Posterior Deltoid (O: Scapular Spine; I: Deltoid Tuberosity)",
+        "stabilizing_muscles": "Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs), Hamstrings (O: Ischial Tuberosity; I: Proximal Tibia/Fibula), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Heavy sagittal/transverse plane pulling requiring intense isometric contraction of the erector spinae and hamstrings to hold the hinge.",
+        "how_to": "1. Hinge forward at the hips until your torso is nearly parallel to the floor. 2. Let dumbbells hang down. 3. Row the weights up toward your hip crease/ribcage, keeping elbows close to the body. 4. Lower with control.",
+        "cue": "Pull your elbows into your back pockets."
+    },
+    "One Arm Cable Bicep Curl": {
+        "primary_muscles": "Biceps Brachii (Long Head) (O: Supraglenoid Tubercle of Scapula; I: Radial Tuberosity, Bicipital Aponeurosis)",
+        "secondary_muscles": "Brachialis (O: Anterior Distal Half of Humerus; I: Coronoid Process and Ulnar Tuberosity)",
+        "stabilizing_muscles": "Anterior Deltoid (O: Lateral Clavicle; I: Deltoid Tuberosity), Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Standing next to a low pulley with the shoulder slightly extended behind the body places the long head of the biceps under an optimal active stretch during elbow flexion.",
+        "how_to": "1. Stand facing away from a low cable pulley, holding a D-handle. 2. Step forward so your working arm is drawn slightly behind your torso into shoulder extension. 3. Keeping your elbow pinned stationary behind your torso, curl the cable handle up toward your chest.",
+        "cue": "Keep your elbow pinned back to isolate the stretched bicep."
+    },
+    "One Arm Cable Reverse Fly": {
+        "primary_muscles": "Posterior Deltoid (O: Scapular Spine; I: Deltoid Tuberosity)",
+        "secondary_muscles": "Rhomboids (O: C7-T5; I: Medial Border of Scapula), Middle Trapezius (O: C7-T3; I: Scapular Spine)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
+        "biomechanics": "Constant cable tension applied directly against horizontal shoulder abduction.",
+        "how_to": "1. Stand facing a high cable pulley. 2. Reach across your body to grab the D-handle with your working arm. 3. Keeping a slight bend in your elbow, pull your arm outward and backward in a horizontal arc until it aligns with or slightly passes your shoulder. 4. Slowly return to the starting cross-body stretch.",
+        "cue": "Keep your shoulder depressed; push the wall away with the back of your hand."
+    },
+    "Wall Slides": {
+        "primary_muscles": "Serratus Anterior (O: Ribs 1-8; I: Medial Border of Scapula), Rhomboids (O: C7-T5; I: Medial Border of Scapula)",
+        "secondary_muscles": "Lower Trapezius (O: T4-T12; I: Scapular Spine)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Gentle, unloaded active arm elevations flush the mid-back.",
+        "how_to": "1. Stand against a wall and slowly slide the backs of your hands up and down it 10 times.",
+        "cue": "Flush the upper back with wall slides."
+    },
+    "Child's Pose": {
+        "primary_muscles": "Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus)",
+        "secondary_muscles": "Gluteus Maximus (O: Posterior Ilium, Sacrum; I: Gluteal Tuberosity), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs)",
+        "stabilizing_muscles": "N/A",
+        "biomechanics": "Profound passive spinal decompression.",
+        "how_to": "1. Kneel on the floor, sit back onto your heels, and stretch your arms far forward on the floor.",
+        "cue": "Decompress and breathe into Child's Pose."
+    },
+    "Scapular Retractions": {
+        "primary_muscles": "Lower Trapezius (O: T4-T12; I: Scapular Spine), Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus)",
+        "secondary_muscles": "Rhomboids (O: C7-T5; I: Medial Border of Scapula)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Pure, active scapular depression without elbow flexion to neurologically prime the lats before initiating the full pull.",
+        "how_to": "1. Grab a pulldown bar with a wide grip and sit down. 2. Keeping your elbows perfectly locked and straight, shrug your shoulders up to your ears. 3. Pull the shoulder blades hard down and together to move the bar just a few inches.",
+        "cue": "Put your shoulder blades in your back pockets."
+    },
+    "Lat Pulldown": {
+        "primary_muscles": "Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus)",
+        "secondary_muscles": "Biceps Brachii (O: Supraglenoid Tubercle, Coracoid Process; I: Radial Tuberosity), Brachialis (O: Distal Half of Anterior Humerus; I: Coronoid Process and Tubosity of Ulna), Rhomboids (O: Spinous Processes of C7-T5; I: Medial Border of Scapula)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba), Erector Spinae (O: Sacrum, Iliac Crest; I: Vertebrae, Ribs), Lower Trapezius (O: T4-T12; I: Scapular Spine)",
+        "biomechanics": "A vertical pulling motion combining shoulder adduction and elbow flexion to heavily target the width of the back.",
+        "how_to": "1. Take a wide grip on the pulldown bar and sit down, locking knees under the pads. 2. Lean back slightly. 3. Pull the bar smoothly down to your upper collarbone. 4. Control the bar back up until arms are fully extended.",
+        "cue": "Drive your elbows down towards the floor; pull your ribs to your hips, not your hands to your chest."
+    },
+    "One Arm Straight Arm Pulldown": {
+        "primary_muscles": "Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus)",
+        "secondary_muscles": "Teres Major (O: Inferior Angle of Scapula; I: Bicipital Groove of Humerus), Posterior Deltoid (O: Scapular Spine; I: Deltoid Tuberosity)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Pure shoulder extension against constant tension, entirely removing the biceps from the movement.",
+        "how_to": "1. Stand facing a high cable with a straight bar. 2. Grab the bar with straight arms, hinge slightly forward. 3. Push the bar in an arc down to your thighs using only your lats. 4. Resist the weight on the way up.",
+        "cue": "Hinge only at the shoulder."
+    },
+    "One Arm Cable Hammer Curl": {
+        "primary_muscles": "Brachialis (O: Distal Half of Anterior Humerus; I: Coronoid Process and Ulnar Tuberosity), Brachioradialis (O: Proximal Two-Thirds of Lateral Supracondylar Ridge of Humerus; I: Styloid Process of Radius)",
+        "secondary_muscles": "Biceps Brachii (Long Head) (O: Supraglenoid Tubercle of Scapula; I: Radial Tuberosity)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Utilizing a neutral (hammer) grip functionally disadvantages the biceps brachii, forcing the underlying brachialis and brachioradialis to take the load during elbow flexion.",
+        "how_to": "1. Attach a D-handle to a low cable. 2. Stand facing the machine, holding the handle with a neutral grip (palm facing in). 3. Keeping elbow glued to your ribs, curl the handle up. 4. Lower with control.",
+        "cue": "Keep your wrist locked in a neutral hammer position."
+    },
+    "Fist Pumps": {
+        "primary_muscles": "Forearm Flexors (O: Medial Epicondyle; I: Phalanges), Forearm Extensors (O: Lateral Epicondyle; I: Phalanges)",
+        "secondary_muscles": "Brachioradialis (O: Lateral Supracondylar Ridge of Humerus; I: Styloid Process of Radius)",
+        "stabilizing_muscles": "Deltoids (Isometric Hold) (O: Clavicle, Scapula; I: Deltoid Tuberosity)",
+        "biomechanics": "Rhythmic finger/wrist movement acts as a vascular pump to clear forearm lactic acid.",
+        "how_to": "1. Extend arms straight out and rapidly open/close your fists 20 times.",
+        "cue": "Pump the hands to clear forearm burning."
+    },
+    "Wrist Stretch": {
+        "primary_muscles": "Forearm Flexors (O: Medial Epicondyle; I: Carpals/Metacarpals), Forearm Extensors (O: Lateral Epicondyle; I: Carpals/Metacarpals)",
+        "secondary_muscles": "Brachioradialis (O: Lateral Supracondylar Ridge of Humerus; I: Styloid Process of Radius)",
+        "stabilizing_muscles": "Deltoids (Isometric Hold) (O: Clavicle, Scapula; I: Deltoid Tuberosity)",
+        "biomechanics": "Passive wrist extension stretches.",
+        "how_to": "1. Hold one arm straight out, palm facing up, and use the other hand to gently pull the fingers down toward the floor. Switch sides.",
+        "cue": "Hold the wrist stretch."
+    },
+    "Overhead Lat Stretch": {
+        "primary_muscles": "Latissimus Dorsi (O: T7-L5, Thoracolumbar Fascia, Iliac Crest, Lower Ribs; I: Bicipital Groove of Humerus)",
+        "secondary_muscles": "Teres Major (O: Inferior Angle of Scapula; I: Bicipital Groove of Humerus), Obliques (O: Ribs 5-12, Iliac Crest; I: Linea Alba, Pubis)",
+        "stabilizing_muscles": "Core Musculature (O: Ribs, Spine, Pelvis; I: Pelvis, Linea Alba)",
+        "biomechanics": "Passive lateral flexion of the spine combined with shoulder elevation to stretch the entire lateral fascial line.",
+        "how_to": "1. Stand tall and reach your right arm straight up overhead. 2. Grab your right wrist with your left hand. 3. Gently pull the right arm over to the left side while slightly pushing your right hip out. Switch sides.",
+        "cue": "Reach up before you reach over."
+    }
+};
     const fallbackEx = { how_to:"Review machine placards or ask a trainer for proper setup instructions.", biomechanics:"Focus on mind-muscle connection and control.", mistakes:"Using momentum, improper breathing, and pushing into pain." };
     const defaultPlan = [
-        {"name": "Arnold Press", "exercises": ["Standing Arnold Press|3|6|0|150", "Cable Lateral Raise|1|AMRAP|0|60", "One Arm Triceps Rope Pushdown|1|AMRAP|0|60"]},
+        {"name": "Side Lunge", "exercises": ["Goblet Side Lunge|3|6|0|150", "Cable Hip Adduction|1|AMRAP|0|60"]},
+        {"name": "Incline Press", "exercises": ["Incline DB Press|3|6|0|150", "One Arm Low-to-High Cable Fly|1|AMRAP|0|60", "One Arm Overhead Triceps Ext.|1|AMRAP|0|60"]},
+        {"name": "Walking Lunge", "exercises": ["Walking Lunge|3|6|0|150", "Single Leg Seated Calf Raise|1|AMRAP|0|60"]},
         {"name": "Bent-Over Row", "exercises": ["Bent-Over DB Row|3|6|0|150", "One Arm Cable Bicep Curl|1|AMRAP|0|60", "One Arm Cable Reverse Fly|1|AMRAP|0|60"]},
         {"name": "Curtsy Lunge", "exercises": ["Dumbbell Curtsy Lunge|3|6|0|150", "Cable Hip Abduction|1|AMRAP|0|60"]},
+        {"name": "Arnold Press", "exercises": ["Standing Arnold Press|3|6|0|150", "Cable Lateral Raise|1|AMRAP|0|60", "One Arm Triceps Cable Pushdown|1|AMRAP|0|60"]},
         {"name": "Deadlift", "exercises": ["Romanian Deadlift|3|6|0|150", "Single Leg Seated Leg Curl|1|AMRAP|0|60", "Single Leg Standing Calf Raise|1|AMRAP|0|60"]},
-        {"name": "Goblet Side Lunge", "exercises": ["Goblet Side Lunge|3|6|0|150", "Cable Hip Adduction|1|AMRAP|0|60"]},
-        {"name": "Incline DB Press", "exercises": ["Incline DB Press|3|6|0|150", "One Arm Cable Fly|1|AMRAP|0|60", "One Arm Overhead Triceps Ext.|1|AMRAP|0|60"]},
-        {"name": "Lat Pulldown", "exercises": ["Lat Pulldown|3|6|0|150", "One Arm Straight Arm Pulldown|1|AMRAP|0|60", "One Arm Rope Hammer Curl|1|AMRAP|0|60"]},
-        {"name": "Walking Lunge", "exercises": ["Walking Lunge|3|6|0|150", "Single Leg Seated Leg Curl|1|AMRAP|0|60", "Single Leg Seated Calf Raise|1|AMRAP|0|60"]}
+        {"name": "Lat Pulldown", "exercises": ["Lat Pulldown|3|6|0|150", "One Arm Straight Arm Pulldown|1|AMRAP|0|60", "One Arm Cable Hammer Curl|1|AMRAP|0|60"]}
     ];
     const defaultWarmups = {
-        "Arnold Press": ["Arm Circles", "Wall Angels", "Scapular Wall Presses"],
-        "Bent-Over Row": ["Arm Circles", "Cat-Cow", "Bent-Over T-Raises"],
-        "Curtsy Lunge": ["Leg Swings", "Glute Bridges", "Fire Hydrants"],
+        "Side Lunge": ["Leg Swings", "Lateral Shifts"],
+        "Incline Press": ["Arm Circles", "Prone Y-Raises"],
+        "Walking Lunge": ["Leg Swings", "Forward Lunge Shifts"],
+        "Bent-Over Row": ["Arm Circles", "Cat-Cow"],
+        "Curtsy Lunge": ["Leg Swings", "Glute Bridges"],
+        "Arnold Press": ["Arm Circles", "Wall Angels"],
         "Deadlift": ["Leg Swings", "Good Mornings"],
-        "Goblet Side Lunge": ["Leg Swings", "Lateral Shifts"],
-        "Incline DB Press": ["Arm Circles", "Prone Y-Raises"],
-        "Lat Pulldown": ["Arm Circles", "Scapular Retractions", "Dead Hang"],
-        "Walking Lunge": ["Leg Swings", "Forward Lunge Shifts", "Clamshells"]
+        "Lat Pulldown": ["Arm Circles", "Scapular Retractions"]
     };
     const defaultCooldowns = {
-        "Arnold Press": ["Shoulder Rolls", "Behind-the-Back Stretch", "Cross-Body Shoulder Stretch"],
+        "Side Lunge": ["Glute Bridge Pulses", "Butterfly Stretch", "Kneeling Quad Stretch"],
+        "Incline Press": ["Arm Hugs", "Doorway Chest Stretch", "Overhead Triceps Stretch"],
+        "Walking Lunge": ["Ankle Pumps", "Seated Toe Touch", "Pigeon Pose"],
         "Bent-Over Row": ["Wall Slides", "Child's Pose", "Cross-Body Shoulder Stretch"],
         "Curtsy Lunge": ["Hip Rocks", "Standing IT Band & TFL Stretch", "Pigeon Pose"],
+        "Arnold Press": ["Shoulder Rolls", "Behind-the-Back Stretch", "Cross-Body Shoulder Stretch"],
         "Deadlift": ["Hip Rocks", "Knees-to-Chest", "Downward Dog"],
-        "Goblet Side Lunge": ["Glute Bridge Pulses", "Butterfly Stretch", "Kneeling Quad Stretch"],
-        "Incline DB Press": ["Arm Hugs", "Doorway Chest Stretch", "Overhead Triceps Stretch"],
-        "Lat Pulldown": ["Fist Pumps", "Wrist Stretch", "Overhead Lat Stretch"],
-        "Walking Lunge": ["Ankle Pumps", "Seated Toe Touch", "Pigeon Pose"]
+        "Lat Pulldown": ["Fist Pumps", "Wrist Stretch", "Overhead Lat Stretch"]
     };
     const AppState = {
         db: null,
@@ -1294,7 +1262,6 @@ select, button, input, textarea {
         const info = exerciseInfo[exName] || fallbackEx;
         const formattedHowTo = (info.how_to || 'N/A').replace(/(\s\d+\.\s)/g, '<br><br>$1');
         DOMElements.modalTitle.innerText = exName;
-        
         const formatMuscle = (muscleString, color) => {
             return muscleString.split(', ').map(part => {
                 const match = part.match(/^([\w\s-]+)(\s\(.*\))?$/);
@@ -1306,7 +1273,6 @@ select, button, input, textarea {
                 return `<span style="color:var(--${color}); font-weight:normal;">${part}</span>`;
             }).join(', ');
         };
-
         let targetsHTML = '<ul>';
         if (info.primary_muscles) {
             targetsHTML += `<li><b style="color:var(--red);">Primary:</b> ${formatMuscle(info.primary_muscles, 'red')}</li>`;
@@ -1318,11 +1284,9 @@ select, button, input, textarea {
             targetsHTML += `<li><b style="color:var(--text);">Stabilizers:</b> ${formatMuscle(info.stabilizing_muscles, 'text')}</li>`;
         }
         targetsHTML += '</ul>';
-
         if (targetsHTML === '<ul></ul>') {
             targetsHTML = '<p>Details not available.</p>';
         }
-
         const extraInfoHTML = `<div class="modal-section"><h4>Muscle Engagement</h4>${targetsHTML}</div><div class="modal-section"><h4>Biomechanics</h4><ul class="modal-section-p"><li>${info.biomechanics || 'N/A'}</li></ul></div><div class="modal-section"><h4>How-To</h4><p class="modal-section-p how-to-text">${formattedHowTo}</p></div><div class="modal-section"><h4>Cue</h4><ul class="modal-section-p"><li><em>${info.cue || 'N/A'}</em></li></ul></div>`;
         DOMElements.modalExtraInfo.innerHTML = extraInfoHTML;
         DOMElements.exModal.dataset.currentEx = exName;
